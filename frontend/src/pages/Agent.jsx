@@ -1,0 +1,333 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { api } from '../lib/api.js'
+import { useReseau } from '../lib/contexte.jsx'
+import {
+  LIBELLE_PORTE, MESSAGE_PB, ageLisible, aujourdhuiIso, classerPB, formaterDate,
+} from '../lib/format.js'
+import { ajouterDeclaration, ajouterVisite, lireFile, nombreEnAttente, vider } from '../lib/offline.js'
+import Accouchement from '../components/Accouchement.jsx'
+import Eveil from '../components/Eveil.jsx'
+import Orienter from '../components/Orienter.jsx'
+import Proches from '../components/Proches.jsx'
+import RetraitConsentement from '../components/RetraitConsentement.jsx'
+
+const CLE_LISTE = 'fildor.cache.visites'
+const CLE_FICHE = (code) => `fildor.cache.fiche.${code}`
+
+function lireCache(cle) {
+  try { return JSON.parse(localStorage.getItem(cle) || 'null') } catch { return null }
+}
+function ecrireCache(cle, v) {
+  try { localStorage.setItem(cle, JSON.stringify(v)) } catch { /* stockage plein : on continue sans cache */ }
+}
+
+function Pastille({ niveau, score }) {
+  const libelle = { URGENT: 'Urgent', PRIORITAIRE: 'Prioritaire', NORMAL: 'Normal' }[niveau]
+  return <span className={`pastille ${niveau.toLowerCase()}`}>{libelle} · {score}</span>
+}
+
+export default function Agent() {
+  const { enLigne, simuleHorsLigne, setSimuleHorsLigne } = useReseau()
+  const [liste, setListe] = useState(() => lireCache(CLE_LISTE) || [])
+  const [horsLigne, setHorsLigne] = useState(false)
+  const [filtre, setFiltre] = useState('')
+  const [choisi, setChoisi] = useState(null)
+  const [attente, setAttente] = useState(0)
+  const [message, setMessage] = useState(null)
+  const [erreur, setErreur] = useState('')
+
+  const rafraichirAttente = useCallback(() => setAttente(nombreEnAttente(lireFile())), [])
+
+  const charger = useCallback(async () => {
+    if (!enLigne) { setHorsLigne(true); return }
+    try {
+      const l = await api.get('/api/agent/visites')
+      setListe(l)
+      ecrireCache(CLE_LISTE, l)
+      setHorsLigne(false)
+      setErreur('')
+    } catch (e) {
+      setErreur(e.message)
+      setHorsLigne(e.statut === 0)
+    }
+  }, [enLigne])
+
+  const synchroniser = useCallback(async () => {
+    const file = lireFile()
+    if (nombreEnAttente(file) === 0) return
+    try {
+      const r = await api.post('/api/agent/sync', file)
+      vider()
+      rafraichirAttente()
+      setMessage({
+        ok: true,
+        texte: `Synchronisé : ${r.visitesCreees} visite(s), ${r.declarationsCreees} déclaration(s), `
+          + `${r.inscriptionsCreees} inscription(s), ${r.accouchementsCrees} naissance(s)`
+          + (r.visitesDejaConnues + r.declarationsDejaConnues + r.inscriptionsDejaConnues + r.accouchementsDejaConnus
+            ? `, ${r.visitesDejaConnues + r.declarationsDejaConnues + r.inscriptionsDejaConnues + r.accouchementsDejaConnus} déjà connue(s)` : '')
+          + (r.inscriptions?.filter((i) => i.creee).length
+            ? `. Codes attribués : ${r.inscriptions.filter((i) => i.creee).map((i) => `${i.codeFamille} (${i.codesEnfants.join(', ')})`).join(' ; ')}` : '')
+          + (r.erreurs.length ? `. À revoir : ${r.erreurs.join(' ; ')}` : '.'),
+      })
+      await charger()
+    } catch (e) {
+      setMessage({ ok: false, texte: `Synchronisation impossible : ${e.message}. Rien n'est perdu, réessayez plus tard.` })
+    }
+  }, [charger, rafraichirAttente])
+
+  // Au retour du réseau : on envoie ce qui attendait, puis on rafraîchit la liste.
+  useEffect(() => {
+    rafraichirAttente()
+    if (enLigne) { synchroniser().then(charger) } else { setHorsLigne(true) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enLigne])
+
+  const affichee = useMemo(
+    () => liste.filter((l) => !filtre || l.codeEnfant.toLowerCase().includes(filtre.toLowerCase())
+      || l.codeFamille.toLowerCase().includes(filtre.toLowerCase())),
+    [liste, filtre],
+  )
+  const urgents = liste.filter((l) => l.priorite.niveau === 'URGENT').length
+
+  return (
+    <main className="page">
+      <div className="barre-titre">
+        <h1>Ma liste de visites</h1>
+        <label className="interrupteur">
+          <input type="checkbox" checked={simuleHorsLigne} onChange={(e) => setSimuleHorsLigne(e.target.checked)} />
+          Simuler un village sans réseau
+        </label>
+      </div>
+
+      <p><Link className="bouton secondaire petit-bouton" to="/agent/inscription">+ Inscrire une famille</Link></p>
+
+      <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
+        {horsLigne ? 'Hors ligne : vous pouvez tout saisir, ça partira au retour du réseau.' : 'En ligne.'}
+        {attente > 0 && (
+          <> {attente} élément(s) en attente. <button className="lien" disabled={!enLigne} onClick={synchroniser}>Synchroniser maintenant</button></>
+        )}
+      </div>
+      {message && <p className={message.ok ? 'succes' : 'erreur'} role="status">{message.texte}</p>}
+      {erreur && <p className="erreur" role="alert">{erreur}</p>}
+
+      <div className="deux-colonnes">
+        <section>
+          <p className="petit">
+            {liste.length} enfant(s) · {urgents} urgent(s). Les familles dont un rappel est resté sans réponse remontent en premier.
+          </p>
+          <input className="recherche" placeholder="Chercher un code (ex. T045A, F-0045)" value={filtre}
+                 onChange={(e) => setFiltre(e.target.value)} aria-label="Chercher un code enfant ou famille" />
+          <ul className="liste-visites">
+            {affichee.map((l) => (
+              <li key={l.codeEnfant}>
+                <button className={choisi === l.codeEnfant ? 'ligne choisie' : 'ligne'} onClick={() => setChoisi(l.codeEnfant)}>
+                  <span>
+                    <b>{l.codeEnfant}</b> <span className="petit">{l.codeFamille} · {l.zone}</span><br />
+                    <span className="petit">
+                      {l.statut === 'GROSSESSE' ? 'Grossesse' : ageLisible(l.dateNaissance)} · {LIBELLE_PORTE[l.porte]}
+                      {l.prochainRdv && <> · prochain rdv {formaterDate(l.prochainRdv)}</>}
+                    </span>
+                    {l.priorite.raisons.length > 0 && <span className="raisons">{l.priorite.raisons[0]}</span>}
+                  </span>
+                  <Pastille niveau={l.priorite.niveau} score={l.priorite.score} />
+                </button>
+              </li>
+            ))}
+            {affichee.length === 0 && <li className="petit">Aucun enfant à afficher.</li>}
+          </ul>
+        </section>
+
+        <section>
+          {choisi
+            ? <Fiche key={choisi} code={choisi} enLigne={enLigne} onChange={() => { rafraichirAttente(); if (enLigne) synchroniser().then(charger) }} />
+            : <div className="carte"><p>Choisissez un enfant dans la liste pour voir sa fiche et saisir la visite.</p></div>}
+        </section>
+      </div>
+    </main>
+  )
+}
+
+function Fiche({ code, enLigne, onChange }) {
+  const [fiche, setFiche] = useState(() => lireCache(CLE_FICHE(code)))
+  const [version, setVersion] = useState(0)
+  const rafraichir = () => setVersion((v) => v + 1)
+  const [depuisCache, setDepuisCache] = useState(false)
+  const [erreur, setErreur] = useState('')
+
+  useEffect(() => {
+    let annule = false
+    async function charger() {
+      if (!enLigne) { setDepuisCache(true); return }
+      try {
+        const f = await api.get(`/api/agent/enfants/${encodeURIComponent(code)}`)
+        if (!annule) { setFiche(f); ecrireCache(CLE_FICHE(code), f); setDepuisCache(false); setErreur('') }
+      } catch (e) {
+        if (!annule) { setErreur(e.message); setDepuisCache(true) }
+      }
+    }
+    charger()
+    return () => { annule = true }
+  }, [code, enLigne, version])
+
+  if (!fiche) {
+    return <div className="carte">{erreur ? <p className="erreur">{erreur}</p> : <p>Chargement…</p>}
+      {!enLigne && <p className="petit">Cette fiche n'a pas été ouverte avant le départ : elle n'est pas disponible hors ligne.</p>}</div>
+  }
+
+  return (
+    <div className="carte fiche">
+      <h2>{fiche.codeEnfant} <span className="petit">famille {fiche.codeFamille}</span></h2>
+      <p className="petit">
+        {fiche.zone} · {LIBELLE_PORTE[fiche.porte]} · {fiche.statut === 'GROSSESSE'
+          ? `terme prévu le ${formaterDate(fiche.dateTermePrevue)}`
+          : `né(e) le ${formaterDate(fiche.dateNaissance)} (${ageLisible(fiche.dateNaissance)})`}
+      </p>
+      {depuisCache && <p className="avertissement">Fiche enregistrée avant le départ : elle peut avoir changé depuis.</p>}
+
+      <Pastille niveau={fiche.priorite.niveau} score={fiche.priorite.score} />
+      {fiche.priorite.raisons.length > 0 && (
+        <ul className="raisons-liste">{fiche.priorite.raisons.map((r) => <li key={r}>{r}</li>)}</ul>
+      )}
+
+      <p><Link to={`/carnet/${fiche.codeFamille}`}>Imprimer le carnet illustré de la famille</Link></p>
+
+      <h3>Rendez-vous</h3>
+      <ul className="rdvs">
+        {fiche.rendezVous.map((r) => (
+          <li key={r.id} className={`rdv ${r.statut.toLowerCase()}`}>
+            <span>{formaterDate(r.datePrevue)}</span> <span>{r.libelle}</span>
+            <span className="petit">{r.statut === 'REALISE' ? '✓ fait' : r.statut === 'MANQUE' ? '✗ manqué' : 'à venir'}</span>
+          </li>
+        ))}
+      </ul>
+
+      {fiche.statut === 'GROSSESSE' && (
+        <Accouchement fiche={fiche} enLigne={enLigne} onChange={() => { onChange(); rafraichir() }} />
+      )}
+      {fiche.statut === 'ENFANT' && <Naissance fiche={fiche} onChange={onChange} />}
+      {fiche.statut === 'ENFANT' && <Eveil eveil={fiche.eveil} aujourdhui={aujourdhuiIso()} />}
+      <Saisie fiche={fiche} onChange={onChange} />
+      <Orienter codeFamille={fiche.codeFamille} demandes={fiche.demandes} enLigne={enLigne && !depuisCache} onChange={rafraichir} />
+      <Proches codeFamille={fiche.codeFamille} enLigne={enLigne && !depuisCache} />
+      <RetraitConsentement codeFamille={fiche.codeFamille} enLigne={enLigne && !depuisCache} onFait={onChange} />
+
+      {fiche.visites.length > 0 && (
+        <>
+          <h3>Dernières mesures</h3>
+          <ul>{fiche.visites.map((v, i) => (
+            <li key={i}>{formaterDate(v.dateVisite)} : PB {v.muacMm ?? '—'} mm{v.poidsG ? `, ${v.poidsG} g` : ''}{v.signesDanger ? ' · signe de danger' : ''}</li>
+          ))}</ul>
+        </>
+      )}
+    </div>
+  )
+}
+
+function Naissance({ fiche, onChange }) {
+  const d = fiche.declaration
+  const [lieu, setLieu] = useState('CENTRE_SANTE')
+  const [certificat, setCertificat] = useState(true)
+  const [fait, setFait] = useState(false)
+
+  if (d && d.statut !== 'REJETEE') {
+    const libelle = { ENVOYEE: 'envoyée à la mairie', VALIDEE: 'validée par la mairie', BROUILLON: 'brouillon' }[d.statut]
+    return (
+      <>
+        <h3>Déclaration de naissance</h3>
+        <p>Déclaration {libelle}. Reçu <b>{d.numeroRecu}</b>{d.dansDelaiGratuit ? ' (dans le délai gratuit)' : ' (hors délai gratuit : jugement supplétif à 6 000 FCFA)'}.</p>
+      </>
+    )
+  }
+  if (d?.statut === 'REJETEE') {
+    return (
+      <>
+        <h3>Déclaration de naissance</h3>
+        <p className="erreur">Rejetée par la mairie : {d.motifRejet}. À corriger avec la famille et la mairie.</p>
+      </>
+    )
+  }
+  if (fait) {
+    return <><h3>Déclaration de naissance</h3><p className="succes">Déclaration enregistrée sur ce téléphone. Elle partira à la mairie dès que le réseau sera là.</p></>
+  }
+  return (
+    <>
+      <h3>Déclaration de naissance</h3>
+      <p className="petit">Gratuite dans les 45 jours. Au-delà, jugement supplétif (6 000 FCFA).</p>
+      <div className="formulaire-ligne">
+        <label>Lieu de naissance
+          <select value={lieu} onChange={(e) => setLieu(e.target.value)}>
+            <option value="CENTRE_SANTE">Centre de santé</option>
+            <option value="DOMICILE">À domicile</option>
+          </select>
+        </label>
+        <label className="case"><input type="checkbox" checked={certificat} onChange={(e) => setCertificat(e.target.checked)} /> Certificat d'accouchement vu</label>
+      </div>
+      <button className="bouton secondaire"
+              onClick={() => { ajouterDeclaration({ codeEnfant: fiche.codeEnfant, lieuNaissance: lieu, certificatAccouchement: certificat }); setFait(true); onChange() }}>
+        Lancer la déclaration
+      </button>
+    </>
+  )
+}
+
+function Saisie({ fiche, onChange }) {
+  const [date, setDate] = useState(aujourdhuiIso())
+  const [pb, setPb] = useState('')
+  const [poids, setPoids] = useState('')
+  const [danger, setDanger] = useState(false)
+  const [realises, setRealises] = useState([])
+  const [enregistre, setEnregistre] = useState(false)
+
+  const classe = classerPB(pb)
+  const aFaire = fiche.rendezVous.filter((r) => r.statut !== 'REALISE' && r.datePrevue <= aujourdhuiIso())
+
+  const basculer = (id) => setRealises((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]))
+
+  function enregistrer(e) {
+    e.preventDefault()
+    ajouterVisite({
+      codeEnfant: fiche.codeEnfant,
+      dateVisite: date,
+      muacMm: pb === '' ? null : Number(pb),
+      poidsG: poids === '' ? null : Number(poids),
+      signesDanger: danger,
+      rendezVousRealises: realises,
+    })
+    setEnregistre(true)
+    setPb(''); setPoids(''); setDanger(false); setRealises([])
+    onChange()
+  }
+
+  return (
+    <form onSubmit={enregistrer}>
+      <h3>Saisir la visite</h3>
+      <div className="formulaire-ligne">
+        <label>Date <input type="date" value={date} max={aujourdhuiIso()} onChange={(e) => setDate(e.target.value)} required /></label>
+        <label>Périmètre brachial (mm)
+          <input type="number" min="60" max="250" inputMode="numeric" value={pb} onChange={(e) => setPb(e.target.value)} placeholder="ex. 128" />
+        </label>
+        <label>Poids (g)
+          <input type="number" min="500" max="30000" inputMode="numeric" value={poids} onChange={(e) => setPoids(e.target.value)} />
+        </label>
+      </div>
+      {classe !== 'NON_MESURE' && <p className={`pb ${classe.toLowerCase()}`} role="status">{MESSAGE_PB[classe]}</p>}
+      <label className="case"><input type="checkbox" checked={danger} onChange={(e) => setDanger(e.target.checked)} /> Signe de danger observé (orienter vers le centre de santé)</label>
+
+      {aFaire.length > 0 && (
+        <fieldset>
+          <legend>Rendez-vous faits pendant cette visite</legend>
+          {aFaire.map((r) => (
+            <label className="case" key={r.id}>
+              <input type="checkbox" checked={realises.includes(r.id)} onChange={() => basculer(r.id)} />
+              {formaterDate(r.datePrevue)} · {r.libelle}
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      <button className="bouton">Enregistrer la visite</button>
+      {enregistre && <p className="succes" role="status">Visite enregistrée sur ce téléphone.</p>}
+    </form>
+  )
+}

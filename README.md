@@ -1,0 +1,107 @@
+# Fil d'Or — prototype Hack4Children Togo 2026
+
+*Ne perdons le fil d'aucun enfant.* Fil d'Or suit chaque enfant de la grossesse à 5 ans, avec ou sans téléphone,
+avec ou sans réseau : un seul carnet, quatre portes d'entrée (voix et SMS, agent de santé, carnet illustré, point d'écoute).
+
+> **Prototype avec données fictives.** Aucun vrai enfant, aucun vrai SMS, aucun opérateur branché.
+> Les contenus de santé et le calendrier vaccinal doivent être validés par des professionnels avant tout usage réel.
+
+## Ce que fait la démo
+
+| Porte / rôle | Ce que l'on peut démontrer |
+|---|---|
+| **Voix et SMS** (`/telephone`) | Un faux téléphone : appeler un sujet (grossesse, vaccins, nutrition…), lire les SMS de rappel et répondre OK, faire un appel manqué. |
+| **Agent de santé** (`/agent`) | Liste de visites **priorisée** (un rappel sans réponse fait monter la famille), fiche enfant, saisie hors ligne (périmètre brachial, vaccins faits), déclaration de naissance, synchronisation. Interrupteur « simuler un village sans réseau ». |
+| **Carnet illustré** (`/carnet/F-0045`) | Page imprimable : pictogrammes, cases à cocher, ruban de mesure, code famille, aucun nom. |
+| **Inscription** (`/agent/inscription`) | L'agent inscrit une famille avec son accord (langue, porte, téléphone facultatif, enfants, grossesses, vaccins déjà faits, proches). Marche hors ligne : les codes arrivent à la synchronisation. Bouton « Le bébé est né » et retrait de consentement sur la fiche. |
+| **Éveil** (fiche, téléphone, carnet) | Un jeu par jour selon l'âge (20 jeux avec objets de la maison), « On l'a fait ✓ », SMS « jeu de la semaine », taux d'éveil sur la carte. |
+| **Annuaire** (`/annuaire`) | Centres de santé, crèches, centres sociaux, état civil par zone. La famille ou l'agent demande un rappel ou une orientation ; la structure répond depuis `/structure` et la famille reçoit un SMS. |
+| **Proches / numéro relais** | Père, grand-parent ou relais reçoivent des rappels généraux sans détail, avec leur accord. Essayez `91000046` dans le simulateur. |
+| **Mairie** (`/mairie`) | Reçoit les dossiers de naissance pré-remplis, valide ou rejette (motif obligatoire). |
+| **Carte des zones oubliées** (`/carte`) | Indice d'oubli par zone, anonyme, sans point GPS précis ; zones de moins de 5 familles masquées. |
+| **Démo** (`/admin`) | Fait avancer le temps de quelques jours pour montrer les rendez-vous manqués et les familles qui remontent. |
+
+## Lancer le projet
+
+### Option 1 : Docker (le plus simple)
+```bash
+docker compose up --build
+```
+Site : http://localhost:8081 · API : http://localhost:8080
+
+### Option 2 : en développement
+Prérequis : Java 21, Maven 3.9, Node 22, PostgreSQL 16.
+
+```bash
+# 1. Base de données
+createdb -U postgres fildor      # ou : docker compose up db
+#    utilisateur/mot de passe par défaut : fildor / fildor (voir backend/src/main/resources/application.yml)
+
+# 2. Serveur (migrations Flyway et données fictives au premier démarrage)
+cd backend && mvn spring-boot:run          # http://localhost:8080
+
+# 3. Site
+cd frontend && npm install && npm run dev  # http://localhost:5173
+```
+
+### Comptes de démonstration
+Créés au premier démarrage (`FILDOR_COMPTES_DEMO=true`). Mot de passe par défaut : `FilDor2026!demo`
+(changez-le avec `FILDOR_MDP_DEMO`).
+
+| Identifiant | Rôle |
+|---|---|
+| `agent.vo` | Agent de santé, zone rurale de Vo (beaucoup de familles à relancer) |
+| `agent.golfe`, `agent.zio` | Agents des zones du Golfe et de Zio |
+| `mairie` | Agent d'état civil |
+| `structure.golfe`, `structure.vo` | Centre de santé (annuaire et demandes) |
+| `decideur` | Responsable régional (carte) |
+| `admin` | Tout, plus l'outil de démo |
+
+Téléphones de démo pour le simulateur : familles `90000001` à `90000045` ; proches `91000001` (père), `91000002` (grand-parent), `91000046` (relais d'une famille sans téléphone).
+
+## Scénario de démo conseillé (5 minutes)
+1. **Simulateur** : numéro `90000031`, appeler « Vaccins », puis « Signes de danger ». Montrer que la voix éwé/kabyè/tem n'est pas encore enregistrée et que l'application le dit.
+2. **Démo** (`admin`) : avancer de 5 jours. Des rendez-vous deviennent manqués, des rappels « sans réponse ».
+3. **Agent** (`agent.vo`) : la liste est triée, les raisons sont affichées. Cocher « simuler un village sans réseau », ouvrir un enfant, saisir un périmètre brachial de 112 mm (l'application dit d'orienter vers le centre de santé), lancer une déclaration de naissance.
+4. Décocher : la synchronisation part toute seule. La relancer ne crée aucun doublon.
+5. **Mairie** : valider le dossier reçu. **Carte** : montrer Vo, Yoto et Lacs en rouge/orange.
+
+## Scénario complémentaire : les nouvelles fonctions
+1. **Agent** (`agent.golfe`) : « Inscrire une famille », ajouter un enfant et un proche relais, cocher « sans réseau » : l'inscription part au retour du réseau, sans doublon.
+2. **Simulateur** : numéro `91000046` (relais) : messages généraux seulement. Numéro `90000001` : onglet « Jeu du jour », puis « Structures » > « Me rappeler ».
+3. **Structure** (`structure.golfe`) : voir la demande par code famille, répondre : la famille reçoit un SMS.
+4. **Démo** (`admin`) : lancer le cycle : rappels aux proches et jeux de la semaine.
+
+## Architecture
+```
+frontend/ (React + Vite)  ──/api──▶  backend/ (Spring Boot 3, Java 21)  ──JDBC──▶  PostgreSQL 16
+   mode hors ligne (file locale)        API REST, sécurité par rôle                  migrations Flyway
+```
+- **Priorité de visite** (`PrioriteService`) : périmètre brachial bas, rappels sans réponse, rendez-vous manqués, naissance non déclarée. Chaque score est renvoyé avec ses raisons.
+- **Hors ligne** : chaque saisie porte un identifiant créé sur le téléphone ; le serveur ignore ce qu'il a déjà reçu (`ON CONFLICT DO NOTHING`).
+- **Cycle des rappels** (`RappelService`) : chaque jour à 6 h, ou à la demande via `/api/admin/cycle`.
+- **Inscription** : validations avant écriture, transaction unique, idempotente par `client_uuid`. Codes `F-0001` (famille) et `T001A` (enfant).
+- **Jeu du jour** (`ChoixJeu`) : choix déterministe par âge et semaine (lundi), identique au téléphone, sur la fiche et dans le carnet.
+- **SMS simulés** : écrits en base. L'envoi réel dépend d'un accord avec un opérateur togolais.
+
+## Protection de l'enfant et des données
+- Aucun nom, photo, adresse ni point GPS précis. Familles et enfants identifiés par un **code**.
+- Téléphones stockés sous forme de **hash** (SHA-256 avec un poivre secret), jamais en clair.
+- Accès **par rôle** et **par zone** ; **journal des accès** (`journal_acces`) pour chaque consultation.
+- Carte **anonyme** : taux par zone, zones de moins de 5 familles masquées.
+- Aucun appel enregistré. Contenus de santé : informer et orienter, jamais de diagnostic (`a_valider = TRUE` tant que non validés).
+- Cadre légal visé : loi n° 2019-014 du 29 octobre 2019 (déclaration à l'IPDCP et autorisation pour les données de santé **avant tout test réel**).
+
+## Ce qui reste à faire avant un vrai pilote
+- Brancher un opérateur (voix, SMS, USSD) ; enregistrer les voix éwé, kabyè, tem avec des locuteurs natifs.
+- Faire valider les contenus de santé et le calendrier vaccinal (PEV), et la valeur légale du reçu de naissance.
+- Authentification de production (jetons, HTTPS obligatoire, mots de passe personnels, double facteur pour la mairie), limitation d'appels côté proxy.
+- Mesurer la couverture réseau réelle par zone (colonne `zone.couverture_reseau`, aujourd'hui `INCONNUE`).
+- Application agent installable (PWA) avec stockage chiffré sur le téléphone ; la file hors ligne actuelle utilise `localStorage`.
+- Hébergement et transferts de données conformes à la loi togolaise (art. 28).
+
+## Tests
+```bash
+cd backend && mvn test      # priorités, indice d'oubli, hash des téléphones, calendrier vaccinal, choix des jeux, règles d'inscription
+cd frontend && npm test     # formats, âge, périmètre brachial, file hors ligne
+```

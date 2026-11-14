@@ -1,0 +1,44 @@
+# Fil d'Or : base PostgreSQL, serveur Spring Boot, site React.
+#   docker compose up --build
+# Site : http://localhost:8081   API : http://localhost:8080   Base : localhost:5432
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fildor
+      POSTGRES_USER: fildor
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fildor}
+    ports:
+      - "5432:5432"
+    volumes:
+      - donnees-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fildor -d fildor"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/fildor
+      DB_USER: fildor
+      DB_PASSWORD: ${DB_PASSWORD:-fildor}
+      FILDOR_PEPPER: ${FILDOR_PEPPER:-fildor-demo-pepper}
+      FILDOR_MDP_DEMO: ${FILDOR_MDP_DEMO:-FilDor2026!demo}
+      FILDOR_ORIGINES: http://localhost:8081
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
+
+volumes:
+  donnees-pg:
