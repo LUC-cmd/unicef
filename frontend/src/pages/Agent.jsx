@@ -92,30 +92,40 @@ export default function Agent() {
 
   return (
     <main className="page">
+      <span className="surtitre">Agent de santé</span>
       <div className="barre-titre">
-        <h1>Ma liste de visites</h1>
+        <h1>Mes visites</h1>
+        <div className="actions">
+          <Link className="bouton petit-bouton" to="/agent/inscription">Inscrire une famille</Link>
+        </div>
+      </div>
+      <p>Les familles dont un rappel est resté sans réponse remontent en premier. Tout se saisit hors ligne et part au retour du réseau.</p>
+
+      <div className="tuiles">
+        <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
+        <div className={`tuile ${urgents ? 'alerte' : ''}`}><b>{urgents}</b><span>à visiter en urgence</span></div>
+        <div className="tuile"><b>{liste.filter((l) => l.priorite.niveau === 'PRIORITAIRE').length}</b><span>prioritaires</span></div>
+        <div className="tuile"><b>{attente}</b><span>saisie(s) en attente d'envoi</span></div>
+      </div>
+
+      <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
+        <span>
+          <b>{horsLigne ? 'Hors ligne' : 'En ligne'}.</b>{' '}
+          {horsLigne ? 'Vous pouvez tout saisir, ça partira au retour du réseau.' : 'Les saisies partent tout de suite.'}
+          {attente > 0 && (
+            <> {attente} élément(s) en attente. <button className="lien" disabled={!enLigne} onClick={synchroniser}>Synchroniser maintenant</button></>
+          )}
+        </span>
         <label className="interrupteur">
           <input type="checkbox" checked={simuleHorsLigne} onChange={(e) => setSimuleHorsLigne(e.target.checked)} />
           Simuler un village sans réseau
         </label>
-      </div>
-
-      <p><Link className="bouton secondaire petit-bouton" to="/agent/inscription">+ Inscrire une famille</Link></p>
-
-      <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
-        {horsLigne ? 'Hors ligne : vous pouvez tout saisir, ça partira au retour du réseau.' : 'En ligne.'}
-        {attente > 0 && (
-          <> {attente} élément(s) en attente. <button className="lien" disabled={!enLigne} onClick={synchroniser}>Synchroniser maintenant</button></>
-        )}
       </div>
       {message && <p className={message.ok ? 'succes' : 'erreur'} role="status">{message.texte}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
       <div className="deux-colonnes">
         <section>
-          <p className="petit">
-            {liste.length} enfant(s) · {urgents} urgent(s). Les familles dont un rappel est resté sans réponse remontent en premier.
-          </p>
           <input className="recherche" placeholder="Chercher un code (ex. T045A, F-0045)" value={filtre}
                  onChange={(e) => setFiltre(e.target.value)} aria-label="Chercher un code enfant ou famille" />
           <ul className="liste-visites">

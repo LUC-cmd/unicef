@@ -28,7 +28,7 @@ export default function Ecoute() {
 
   return (
     <main className="page">
-      <p className="surtitre">Porte 4</p>
+      <span className="surtitre">Porte 4</span>
       <h1>Point d'écoute</h1>
       <p>
         Centre de santé, radio communautaire, causerie au marché. On lit les mêmes messages qu'au téléphone,

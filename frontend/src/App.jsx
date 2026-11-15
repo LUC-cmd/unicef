@@ -14,6 +14,7 @@ import Ecoute from './pages/Ecoute.jsx'
 import Assistant from './pages/Assistant.jsx'
 import Inscription from './pages/Inscription.jsx'
 import Structure from './pages/Structure.jsx'
+import Projet from './pages/Projet.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
@@ -56,8 +57,7 @@ export default function App() {
   const lieu = useLocation()
   const [menuOuvert, setMenuOuvert] = useState(false)
   const peut = (page) => session && ROLES_PAR_PAGE[page].includes(session.role)
-  const aEspacePro = peut('agent') || peut('mairie') || peut('carte') || peut('structure') || peut('admin')
-
+  
   // Ferme le menu mobile et remonte en haut à chaque changement de page
   useEffect(() => { setMenuOuvert(false); window.scrollTo(0, 0) }, [lieu.pathname])
 
@@ -71,41 +71,50 @@ export default function App() {
         </div>
       </div>
 
-      <header className={`entete no-print ${menuOuvert ? 'ouvert' : ''}`}>
-        <div className="interieur">
-          <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
-          <button className="menu-bouton" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
-            <IconeMenu /> Menu
-          </button>
-          <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
-            <NavLink to="/" end>Accueil</NavLink>
-            <NavLink to="/telephone">Téléphone</NavLink>
-            <NavLink to="/ecoute">Point d'écoute</NavLink>
-            <NavLink to="/assistant">Assistant</NavLink>
-            <NavLink to="/annuaire">Annuaire</NavLink>
-            {aEspacePro && <span className="separateur" aria-hidden="true" />}
-            {peut('agent') && <NavLink to="/agent">Agent</NavLink>}
-            {peut('mairie') && <NavLink to="/mairie">État civil</NavLink>}
-            {peut('carte') && <NavLink to="/carte">Carte</NavLink>}
-            {peut('structure') && <NavLink to="/structure">Ma structure</NavLink>}
-            {peut('admin') && <NavLink to="/admin">Coulisses</NavLink>}
-          </nav>
-          <div className="session">
-            {session ? (
-              <>
-                <div className="qui"><b>{session.nomComplet}</b><span>{LIBELLE_ROLE[session.role] ?? session.role}</span></div>
-                <button className="bouton secondaire petit-bouton" onClick={deconnexion}>Se déconnecter</button>
-              </>
-            ) : (
-              <Link className="bouton petit-bouton" to="/connexion">Se connecter</Link>
-            )}
+      <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}`}>
+        <header className="entete">
+          <div className="interieur">
+            <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+            <button className="menu-bouton" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
+              <IconeMenu /> Menu
+            </button>
+            <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
+              <NavLink to="/projet">Le projet</NavLink>
+              <NavLink to="/telephone">Téléphone</NavLink>
+              <NavLink to="/ecoute">Point d'écoute</NavLink>
+              <NavLink to="/assistant">Assistant</NavLink>
+              <NavLink to="/annuaire">Annuaire</NavLink>
+              {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
+            </nav>
           </div>
-        </div>
-      </header>
+        </header>
+        {session && (
+          <div className="espace-pro">
+            <div className="interieur">
+              <span className="espace-titre">{LIBELLE_ROLE[session.role] ?? 'Espace professionnel'}</span>
+              <nav aria-label="Espace professionnel">
+                {peut('agent') && <NavLink to="/agent" end>Mes visites</NavLink>}
+                {peut('agent') && <NavLink to="/agent/inscription">Inscrire une famille</NavLink>}
+                {peut('mairie') && <NavLink to="/mairie">Déclarations de naissance</NavLink>}
+                {peut('carte') && <NavLink to="/carte">Carte des zones</NavLink>}
+                {peut('structure') && <NavLink to="/structure">Ma structure</NavLink>}
+                {peut('admin') && <NavLink to="/mairie">État civil</NavLink>}
+                {peut('admin') && <NavLink to="/carte">Carte</NavLink>}
+                {peut('admin') && <NavLink to="/admin">Coulisses</NavLink>}
+              </nav>
+              <div className="session">
+                <div className="qui"><b>{session.nomComplet}</b></div>
+                <button className="bouton secondaire petit-bouton" onClick={deconnexion}>Se déconnecter</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="contenu" id="contenu">
         <Routes>
           <Route path="/" element={<Accueil />} />
+          <Route path="/projet" element={<Projet />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/telephone" element={<Telephone />} />
           <Route path="/ecoute" element={<Ecoute />} />
@@ -126,12 +135,13 @@ export default function App() {
         <div className="pied-interieur">
           <div className="pied-grille">
             <div>
-              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo fond="#1cabe2" /></Link>
               <p>Un seul carnet pour suivre chaque enfant de la grossesse à 5 ans : santé, nutrition, état civil, services sociaux et éveil.</p>
             </div>
             <div>
               <h2>Découvrir</h2>
               <ul>
+                <li><Link to="/projet">Le projet</Link></li>
                 <li><Link to="/telephone">Simulateur de téléphone</Link></li>
                 <li><Link to="/ecoute">Point d'écoute</Link></li>
                 <li><Link to="/assistant">Poser une question</Link></li>

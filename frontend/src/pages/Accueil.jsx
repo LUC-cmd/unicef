@@ -15,6 +15,29 @@ const PORTES = [
   { Icone: IconeEcoute, titre: "Le point d'écoute", texte: "Centre de santé, radio, causerie : le même message, à voix haute, pour les familles sans téléphone.", lien: '/ecoute', action: 'Ouvrir une séance' },
 ]
 
+const FAMILLES = [
+  {
+    nom: 'Akouvi',
+    situation: 'Enceinte de 7 mois, un téléphone simple, un peu de réseau.',
+    etapes: [
+      'Elle appelle Fil d’Or, choisit sa langue et un sujet : grossesse, allaitement, vaccins.',
+      'Une voix lui rappelle son rendez-vous, un SMS le lui redit la veille. Signe de danger : on l’oriente vers le centre de santé.',
+      'Après la naissance, la déclaration est lancée dès le premier jour.',
+      'Chaque semaine, un jeu à faire avec des objets de la maison. Son mari et sa mère reçoivent aussi les rappels.',
+    ],
+  },
+  {
+    nom: 'Kokou et Abla',
+    situation: 'Pas de téléphone, village sans réseau. Leur fille a 8 mois.',
+    etapes: [
+      'L’agent leur laisse un carnet en images : rendez-vous et vaccins dessinés.',
+      'Il mesure l’enfant au ruban, coche le vaccin sur le carnet et note tout sur son téléphone, sans réseau.',
+      'Au centre de santé, tout se synchronise. Un rendez-vous manqué place la famille en haut de sa liste.',
+      'Histoires et chansons passent à la radio communautaire.',
+    ],
+  },
+]
+
 const PARCOURS = [
   ["Appeler le 90000031 dans le simulateur", "Choisissez Vaccins, puis Signes de danger. En éwé, la voix n'est pas encore enregistrée et l'application le dit."],
   ['Se connecter en administrateur', 'Avancez le temps de 5 jours : des rendez-vous deviennent manqués et des rappels restent sans réponse.'],
@@ -99,7 +122,24 @@ export default function Accueil() {
         </div>
       </section>
 
-      <section className="section blanc" aria-labelledby="titre-parcours">
+      <section className="section blanc" aria-labelledby="titre-familles">
+        <div className="interieur">
+          <h2 id="titre-familles" className="titre-section">Deux familles, un même fil</h2>
+          <p className="chapeau">Akouvi a un téléphone, Kokou et Abla n'en ont pas. Le même carnet suit leurs enfants.</p>
+          <div className="familles">
+            {FAMILLES.map((f) => (
+              <article className="famille" key={f.nom}>
+                <h3>{f.nom}</h3>
+                <p className="situation">{f.situation}</p>
+                <ol>{f.etapes.map((e) => <li key={e}>{e}</li>)}</ol>
+              </article>
+            ))}
+          </div>
+          <p style={{ marginTop: '1.5rem' }}><Link className="bouton secondaire" to="/projet">Lire le dossier du projet</Link></p>
+        </div>
+      </section>
+
+      <section className="section ciel" aria-labelledby="titre-parcours">
         <div className="interieur parcours">
           <div>
             <h2 id="titre-parcours" className="titre-section">Parcourir la démonstration en cinq minutes</h2>
@@ -119,7 +159,7 @@ export default function Accueil() {
         </div>
       </section>
 
-      <section className="section ciel" aria-labelledby="titre-protection">
+      <section className="section blanc" aria-labelledby="titre-protection">
         <div className="interieur">
           <h2 id="titre-protection" className="titre-section">La protection de l'enfant passe avant tout</h2>
           <p className="chapeau">Fil d'Or ne garde que ce dont le suivi a besoin, et seulement avec l'accord de la famille.</p>

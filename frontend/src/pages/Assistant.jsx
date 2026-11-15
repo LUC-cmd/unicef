@@ -41,7 +41,7 @@ export default function Assistant() {
 
   return (
     <main className="page etroite">
-      <p className="surtitre">Service assistant</p>
+      <span className="surtitre">Service assistant</span>
       <h1>Poser une question</h1>
       <p>
         L'assistant répond à partir des contenus de Fil d'Or, déjà écrits pour les familles.

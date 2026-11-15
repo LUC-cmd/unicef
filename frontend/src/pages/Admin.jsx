@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
 
@@ -50,7 +51,7 @@ export default function Admin() {
 
   return (
     <main className="page">
-      <p className="surtitre">Réservé à l'administration de la démo</p>
+      <span className="surtitre">Réservé à l'administration de la démonstration</span>
       <h1>Coulisses</h1>
       <p>Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.</p>
 
@@ -90,14 +91,14 @@ export default function Admin() {
         </section>
         <section className="carte">
           <h2>Ce que le jury peut ouvrir</h2>
-          <ul>
+          <ul className="liste-points">
             <li>Téléphone <b>90000031</b>, puis l'onglet USSD <b>*789#</b></li>
             <li>Assistant : une question sur les vaccins, une sur les convulsions</li>
-            <li><b>agent.vo</b> — liste priorisée, saisie hors ligne</li>
-            <li><b>mairie</b> — valider, la famille reçoit un avis</li>
-            <li><b>decideur</b> — carte anonyme</li>
+            <li><b>Agent de Vo</b> : liste priorisée, saisie hors ligne</li>
+            <li><b>État civil</b> : valider, la famille reçoit un avis</li>
+            <li><b>Responsable régional</b> : carte anonyme</li>
           </ul>
-          <p className="petit">Mot de passe de démonstration : FilDor2026!demo</p>
+          <p className="petit">Les comptes de démonstration sont sur la page <Link to="/connexion">Se connecter</Link>.</p>
         </section>
       </div>
     </main>
