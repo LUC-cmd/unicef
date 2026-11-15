@@ -12,6 +12,7 @@ import Orienter from '../components/Orienter.jsx'
 import Proches from '../components/Proches.jsx'
 import RetraitConsentement from '../components/RetraitConsentement.jsx'
 import Bandeau from '../components/Bandeau.jsx'
+import GuideRole from '../components/GuideRole.jsx'
 
 const CLE_LISTE = 'fildor.cache.visites'
 const CLE_FICHE = (code) => `fildor.cache.fiche.${code}`
@@ -98,6 +99,7 @@ export default function Agent() {
       Les familles dont un rappel est resté sans réponse remontent en premier. Tout se saisit hors ligne et part au retour du réseau.
     </Bandeau>
     <main className="page">
+      <GuideRole role="AGENT" />
 
       <div className="tuiles">
         <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>

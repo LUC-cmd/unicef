@@ -1,13 +1,20 @@
 package tg.fildor.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import tg.fildor.config.AppUser;
+import tg.fildor.config.FilDorProperties;
 import tg.fildor.domain.Dtos.DeclarationDto;
 import tg.fildor.repo.DeclarationRepository;
 import tg.fildor.repo.DeclarationRepository.ContexteFamille;
@@ -31,13 +38,79 @@ public class NaissanceService {
     private final SuiviService suivi;
     private final AccesService acces;
     private final MessageRepository messages;
+    private final String secretPreuve;
 
     public NaissanceService(DeclarationRepository declarations, SuiviService suivi, AccesService acces,
-                            MessageRepository messages) {
+                            MessageRepository messages, FilDorProperties props) {
         this.declarations = declarations;
         this.suivi = suivi;
         this.acces = acces;
         this.messages = messages;
+        this.secretPreuve = props.telephonePepper() + "|preuve";
+    }
+
+    private static final String ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+    /** Résultat public d'une vérification : jamais de nom, jamais d'adresse. */
+    public record Preuve(String numero, String statut, boolean verifiee, String zone, String naissance,
+                         LocalDate valideeLe, String message) {
+    }
+
+    /**
+     * Code de vérification de 6 caractères, calculé à partir du numéro de reçu et d'un secret du serveur :
+     * rien de plus à stocker, et impossible à deviner sans le secret.
+     */
+    public String codePreuve(String numeroRecu) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secretPreuve.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] h = mac.doFinal(numeroRecu.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                sb.append(ALPHABET.charAt(h[i] & 31));
+            }
+            return sb.toString();
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String texteStatut(String statut) {
+        return switch (statut) {
+            case "VALIDEE" -> "La mairie a enregistré cette déclaration. Ce n'est pas l'acte de naissance.";
+            case "REJETEE" -> "La mairie attend une correction : demandez à l'agent de santé.";
+            default -> "La déclaration est arrivée à la mairie, elle n'est pas encore traitée.";
+        };
+    }
+
+    /** Vérification publique. Sans le bon code, seul l'état de la déclaration est visible. */
+    public Preuve verifier(String numero, String code) {
+        String n = numero == null ? "" : numero.strip().toUpperCase();
+        var trouvee = declarations.parNumero(n);
+        if (trouvee.isEmpty()) {
+            return new Preuve(n, "INCONNUE", false, null, null, null, null);
+        }
+        DeclarationDto d = trouvee.get();
+        String saisi = code == null ? "" : code.strip().toUpperCase();
+        boolean ok = !saisi.isEmpty() && MessageDigest.isEqual(saisi.getBytes(StandardCharsets.UTF_8),
+                codePreuve(d.numeroRecu()).getBytes(StandardCharsets.UTF_8));
+        if (!ok) {
+            return new Preuve(d.numeroRecu(), d.statut(), false, null, null, null, texteStatut(d.statut()));
+        }
+        LocalDate validee = "VALIDEE".equals(d.statut()) ? declarations.dateTraitement(d.id()).orElse(null) : null;
+        String naissance = d.dateNaissance() == null ? null : d.dateNaissance().toString().substring(0, 7);
+        return new Preuve(d.numeroRecu(), d.statut(), true, d.zone(), naissance, validee, texteStatut(d.statut()));
+    }
+
+    /** La mairie relit le numéro et le code d'une déclaration validée, pour les donner à la famille. */
+    public Map<String, String> preuveMairie(AppUser u, long id) {
+        DeclarationDto d = declarations.parId(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Déclaration introuvable"));
+        if (!"VALIDEE".equals(d.statut())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Seule une déclaration validée a une preuve");
+        }
+        acces.tracer(u, "VOIR_PREUVE", String.valueOf(id));
+        return Map.of("numero", d.numeroRecu(), "code", codePreuve(d.numeroRecu()));
     }
 
     // Pas de @Transactional ici : appelée dans la synchronisation, une exception rattrapée marquerait sinon
@@ -88,19 +161,25 @@ public class NaissanceService {
     /** SMS simulé vers le téléphone de la famille. Sans téléphone, l'agent voit le résultat sur la fiche. */
     private String prevenir(long id, boolean validee, String motif) {
         ContexteFamille c = declarations.contexte(id).orElse(null);
+        String preuve = "";
+        if (validee) {
+            preuve = declarations.parId(id)
+                    .map(d -> "Reçu " + d.numeroRecu() + ", code " + codePreuve(d.numeroRecu()) + ".")
+                    .orElse("");
+        }
         if (c == null || !c.consentement() || !c.aTelephone()) {
             return validee
-                    ? "Déclaration validée. Pas de téléphone : l'agent verra le résultat sur la fiche."
+                    ? "Déclaration validée. Pas de téléphone : l'agent verra le résultat sur la fiche. " + preuve
                     : "Déclaration rejetée. Pas de téléphone : l'agent verra le motif sur la fiche.";
         }
         String texte = validee
-                ? "Fil d'Or : la mairie a enregistré la déclaration de naissance de l'enfant " + c.codeEnfant()
-                        + ". Gardez le reçu. Ce message n'est pas encore l'acte de naissance."
+                ? "Fil d'Or : la mairie a enregistré la naissance de l'enfant " + c.codeEnfant() + ". " + preuve
+                        + " Gardez ce SMS. Ce n'est pas encore l'acte de naissance."
                 : "Fil d'Or : la mairie n'a pas validé la déclaration de l'enfant " + c.codeEnfant()
                         + ". Motif : " + motif + ". L'agent de santé vous aidera à corriger.";
         messages.ajouterPourFamille(c.familleId(), "NAISSANCE", texte);
         return validee
-                ? "Déclaration validée. Un SMS part vers la famille."
+                ? "Déclaration validée. Un SMS part vers la famille. " + preuve
                 : "Déclaration rejetée. Un SMS part vers la famille.";
     }
 }

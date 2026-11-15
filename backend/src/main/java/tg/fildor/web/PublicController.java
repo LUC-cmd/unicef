@@ -18,6 +18,7 @@ import tg.fildor.domain.Dtos.Profil;
 import tg.fildor.domain.Dtos.StructureDto;
 import tg.fildor.service.AnnuaireService;
 import tg.fildor.service.EcouteService;
+import tg.fildor.service.NaissanceService;
 import tg.fildor.service.VoixService;
 
 /**
@@ -29,6 +30,9 @@ import tg.fildor.service.VoixService;
 public class PublicController {
 
     public record Appel(@NotBlank String telephone) {
+    }
+
+    public record DemandePreuve(@NotBlank String numero, String code) {
     }
 
     public record DemandeVoix(@NotBlank String telephone, @NotBlank String sujet, String langue) {
@@ -47,11 +51,20 @@ public class PublicController {
     private final VoixService voix;
     private final AnnuaireService annuaire;
     private final EcouteService ecoute;
+    private final NaissanceService naissances;
 
-    public PublicController(VoixService voix, AnnuaireService annuaire, EcouteService ecoute) {
+    public PublicController(VoixService voix, AnnuaireService annuaire, EcouteService ecoute,
+                            NaissanceService naissances) {
         this.voix = voix;
         this.annuaire = annuaire;
         this.ecoute = ecoute;
+        this.naissances = naissances;
+    }
+
+    /** Vérification d'un reçu de naissance. Le numéro et le code circulent dans le corps, jamais dans l'adresse. */
+    @PostMapping("/preuve")
+    NaissanceService.Preuve preuve(@Valid @RequestBody DemandePreuve d) {
+        return naissances.verifier(d.numero(), d.code());
     }
 
     @GetMapping("/sujets")

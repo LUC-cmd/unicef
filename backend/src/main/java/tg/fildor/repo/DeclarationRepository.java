@@ -1,5 +1,6 @@
 package tg.fildor.repo;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -34,6 +35,24 @@ public class DeclarationRepository {
     public Optional<DeclarationDto> parEnfant(long enfantId) {
         return jdbc.sql(SELECT + " WHERE d.enfant_id = :id").param("id", enfantId)
                 .query(DeclarationRepository::map).optional();
+    }
+
+    public Optional<DeclarationDto> parId(long id) {
+        return jdbc.sql(SELECT + " WHERE d.id = :id").param("id", id)
+                .query(DeclarationRepository::map).optional();
+    }
+
+    public Optional<DeclarationDto> parNumero(String numeroRecu) {
+        return jdbc.sql(SELECT + " WHERE d.numero_recu = :n").param("n", numeroRecu)
+                .query(DeclarationRepository::map).optional();
+    }
+
+    /** Jour où la mairie a traité la déclaration. */
+    public Optional<LocalDate> dateTraitement(long id) {
+        return jdbc.sql("SELECT CAST(traitee_le AS DATE) AS jour FROM declaration_naissance"
+                        + " WHERE id = :id AND traitee_le IS NOT NULL")
+                .param("id", id)
+                .query((rs, n) -> Lignes.date(rs, "jour")).optional();
     }
 
     public List<DeclarationDto> lister(String statut) {

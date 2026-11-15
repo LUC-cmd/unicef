@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import GuideRole from '../components/GuideRole.jsx'
 
 const SERVICES = [
   ['Site', 'Cette interface, servie à part.', null],
@@ -56,6 +57,7 @@ export default function Admin() {
       Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.
     </Bandeau>
     <main className="page">
+      <GuideRole role="ADMIN" />
 
       <section className="services" aria-label="État des services">
         {SERVICES.map(([nom, detail]) => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { ageLisible, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import GuideRole from '../components/GuideRole.jsx'
 
 const STATUTS = [['ENVOYEE', 'À traiter'], ['VALIDEE', 'Validées'], ['REJETEE', 'Rejetées'], ['', 'Toutes']]
 const LIBELLE = { ENVOYEE: 'À traiter', VALIDEE: 'Validée', REJETEE: 'Rejetée', BROUILLON: 'Brouillon' }
@@ -26,6 +27,13 @@ export default function Mairie() {
     try { const r = await api.post(`/api/mairie/declarations/${id}/valider`); setInfo(r.message); await charger() }
     catch (e) { setErreur(e.message) }
   }
+  async function voirPreuve(id) {
+    try {
+      const r = await api.get(`/api/mairie/declarations/${id}/preuve`)
+      setInfo(`Preuve de naissance : reçu ${r.numero}, code ${r.code}. À lire à la famille ou à écrire sur son carnet.`)
+      setErreur('')
+    } catch (e) { setErreur(e.message) }
+  }
   async function rejeter() {
     try {
       const r = await api.post(`/api/mairie/declarations/${rejet.id}/rejeter`, { motif: rejet.motif })
@@ -40,6 +48,7 @@ export default function Mairie() {
       la zone et les éléments du dossier. La famille est prévenue après validation.
     </Bandeau>
     <main className="page">
+      <GuideRole role="MAIRIE" />
 
       <div className="onglets large" role="tablist">
         {STATUTS.map(([v, nom]) => (
@@ -72,6 +81,9 @@ export default function Mairie() {
                       <button className="bouton petit-bouton" onClick={() => valider(d.id)}>Valider</button>
                       <button className="bouton secondaire petit-bouton" onClick={() => setRejet({ id: d.id, motif: '' })}>Rejeter</button>
                     </div>
+                  )}
+                  {d.statut === 'VALIDEE' && (
+                    <button className="bouton secondaire petit-bouton" onClick={() => voirPreuve(d.id)}>Voir la preuve</button>
                   )}
                 </td>
               </tr>

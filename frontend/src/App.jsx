@@ -15,6 +15,8 @@ import Assistant from './pages/Assistant.jsx'
 import Inscription from './pages/Inscription.jsx'
 import Structure from './pages/Structure.jsx'
 import Projet from './pages/Projet.jsx'
+import Jeux from './pages/Jeux.jsx'
+import Fonctionnement from './pages/Fonctionnement.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
@@ -73,10 +75,12 @@ export default function App() {
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <NavLink to="/projet">Le projet</NavLink>
+              <NavLink to="/fonctionnement">Fonctionnement</NavLink>
               <NavLink to="/telephone">Téléphone</NavLink>
-              <NavLink to="/ecoute">Point d'écoute</NavLink>
+              <NavLink to="/ecoute">Écoute</NavLink>
               <NavLink to="/assistant">Assistant</NavLink>
               <NavLink to="/annuaire">Annuaire</NavLink>
+              <NavLink to="/jeux">Jeux</NavLink>
               {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
             </nav>
           </div>
@@ -113,6 +117,9 @@ export default function App() {
           <Route path="/ecoute" element={<Ecoute />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/annuaire" element={<Annuaire />} />
+          <Route path="/fonctionnement" element={<Fonctionnement />} />
+          <Route path="/jeux" element={<Jeux />} />
+          <Route path="/jeux/:jeu" element={<Jeux />} />
           <Route path="/agent" element={<Protegee page="agent"><Agent /></Protegee>} />
           <Route path="/agent/inscription" element={<Protegee page="agent"><Inscription /></Protegee>} />
           <Route path="/structure" element={<Protegee page="structure"><Structure /></Protegee>} />
@@ -135,6 +142,8 @@ export default function App() {
               <h2>Découvrir</h2>
               <ul>
                 <li><Link to="/projet">Le projet</Link></li>
+                <li><Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link></li>
+                <li><Link to="/jeux">Jeux pour les enfants</Link></li>
                 <li><Link to="/telephone">Simulateur de téléphone</Link></li>
                 <li><Link to="/ecoute">Point d'écoute</Link></li>
                 <li><Link to="/assistant">Poser une question</Link></li>

@@ -32,6 +32,11 @@ public class MairieController {
         return naissances.lister(u, statut);
     }
 
+    @GetMapping("/declarations/{id}/preuve")
+    Map<String, String> preuve(@AuthenticationPrincipal AppUser u, @PathVariable long id) {
+        return naissances.preuveMairie(u, id);
+    }
+
     @PostMapping("/declarations/{id}/valider")
     Map<String, String> valider(@AuthenticationPrincipal AppUser u, @PathVariable long id) {
         return Map.of("message", naissances.valider(u, id));

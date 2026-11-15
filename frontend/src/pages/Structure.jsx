@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import GuideRole from '../components/GuideRole.jsx'
 
 const REPONSES = [['RDV_PROPOSE', 'Proposer un rendez-vous'], ['PAS_DE_PLACE', 'Pas de place'], ['AUTRE_STRUCTURE', 'Conseiller une autre structure']]
 
@@ -46,6 +47,7 @@ export default function Structure() {
       {maStructure ? `${LIBELLE_TYPE_STRUCTURE[maStructure.type]} · ${maStructure.zone}` : null}
     </Bandeau>
     <main className="page">
+      <GuideRole role="STRUCTURE" />
       {info && <p className={info.ok ? 'succes' : 'erreur'} role="status">{info.texte}</p>}
 
       <div className="deux-colonnes">

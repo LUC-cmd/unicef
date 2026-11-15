@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { couleurIndice } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import GuideRole from '../components/GuideRole.jsx'
 
 const L = 640
 const H = 470
@@ -46,6 +47,7 @@ export default function Carte() {
       Une zone avec moins de 5 familles n'est pas détaillée (anonymat). Données fictives.
     </Bandeau>
     <main className="page">
+      <GuideRole role="DECIDEUR" />
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
       {zones.length > 0 && (
