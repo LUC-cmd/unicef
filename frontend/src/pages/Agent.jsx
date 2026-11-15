@@ -11,6 +11,7 @@ import Eveil from '../components/Eveil.jsx'
 import Orienter from '../components/Orienter.jsx'
 import Proches from '../components/Proches.jsx'
 import RetraitConsentement from '../components/RetraitConsentement.jsx'
+import Bandeau from '../components/Bandeau.jsx'
 
 const CLE_LISTE = 'fildor.cache.visites'
 const CLE_FICHE = (code) => `fildor.cache.fiche.${code}`
@@ -91,15 +92,12 @@ export default function Agent() {
   const urgents = liste.filter((l) => l.priorite.niveau === 'URGENT').length
 
   return (
+    <>
+    <Bandeau surtitre="Agent de santé" titre="Mes visites"
+             actions={<Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>}>
+      Les familles dont un rappel est resté sans réponse remontent en premier. Tout se saisit hors ligne et part au retour du réseau.
+    </Bandeau>
     <main className="page">
-      <span className="surtitre">Agent de santé</span>
-      <div className="barre-titre">
-        <h1>Mes visites</h1>
-        <div className="actions">
-          <Link className="bouton petit-bouton" to="/agent/inscription">Inscrire une famille</Link>
-        </div>
-      </div>
-      <p>Les familles dont un rappel est resté sans réponse remontent en premier. Tout se saisit hors ligne et part au retour du réseau.</p>
 
       <div className="tuiles">
         <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
@@ -155,6 +153,7 @@ export default function Agent() {
         </section>
       </div>
     </main>
+    </>
   )
 }
 

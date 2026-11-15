@@ -8,6 +8,7 @@ import {
   LIBELLE_LANGUE, LIBELLE_PORTE, LIBELLE_ROLE_PROCHE, ZONES, aujourdhuiIso, formaterDate,
 } from '../lib/format.js'
 import { ajouterInscription, nouvelUuid } from '../lib/offline.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 const enfantVide = () => ({ cle: nouvelUuid(), statut: 'ENFANT', dateNaissance: '', dateTermePrevue: '', sexe: '', etapesFaites: [], consultationsFaites: 0 })
 const procheVide = () => ({ cle: nouvelUuid(), role: 'RELAIS', telephone: '', consentement: false })
@@ -94,12 +95,12 @@ export default function Inscription() {
   }
 
   return (
+    <>
+    <Bandeau surtitre="Agent de santé" titre="Inscrire une famille">
+      Pas de nom, de photo ni d'adresse : la famille et chaque enfant reçoivent un <b>code</b>.
+      {!enLigne && ' Vous êtes hors ligne : l’inscription partira au retour du réseau.'}
+    </Bandeau>
     <main className="page etroite large">
-      <h1>Inscrire une famille</h1>
-      <p className="petit">
-        Pas de nom, de photo ni d'adresse : la famille et chaque enfant reçoivent un <b>code</b>.
-        {!enLigne && ' Vous êtes hors ligne : l’inscription partira au retour du réseau.'}
-      </p>
 
       <form onSubmit={envoyer}>
         <section className="carte">
@@ -221,5 +222,6 @@ export default function Inscription() {
         </section>
       </form>
     </main>
+    </>
   )
 }

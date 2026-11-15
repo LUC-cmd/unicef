@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Ussd from '../components/Ussd.jsx'
 import { api } from '../lib/api.js'
+import Bandeau from '../components/Bandeau.jsx'
 import {
   LIBELLE_LANGUE, LIBELLE_ROLE_PROCHE, LIBELLE_SUJET, LIBELLE_TYPE_STRUCTURE, formaterDate,
 } from '../lib/format.js'
@@ -94,13 +95,13 @@ export default function Telephone() {
     setInfo((await api.post('/api/public/demandes', { telephone: numero, codeStructure, motif })).message))
 
   return (
+    <>
+    <Bandeau surtitre="Porte 1" titre="Simulateur de téléphone">
+      Cette porte marche avec un téléphone basique, sans application ni data. Ici, un faux téléphone remplace
+      l'opérateur. Familles : <b>90000001</b> à <b>90000045</b>. Proches : <b>91000001</b> (père de F-0001),
+      <b> 91000002</b> (grand-parent), <b>91000046</b> (relais d'une famille sans téléphone).
+    </Bandeau>
     <main className="page">
-      <h1>Simulateur de téléphone</h1>
-      <p className="petit">
-        Cette porte marche avec un téléphone basique, sans application ni data. Ici, un faux téléphone remplace
-        l'opérateur. Familles : <b>90000001</b> à <b>90000045</b>. Proches : <b>91000001</b> (père de F-0001),
-        <b> 91000002</b> (grand-parent), <b>91000046</b> (relais d'une famille sans téléphone).
-      </p>
 
       <div className="telephone-cadre">
         <div className="telephone" role="group" aria-label="Téléphone simulé">
@@ -243,5 +244,6 @@ export default function Telephone() {
         </aside>
       </div>
     </main>
+    </>
   )
 }

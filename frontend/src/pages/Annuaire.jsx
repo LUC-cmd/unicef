@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_TYPE_STRUCTURE, ZONES, formaterDate } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 /** Annuaire public des structures : informations sur les structures, jamais sur les familles. */
 export default function Annuaire() {
@@ -19,12 +20,12 @@ export default function Annuaire() {
   }, [zone, type, besoins])
 
   return (
+    <>
+    <Bandeau surtitre="Annuaire public" titre="Annuaire des structures">
+      Centres de santé, crèches, centres sociaux et services d'état civil, par zone. Les structures mettent à jour
+      elles-mêmes leurs horaires et leurs services. Noms et numéros de la démonstration : fictifs.
+    </Bandeau>
     <main className="page">
-      <h1>Annuaire des structures</h1>
-      <p className="petit">
-        Centres de santé, crèches, centres sociaux et services d'état civil, par zone. Les structures mettent à jour
-        elles-mêmes leurs horaires et leurs services. Noms et numéros de la démonstration : fictifs.
-      </p>
 
       <div className="filtres">
         <label>Zone
@@ -57,5 +58,6 @@ export default function Annuaire() {
         {liste.length === 0 && !erreur && <p className="petit">Aucune structure pour ces critères.</p>}
       </div>
     </main>
+    </>
   )
 }

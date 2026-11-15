@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { couleurIndice } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 const L = 640
 const H = 470
@@ -39,13 +40,12 @@ export default function Carte() {
   const prioritaire = triees.find((z) => !z.masquee && z.indiceOubli !== null)
 
   return (
+    <>
+    <Bandeau surtitre="Responsable régional" titre="Carte des zones oubliées">
+      Taux par zone, jamais un enfant ni un point précis. Le centre de chaque zone est approximatif et le dessin est schématique.
+      Une zone avec moins de 5 familles n'est pas détaillée (anonymat). Données fictives.
+    </Bandeau>
     <main className="page">
-      <span className="surtitre">Responsable régional</span>
-      <h1>Carte des zones oubliées</h1>
-      <p>
-        Taux par zone, jamais un enfant ni un point précis. Le centre de chaque zone est approximatif et le dessin est schématique.
-        Une zone avec moins de 5 familles n'est pas détaillée (anonymat). Données fictives.
-      </p>
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
       {zones.length > 0 && (
@@ -138,5 +138,6 @@ export default function Carte() {
         </section>
       </div>
     </main>
+    </>
   )
 }

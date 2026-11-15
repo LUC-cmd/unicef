@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 const SERVICES = [
   ['Site', 'Cette interface, servie à part.', null],
@@ -50,10 +51,11 @@ export default function Admin() {
   }
 
   return (
+    <>
+    <Bandeau surtitre="Réservé à l'administration de la démonstration" titre="Coulisses">
+      Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.
+    </Bandeau>
     <main className="page">
-      <span className="surtitre">Réservé à l'administration de la démonstration</span>
-      <h1>Coulisses</h1>
-      <p>Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.</p>
 
       <section className="services" aria-label="État des services">
         {SERVICES.map(([nom, detail]) => {
@@ -102,5 +104,6 @@ export default function Admin() {
         </section>
       </div>
     </main>
+    </>
   )
 }

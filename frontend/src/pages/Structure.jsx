@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 const REPONSES = [['RDV_PROPOSE', 'Proposer un rendez-vous'], ['PAS_DE_PLACE', 'Pas de place'], ['AUTRE_STRUCTURE', 'Conseiller une autre structure']]
 
@@ -40,9 +41,11 @@ export default function Structure() {
   const maj = (champs) => setMaStructure((s) => ({ ...s, ...champs }))
 
   return (
+    <>
+    <Bandeau surtitre="Structure d'accueil" titre={maStructure ? maStructure.nom : 'Ma structure'}>
+      {maStructure ? `${LIBELLE_TYPE_STRUCTURE[maStructure.type]} · ${maStructure.zone}` : null}
+    </Bandeau>
     <main className="page">
-      <h1>{maStructure ? maStructure.nom : 'Ma structure'}</h1>
-      {maStructure && <p className="petit">{LIBELLE_TYPE_STRUCTURE[maStructure.type]} · {maStructure.zone}</p>}
       {info && <p className={info.ok ? 'succes' : 'erreur'} role="status">{info.texte}</p>}
 
       <div className="deux-colonnes">
@@ -89,5 +92,6 @@ export default function Structure() {
         </section>
       </div>
     </main>
+    </>
   )
 }

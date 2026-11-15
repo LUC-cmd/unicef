@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Bandeau from '../components/Bandeau.jsx'
 
 const EXEMPLES = [
   'Un vaccin a été manqué, est-ce trop tard ?',
@@ -39,41 +40,74 @@ export default function Assistant() {
     }
   }
 
+  const [posee, setPosee] = useState('')
   return (
-    <main className="page etroite">
-      <span className="surtitre">Service assistant</span>
-      <h1>Poser une question</h1>
-      <p>
+    <>
+      <Bandeau surtitre="Service assistant" titre="Poser une question">
         L'assistant répond à partir des contenus de Fil d'Or, déjà écrits pour les familles.
         Il ne voit aucun dossier, aucun nom, aucun numéro. Il ne remplace pas un soignant.
-      </p>
+      </Bandeau>
+      <main className="page">
+        <div className="assistant-grille">
+          <div>
+            <form className="carte assistant-saisie" onSubmit={(e) => { setPosee(question.trim()); envoyer(e) }}>
+              <h2>Votre question</h2>
+              <label className="sr-seulement" htmlFor="question">Question</label>
+              <textarea id="question" className="question" rows="4" maxLength="400" value={question}
+                        onChange={(ev) => setQuestion(ev.target.value)}
+                        placeholder="Par exemple : quand déclarer une naissance ?" required />
+              <button className="bouton" disabled={attente}>{attente ? 'Recherche…' : 'Demander'}</button>
 
-      <form className="carte" onSubmit={(e) => envoyer(e)}>
-        <label>
-          Question
-          <textarea className="question" rows="3" maxLength="400" value={question}
-                    onChange={(ev) => setQuestion(ev.target.value)}
-                    placeholder="Par exemple : quand déclarer une naissance ?" required />
-        </label>
-        <button className="bouton" disabled={attente}>{attente ? 'Recherche…' : 'Demander'}</button>
-      </form>
+              <p className="exemples-titre">Ou choisissez une question fréquente</p>
+              <div className="exemples">
+                {EXEMPLES.map((ex) => (
+                  <button key={ex} type="button" className="exemple" onClick={() => { setPosee(ex); envoyer(null, ex) }}>{ex}</button>
+                ))}
+              </div>
+            </form>
 
-      <p className="petit">Exemples</p>
-      <div className="actions">
-        {EXEMPLES.map((ex) => (
-          <button key={ex} type="button" className="bouton secondaire petit-bouton" onClick={() => envoyer(null, ex)}>{ex}</button>
-        ))}
-      </div>
+            {erreur && <p className="erreur" role="alert">{erreur}</p>}
+            {reponse && (
+              <div className="echange" role="status">
+                {posee && <div className="bulle vous"><p>{posee}</p></div>}
+                <article className={`bulle assistant ${reponse.niveau === 'URGENCE' ? 'urgence' : reponse.niveau === 'INFO' ? 'info' : ''}`}>
+                  <span className="niveau">{reponse.niveau === 'URGENCE' ? 'Orientation immédiate' : reponse.niveau === 'INFO' ? 'Contenu approuvé' : 'Hors des contenus'}</span>
+                  <p>{reponse.reponse}</p>
+                  {(reponse.sources?.length > 0 || reponse.limite) && (
+                    <p className="source">
+                      {reponse.sources?.length > 0 && <>Source : {reponse.sources.map((s) => s.titre).join(', ')}. </>}
+                      {reponse.limite}
+                    </p>
+                  )}
+                </article>
+              </div>
+            )}
+          </div>
 
-      {erreur && <p className="erreur" role="alert">{erreur}</p>}
-      {reponse && (
-        <article className="carte" role="status">
-          <p className="petit">{reponse.niveau === 'URGENCE' ? 'Orientation immédiate' : reponse.niveau === 'INFO' ? 'Contenu approuvé' : 'Hors des contenus'}</p>
-          <p>{reponse.reponse}</p>
-          {reponse.sources?.length > 0 && <p className="petit">Source : {reponse.sources.map((s) => s.titre).join(', ')}</p>}
-          <p className="petit">{reponse.limite}</p>
-        </article>
-      )}
-    </main>
+          <aside className="assistant-cote" aria-label="Limites de l'assistant">
+            <section className="carte">
+              <h2>Ce qu'il fait</h2>
+              <ul className="liste-coches">
+                <li>Répond avec des textes déjà validés pour les familles</li>
+                <li>Cite la source de chaque réponse</li>
+                <li>Oriente vers un centre de santé quand c'est utile</li>
+              </ul>
+            </section>
+            <section className="carte">
+              <h2>Ce qu'il ne fait jamais</h2>
+              <ul className="liste-coches non">
+                <li>Lire un dossier, un nom ou un numéro de téléphone</li>
+                <li>Poser un diagnostic ou conseiller un médicament</li>
+                <li>Inventer une réponse hors de ses contenus</li>
+              </ul>
+            </section>
+            <section className="carte urgence-info">
+              <h2>Un enfant va mal ?</h2>
+              <p>Convulsions, difficulté à respirer, fièvre qui ne baisse pas : n'attendez pas de réponse ici, allez tout de suite au centre de santé le plus proche.</p>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </>
   )
 }

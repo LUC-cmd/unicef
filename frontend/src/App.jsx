@@ -135,7 +135,7 @@ export default function App() {
         <div className="pied-interieur">
           <div className="pied-grille">
             <div>
-              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo fond="#1cabe2" /></Link>
+              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo fond="#0a2b40" /></Link>
               <p>Un seul carnet pour suivre chaque enfant de la grossesse à 5 ans : santé, nutrition, état civil, services sociaux et éveil.</p>
             </div>
             <div>
@@ -167,15 +167,17 @@ export default function App() {
               </ul>
             </div>
           </div>
-          <div className="pied-bas">
-            <p>
-              Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
-              doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026 :
-              ce n'est pas un service officiel de l'UNICEF.
-            </p>
-            <span>© 2026 Fil d'Or</span>
-          </div>
         </div>
+      <div className="pied-bas-bloc no-print">
+        <div className="pied-bas">
+          <p>
+            Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
+            doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026 :
+            ce n'est pas un service officiel de l'UNICEF.
+          </p>
+          <span>© 2026 Fil d'Or</span>
+        </div>
+      </div>
       </footer>
     </div>
   )

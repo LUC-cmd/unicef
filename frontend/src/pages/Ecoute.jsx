@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { ZONES } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 function lire(texte) {
   if (!('speechSynthesis' in window)) return
@@ -27,13 +28,12 @@ export default function Ecoute() {
   }, [zone])
 
   return (
+    <>
+    <Bandeau surtitre="Porte 4" titre="Point d'écoute">
+      Centre de santé, radio communautaire, causerie au marché. On lit les mêmes messages qu'au téléphone,
+      à voix haute, pour toutes les familles. Personne n'est nommé.
+    </Bandeau>
     <main className="page">
-      <span className="surtitre">Porte 4</span>
-      <h1>Point d'écoute</h1>
-      <p>
-        Centre de santé, radio communautaire, causerie au marché. On lit les mêmes messages qu'au téléphone,
-        à voix haute, pour toutes les familles. Personne n'est nommé.
-      </p>
 
       <label>
         Zone de la séance
@@ -66,5 +66,6 @@ export default function Ecoute() {
         </>
       )}
     </main>
+    </>
   )
 }

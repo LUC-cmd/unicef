@@ -60,20 +60,21 @@ code { background: var(--ciel); color: var(--nuit); padding: 0.05rem 0.35rem; bo
 .barre-haute .interieur { max-width: var(--largeur); margin: 0 auto; padding: 0.4rem 1.25rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .barre-haute strong { color: #fff; font-weight: 600; }
 .entete-bloc { position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(10, 43, 64, 0.18); }
-.entete { background: var(--cyan); color: var(--nuit); }
+.entete { background: var(--cyan); color: #fff; }
 .entete .interieur { max-width: var(--largeur); margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1.5rem; min-height: 72px; }
-.logo { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; color: var(--nuit); font-family: var(--police-titre); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; white-space: nowrap; line-height: 1.1; }
-.logo:hover { color: var(--nuit); }
+.logo { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; color: #fff; font-family: var(--police-titre); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; white-space: nowrap; line-height: 1.1; }
+.logo:hover { color: #fff; }
 .logo svg { display: block; flex: none; }
-.logo small { display: block; font-family: var(--police-texte); font-weight: 600; font-size: 0.74rem; color: rgba(10, 43, 64, 0.85); letter-spacing: 0; margin-top: 0.1rem; }
+.logo small { display: block; font-family: var(--police-texte); font-weight: 600; font-size: 0.74rem; color: rgba(255, 255, 255, 0.92); letter-spacing: 0; margin-top: 0.1rem; }
+.entete .logo { text-shadow: 0 1px 2px rgba(0, 60, 95, 0.3); }
 .nav-principale { display: flex; gap: 0.25rem; flex: 1; align-items: center; justify-content: flex-end; }
-.nav-principale a { display: flex; align-items: center; padding: 0.5rem 0.85rem; text-decoration: none; color: var(--nuit); font-weight: 700; font-size: 0.95rem; border-radius: 8px; white-space: nowrap; }
-.nav-principale a:hover { background: rgba(255, 255, 255, 0.28); color: var(--nuit); }
-.nav-principale a.active { background: #fff; color: var(--nuit); }
+.nav-principale a { display: flex; align-items: center; padding: 0.5rem 0.85rem; text-decoration: none; color: #fff; font-weight: 700; font-size: 0.97rem; border-radius: 8px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 60, 95, 0.35); }
+.nav-principale a:hover { background: rgba(10, 43, 64, 0.22); color: #fff; }
+.nav-principale a.active { background: var(--nuit); color: #fff; text-shadow: none; }
 .nav-principale a.bouton-entete, .bouton-entete { display: inline-flex; align-items: center; justify-content: center; background: var(--nuit); color: #fff; border: 2px solid var(--nuit); border-radius: 8px; padding: 0.5rem 1.1rem; font-weight: 700; text-decoration: none; min-height: 44px; white-space: nowrap; margin-left: 0.4rem; }
-.nav-principale a.bouton-entete { color: #fff; background: var(--nuit); }
-.nav-principale a.bouton-entete:hover, .bouton-entete:hover { background: #fff; color: var(--nuit); border-color: #fff; }
-.menu-bouton { display: none; margin-left: auto; background: transparent; border: 2px solid var(--nuit); border-radius: 8px; padding: 0.45rem 0.8rem; font-weight: 700; color: var(--nuit); min-height: 44px; }
+.nav-principale a.bouton-entete { color: var(--nuit); background: #fff; border-color: #fff; text-shadow: none; }
+.nav-principale a.bouton-entete:hover, .bouton-entete:hover { background: var(--nuit); color: #fff; border-color: var(--nuit); }
+.menu-bouton { display: none; margin-left: auto; background: transparent; border: 2px solid #fff; border-radius: 8px; padding: 0.45rem 0.8rem; font-weight: 700; color: #fff; min-height: 44px; }
 .espace-pro { background: #fff; border-bottom: 1px solid var(--bord); }
 .espace-pro .interieur { max-width: var(--largeur); margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1.2rem; min-height: 52px; }
 .espace-titre { font-weight: 700; color: var(--nuit); font-size: 0.9rem; white-space: nowrap; padding-right: 1.2rem; border-right: 1px solid var(--bord); }
@@ -99,10 +100,10 @@ code { background: var(--ciel); color: var(--nuit); padding: 0.05rem 0.35rem; bo
 
 /* ----- Boutons ----- */
 button { font: inherit; cursor: pointer; }
-.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--cyan); color: var(--nuit); border: 2px solid var(--cyan); border-radius: 8px; padding: 0.65rem 1.25rem; font-weight: 700; min-height: 46px; text-decoration: none; transition: background 0.15s, border-color 0.15s, color 0.15s; }
-.bouton:hover:not(:disabled) { background: var(--cyan-fonce); border-color: var(--cyan-fonce); color: #fff; }
-.bouton.secondaire { background: transparent; color: var(--bleu-fonce); border-color: var(--cyan); }
-.bouton.secondaire:hover:not(:disabled) { background: var(--ciel); color: var(--nuit); border-color: var(--cyan-fonce); }
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--bleu); color: #fff; border: 2px solid var(--bleu); border-radius: 8px; padding: 0.65rem 1.25rem; font-weight: 700; min-height: 46px; text-decoration: none; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+.bouton:hover:not(:disabled) { background: var(--nuit); border-color: var(--nuit); color: #fff; }
+.bouton.secondaire { background: #fff; color: var(--bleu-fonce); border-color: var(--bleu); }
+.bouton.secondaire:hover:not(:disabled) { background: var(--ciel); color: var(--nuit); border-color: var(--nuit); }
 .bouton.petit-bouton { padding: 0.35rem 0.8rem; min-height: 38px; font-size: 0.9rem; }
 .bouton:disabled { opacity: 0.5; cursor: not-allowed; }
 .bouton.clair { background: var(--cyan); border-color: var(--cyan); color: var(--nuit); }
@@ -186,7 +187,7 @@ legend { font-weight: 700; color: var(--nuit); padding: 0 0.4rem; }
 .onglets { display: flex; gap: 0.3rem; margin: 0.7rem 0; }
 .onglets button { flex: 1; padding: 0.55rem; border: 1px solid var(--bord); background: #fff; border-radius: 8px; min-height: 46px; font-weight: 600; color: var(--texte); }
 .onglets button:hover { border-color: var(--bleu); }
-.onglets button.actif { background: var(--cyan); color: var(--nuit); border-color: var(--cyan); }
+.onglets button.actif { background: var(--bleu); color: #fff; border-color: var(--bleu); }
 .onglets.large { max-width: 560px; }
 .onglets.defilant { flex-wrap: wrap; }
 .onglets.defilant button { flex: 1 1 auto; padding-inline: 0.6rem; white-space: nowrap; }
@@ -329,18 +330,20 @@ tr.choisie { background: var(--ciel); }
 .compte span { font-size: 0.82rem; color: var(--texte-doux); }
 
 /* ----- Pied de page ----- */
-.pied { background: var(--nuit); color: #b9d3e1; margin-top: 0; border-top: 4px solid var(--or); }
+.pied { background: var(--cyan); color: #fff; margin-top: 0; }
 .pied-interieur { max-width: var(--largeur); margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 .pied-grille { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 2.5rem; }
-.pied h2 { color: #fff; font-size: 0.98rem; margin: 0 0 0.8rem; font-family: var(--police-titre); }
-.pied p, .pied li { font-size: 0.92rem; margin: 0 0 0.45rem; color: #b9d3e1; }
+.pied h2 { color: #fff; font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--police-titre); text-shadow: 0 1px 2px rgba(0, 60, 95, 0.3); }
+.pied h2::after { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--or); margin-top: 0.45rem; }
+.pied p, .pied li { font-size: 0.94rem; margin: 0 0 0.5rem; color: #fff; text-shadow: 0 1px 2px rgba(0, 60, 95, 0.25); }
 .pied ul { list-style: none; padding: 0; margin: 0; }
-.pied a { color: #dff1fa; text-decoration: none; }
-.pied a:hover { color: #fff; text-decoration: underline; }
-.pied .logo { color: #fff; margin-bottom: 0.8rem; }
-.pied .logo small { color: #9fc2d6; }
-.pied-bas { margin-top: 2.2rem; padding-top: 1.3rem; border-top: 1px solid #1e5072; display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; font-size: 0.82rem; color: #9fc2d6; }
-.pied-bas p { margin: 0; max-width: 78ch; font-size: 0.82rem; color: #9fc2d6; }
+.pied a { color: #fff; text-decoration: none; font-weight: 600; }
+.pied a:hover { color: var(--nuit); text-decoration: underline; }
+.pied .logo { color: #fff; margin-bottom: 0.9rem; }
+.pied-bas-bloc { background: var(--nuit); }
+.pied-bas { max-width: var(--largeur); margin: 0 auto; padding: 1.1rem 1.25rem; display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; font-size: 0.82rem; color: #cfe3ee; }
+.pied-bas p { margin: 0; max-width: 78ch; font-size: 0.82rem; color: #cfe3ee; text-shadow: none; }
+.pied-bas span { color: #fff; font-weight: 600; }
 @media (max-width: 900px) { .pied-grille { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .pied-grille { grid-template-columns: 1fr; gap: 1.6rem; } }
 
@@ -378,8 +381,8 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .compte-carte .texte b { display: block; color: var(--nuit); font-family: var(--police-titre); font-weight: 600; font-size: 1.05rem; }
 .compte-carte .texte em { display: block; font-style: normal; font-weight: 700; color: var(--bleu-fonce); font-size: 0.85rem; margin-bottom: 0.25rem; }
 .compte-carte .texte span { display: block; font-size: 0.88rem; color: var(--texte-doux); line-height: 1.4; }
-.compte-carte .entrer { background: var(--cyan); color: var(--nuit); font-weight: 700; border-radius: 8px; padding: 0.5rem 1rem; min-height: 40px; display: grid; place-items: center; }
-.compte-carte:hover:not(:disabled) .entrer { background: var(--cyan-fonce); color: #fff; }
+.compte-carte .entrer { background: var(--bleu); color: #fff; font-weight: 700; border-radius: 8px; padding: 0.5rem 1rem; min-height: 40px; display: grid; place-items: center; }
+.compte-carte:hover:not(:disabled) .entrer { background: var(--nuit); color: #fff; }
 @media (max-width: 520px) { .compte-carte { grid-template-columns: 44px 1fr; } .compte-carte .entrer { grid-column: 1 / -1; } .compte-carte .icone { width: 44px; height: 44px; } }
 .autre-compte summary { cursor: pointer; font-weight: 700; color: var(--bleu-fonce); padding: 0.5rem 0; }
 .autre-compte form { margin-top: 0.6rem; max-width: 560px; }
@@ -430,3 +433,50 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .etat-reseau .interrupteur { margin: 0; color: inherit; font-weight: 600; }
 .page .deux-colonnes > section > .carte:first-child { margin-top: 0; }
 .services { margin-bottom: 1.2rem; }
+
+/* ----- Bandeau de titre commun aux pages ----- */
+.bandeau { background: var(--nuit) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='200' viewBox='0 0 520 200'%3E%3Cpath d='M0 150 C 120 150 130 50 260 50 C 390 50 400 130 520 120' fill='none' stroke='%23e3a71b' stroke-width='3' stroke-linecap='round' opacity='.55'/%3E%3Ccircle cx='260' cy='50' r='7' fill='%23fff' opacity='.9'/%3E%3C/svg%3E") no-repeat right center; color: #cfe3ee; border-bottom: 4px solid var(--or); }
+.bandeau .interieur { max-width: var(--largeur); margin: 0 auto; padding: 2rem 1.25rem 2.1rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.bandeau-sur { display: block; font-weight: 700; font-size: 0.92rem; color: var(--cyan); margin-bottom: 0.35rem; }
+.bandeau h1 { color: #fff; font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+.bandeau p { margin: 0; max-width: 68ch; color: #cfe3ee; font-size: 1.04rem; }
+.bandeau p b { color: #fff; }
+.bandeau-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.bandeau + .page { padding-top: 1.8rem; }
+
+/* ----- Assistant ----- */
+.assistant-grille { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 1.5rem; align-items: start; }
+@media (max-width: 900px) { .assistant-grille { grid-template-columns: 1fr; } }
+.assistant-saisie { padding: 1.4rem 1.5rem; box-shadow: 0 8px 24px rgba(10, 43, 64, 0.06); }
+.assistant-saisie h2 { margin-top: 0; }
+.assistant-saisie textarea { width: 100%; min-height: 120px; resize: vertical; font-size: 1.05rem; }
+.assistant-saisie .bouton { width: 100%; }
+.exemples-titre { font-weight: 700; color: var(--nuit); margin: 1.4rem 0 0.6rem; font-size: 0.95rem; }
+.exemples { display: flex; flex-direction: column; gap: 0.5rem; }
+.exemple { text-align: left; background: #fff; border: 1.5px solid var(--bord); border-radius: 10px; padding: 0.7rem 1rem; color: var(--nuit); font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; transition: border-color 0.15s, background 0.15s; }
+.exemple::after { content: "›"; font-size: 1.4rem; line-height: 1; color: var(--cyan-fonce); }
+.exemple:hover { border-color: var(--cyan); background: var(--ciel); }
+.echange { margin-top: 1.4rem; display: grid; gap: 0.8rem; }
+.bulle { border-radius: 14px; padding: 0.9rem 1.1rem; max-width: 92%; }
+.bulle.vous { justify-self: end; background: var(--nuit); color: #fff; border-bottom-right-radius: 4px; }
+.bulle.vous p { margin: 0; }
+.bulle.assistant { justify-self: start; background: #fff; border: 1.5px solid var(--bord); border-bottom-left-radius: 4px; max-width: 100%; width: 100%; }
+.bulle.assistant.urgence { border-color: var(--rouge); background: #fff8f7; }
+.bulle.assistant.info { border-color: var(--cyan); }
+.bulle .niveau { display: inline-block; font-size: 0.8rem; font-weight: 700; border-radius: 999px; padding: 0.15rem 0.75rem; margin-bottom: 0.6rem; background: #f1ecdc; color: var(--or-fonce); }
+.bulle.urgence .niveau { background: #fdecea; color: var(--rouge); }
+.bulle.info .niveau { background: var(--ciel); color: var(--bleu-fonce); }
+.bulle.assistant p { font-size: 1.05rem; }
+.bulle .source { font-size: 0.85rem; color: var(--texte-doux); border-top: 1px solid var(--bord); padding-top: 0.6rem; margin-top: 0.8rem; }
+.assistant-cote { display: grid; gap: 1rem; }
+.assistant-cote .carte { margin: 0; }
+.assistant-cote h2 { font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; }
+.liste-coches { list-style: none; padding: 0; margin: 0; }
+.liste-coches li { position: relative; padding: 0.35rem 0 0.35rem 1.7rem; font-size: 0.95rem; }
+.liste-coches li::before { content: ""; position: absolute; left: 0; top: 0.65rem; width: 0.95rem; height: 0.95rem; border-radius: 50%; background: var(--cyan); box-shadow: inset 0 0 0 4px var(--cyan), inset 0 0 0 8px #fff; }
+.liste-coches.non li::before { background: var(--rouge); box-shadow: inset 0 0 0 4px var(--rouge), inset 0 0 0 8px #fff; }
+.carte.urgence-info { background: var(--nuit); border-color: var(--nuit); color: #cfe3ee; }
+.carte.urgence-info h2 { color: #fff; }
+.carte.urgence-info p { color: #cfe3ee; font-size: 0.95rem; }
+
+@media (max-width: 900px) { .bandeau { background-image: none; } .bandeau .interieur { padding: 1.5rem 1.25rem 1.6rem; } }

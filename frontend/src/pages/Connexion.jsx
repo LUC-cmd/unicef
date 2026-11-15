@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { IconeAgent, IconeBouclier, IconeCarnet, IconeZone } from '../components/Icones.jsx'
 import { useAuth } from '../lib/contexte.jsx'
+import Bandeau from '../components/Bandeau.jsx'
 
 // Mot de passe commun des comptes de démonstration, défini à la construction du site (VITE_MDP_DEMO).
 const MDP_DEMO = import.meta.env.VITE_MDP_DEMO || 'FilDor2026!demo'
@@ -44,10 +45,11 @@ export default function Connexion() {
   }
 
   return (
+    <>
+    <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
+      Choisissez un rôle : la connexion est immédiate. Chaque rôle voit une partie différente du système. Toutes les données sont fictives.
+    </Bandeau>
     <main className="page connexion-page">
-      <span className="surtitre">Démonstration</span>
-      <h1>Entrer dans Fil d'Or</h1>
-      <p>Choisissez un rôle : la connexion est immédiate. Chaque rôle voit une partie différente du système. Toutes les données sont fictives.</p>
 
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
@@ -80,5 +82,6 @@ export default function Connexion() {
         </form>
       </details>
     </main>
+    </>
   )
 }

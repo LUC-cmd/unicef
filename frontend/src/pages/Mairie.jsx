@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { ageLisible, formaterDate } from '../lib/format.js'
+import Bandeau from '../components/Bandeau.jsx'
 
 const STATUTS = [['ENVOYEE', 'À traiter'], ['VALIDEE', 'Validées'], ['REJETEE', 'Rejetées'], ['', 'Toutes']]
 const LIBELLE = { ENVOYEE: 'À traiter', VALIDEE: 'Validée', REJETEE: 'Rejetée', BROUILLON: 'Brouillon' }
@@ -33,12 +34,12 @@ export default function Mairie() {
   }
 
   return (
+    <>
+    <Bandeau surtitre="État civil" titre="Déclarations de naissance">
+      Dossiers pré-remplis envoyés par les agents de santé. Pas de nom, de photo ni d'adresse ici : un code enfant,
+      la zone et les éléments du dossier. La famille est prévenue après validation.
+    </Bandeau>
     <main className="page">
-      <h1>Déclarations de naissance</h1>
-      <p className="petit">
-        Dossiers pré-remplis envoyés par les agents de santé. Pas de nom, de photo ni d'adresse ici : un code enfant,
-        la zone et les éléments du dossier. La famille est prévenue après validation.
-      </p>
 
       <div className="onglets large" role="tablist">
         {STATUTS.map(([v, nom]) => (
@@ -94,5 +95,6 @@ export default function Mairie() {
         </div>
       )}
     </main>
+    </>
   )
 }
