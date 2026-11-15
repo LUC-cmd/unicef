@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/contexte.jsx'
 import Accueil from './pages/Accueil.jsx'
@@ -13,6 +14,16 @@ import Ecoute from './pages/Ecoute.jsx'
 import Assistant from './pages/Assistant.jsx'
 import Inscription from './pages/Inscription.jsx'
 import Structure from './pages/Structure.jsx'
+import Logo from './components/Logo.jsx'
+import { IconeMenu } from './components/Icones.jsx'
+
+const LIBELLE_ROLE = {
+  AGENT: 'Agent de santé',
+  MAIRIE: "État civil",
+  DECIDEUR: 'Responsable régional',
+  STRUCTURE: 'Structure',
+  ADMIN: 'Administrateur',
+}
 
 const ROLES_PAR_PAGE = {
   agent: ['AGENT', 'ADMIN'],
@@ -28,8 +39,12 @@ function Protegee({ page, children }) {
   if (!session) return <Navigate to="/connexion" state={{ depuis: lieu.pathname }} replace />
   if (!ROLES_PAR_PAGE[page].includes(session.role)) {
     return (
-      <main className="page">
-        <div className="carte erreur">Votre compte n'a pas accès à cette page.</div>
+      <main className="page etroite">
+        <h1>Accès réservé</h1>
+        <div className="carte">
+          <p>Votre compte ({LIBELLE_ROLE[session.role] ?? session.role}) n'a pas accès à cette page.</p>
+          <Link className="bouton secondaire" to="/">Retour à l'accueil</Link>
+        </div>
       </main>
     )
   }
@@ -38,88 +53,119 @@ function Protegee({ page, children }) {
 
 export default function App() {
   const { session, deconnexion } = useAuth()
+  const lieu = useLocation()
+  const [menuOuvert, setMenuOuvert] = useState(false)
   const peut = (page) => session && ROLES_PAR_PAGE[page].includes(session.role)
+  const aEspacePro = peut('agent') || peut('mairie') || peut('carte') || peut('structure') || peut('admin')
+
+  // Ferme le menu mobile et remonte en haut à chaque changement de page
+  useEffect(() => { setMenuOuvert(false); window.scrollTo(0, 0) }, [lieu.pathname])
 
   return (
     <div className="coque">
-      <header className="entete no-print">
-        <Link to="/" className="logo" aria-label="Fil d'Or, accueil">
-          <span className="fil" aria-hidden="true" />
-          Fil d'Or
-        </Link>
-        <nav aria-label="Navigation principale">
-          <NavLink to="/telephone">Téléphone</NavLink>
-          <NavLink to="/ecoute">Écoute</NavLink>
-          <NavLink to="/assistant">Assistant</NavLink>
-          <NavLink to="/annuaire">Annuaire</NavLink>
-          {peut('agent') && <NavLink to="/agent">Agent</NavLink>}
-          {peut('mairie') && <NavLink to="/mairie">Mairie</NavLink>}
-          {peut('carte') && <NavLink to="/carte">Carte</NavLink>}
-          {peut('structure') && <NavLink to="/structure">Structure</NavLink>}
-          {peut('admin') && <NavLink to="/admin">Coulisses</NavLink>}
-        </nav>
-        <div className="session">
-          {session ? (
-            <>
-              <span className="petit">{session.nomComplet}</span>
-              <button className="lien" onClick={deconnexion}>Quitter</button>
-            </>
-          ) : (
-            <Link to="/connexion">Se connecter</Link>
-          )}
+      <a className="lien-evitement" href="#contenu">Aller au contenu</a>
+      <div className="barre-haute no-print">
+        <div className="interieur">
+          <span><strong>Hack4Children Togo 2026</strong> · candidature au concours</span>
+          <span>Version de démonstration : toutes les données sont fictives</span>
+        </div>
+      </div>
+
+      <header className={`entete no-print ${menuOuvert ? 'ouvert' : ''}`}>
+        <div className="interieur">
+          <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+          <button className="menu-bouton" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
+            <IconeMenu /> Menu
+          </button>
+          <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
+            <NavLink to="/" end>Accueil</NavLink>
+            <NavLink to="/telephone">Téléphone</NavLink>
+            <NavLink to="/ecoute">Point d'écoute</NavLink>
+            <NavLink to="/assistant">Assistant</NavLink>
+            <NavLink to="/annuaire">Annuaire</NavLink>
+            {aEspacePro && <span className="separateur" aria-hidden="true" />}
+            {peut('agent') && <NavLink to="/agent">Agent</NavLink>}
+            {peut('mairie') && <NavLink to="/mairie">État civil</NavLink>}
+            {peut('carte') && <NavLink to="/carte">Carte</NavLink>}
+            {peut('structure') && <NavLink to="/structure">Ma structure</NavLink>}
+            {peut('admin') && <NavLink to="/admin">Coulisses</NavLink>}
+          </nav>
+          <div className="session">
+            {session ? (
+              <>
+                <div className="qui"><b>{session.nomComplet}</b><span>{LIBELLE_ROLE[session.role] ?? session.role}</span></div>
+                <button className="bouton secondaire petit-bouton" onClick={deconnexion}>Se déconnecter</button>
+              </>
+            ) : (
+              <Link className="bouton petit-bouton" to="/connexion">Se connecter</Link>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="bandeau-demo no-print">Prototype Hack4Children Togo 2026 · données fictives · aucun vrai enfant, aucun vrai SMS</div>
-
-      <div className="contenu">
-      <Routes>
-        <Route path="/" element={<Accueil />} />
-        <Route path="/connexion" element={<Connexion />} />
-        <Route path="/telephone" element={<Telephone />} />
-        <Route path="/ecoute" element={<Ecoute />} />
-        <Route path="/assistant" element={<Assistant />} />
-        <Route path="/annuaire" element={<Annuaire />} />
-        <Route path="/agent" element={<Protegee page="agent"><Agent /></Protegee>} />
-        <Route path="/agent/inscription" element={<Protegee page="agent"><Inscription /></Protegee>} />
-        <Route path="/structure" element={<Protegee page="structure"><Structure /></Protegee>} />
-        <Route path="/carnet/:code" element={<Protegee page="agent"><Carnet /></Protegee>} />
-        <Route path="/mairie" element={<Protegee page="mairie"><Mairie /></Protegee>} />
-        <Route path="/carte" element={<Protegee page="carte"><Carte /></Protegee>} />
-        <Route path="/admin" element={<Protegee page="admin"><Admin /></Protegee>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div className="contenu" id="contenu">
+        <Routes>
+          <Route path="/" element={<Accueil />} />
+          <Route path="/connexion" element={<Connexion />} />
+          <Route path="/telephone" element={<Telephone />} />
+          <Route path="/ecoute" element={<Ecoute />} />
+          <Route path="/assistant" element={<Assistant />} />
+          <Route path="/annuaire" element={<Annuaire />} />
+          <Route path="/agent" element={<Protegee page="agent"><Agent /></Protegee>} />
+          <Route path="/agent/inscription" element={<Protegee page="agent"><Inscription /></Protegee>} />
+          <Route path="/structure" element={<Protegee page="structure"><Structure /></Protegee>} />
+          <Route path="/carnet/:code" element={<Protegee page="agent"><Carnet /></Protegee>} />
+          <Route path="/mairie" element={<Protegee page="mairie"><Mairie /></Protegee>} />
+          <Route path="/carte" element={<Protegee page="carte"><Carte /></Protegee>} />
+          <Route path="/admin" element={<Protegee page="admin"><Admin /></Protegee>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
 
       <footer className="pied no-print">
-        <div className="pied-grille">
-          <div>
-            <h2>Fil d'Or</h2>
-            <p>Un carnet, de la grossesse à 5 ans. Quatre portes : voix et SMS, agent, carnet illustré, point d'écoute.</p>
+        <div className="pied-interieur">
+          <div className="pied-grille">
+            <div>
+              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+              <p>Un seul carnet pour suivre chaque enfant de la grossesse à 5 ans : santé, nutrition, état civil, services sociaux et éveil.</p>
+            </div>
+            <div>
+              <h2>Découvrir</h2>
+              <ul>
+                <li><Link to="/telephone">Simulateur de téléphone</Link></li>
+                <li><Link to="/ecoute">Point d'écoute</Link></li>
+                <li><Link to="/assistant">Poser une question</Link></li>
+                <li><Link to="/annuaire">Annuaire des structures</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h2>Espaces professionnels</h2>
+              <ul>
+                <li><Link to="/connexion">Agent de santé</Link></li>
+                <li><Link to="/connexion">État civil</Link></li>
+                <li><Link to="/connexion">Structure d'accueil</Link></li>
+                <li><Link to="/connexion">Responsable régional</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h2>Protection</h2>
+              <ul>
+                <li>Aucun nom, aucune photo, aucune adresse</li>
+                <li>Accord de la famille avant tout suivi</li>
+                <li>Accès par rôle et par zone, journal des consultations</li>
+                <li>Loi n° 2019-014 du 29 octobre 2019</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h2>Services</h2>
-            <ul>
-              <li>Site — cette interface</li>
-              <li>API — dossiers, rôles, rappels</li>
-              <li>Base — PostgreSQL, données fictives</li>
-              <li>Assistant — questions, sans dossier</li>
-            </ul>
-          </div>
-          <div>
-            <h2>Aller</h2>
-            <ul>
-              <li><Link to="/telephone">Téléphone</Link></li>
-              <li><Link to="/assistant">Poser une question</Link></li>
-              <li><Link to="/annuaire">Annuaire</Link></li>
-              <li><Link to="/connexion">Connexion</Link></li>
-            </ul>
+          <div className="pied-bas">
+            <p>
+              Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
+              doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026 :
+              ce n'est pas un service officiel de l'UNICEF.
+            </p>
+            <span>© 2026 Fil d'Or</span>
           </div>
         </div>
-        <p className="mention">
-          Informe et oriente, ne diagnostique pas. Contenus à valider par des professionnels avant tout usage réel.
-          Loi n° 2019-014 du 29 octobre 2019. Aucun nom, aucune photo, aucun point GPS précis.
-        </p>
       </footer>
     </div>
   )
