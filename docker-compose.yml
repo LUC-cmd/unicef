@@ -1,6 +1,9 @@
-# Fil d'Or : base PostgreSQL, serveur Spring Boot, site React.
+# Fil d'Or : quatre services séparés.
 #   docker compose up --build
-# Site : http://localhost:8081   API : http://localhost:8080   Base : localhost:5432
+# Site : http://localhost:8081
+# API : http://localhost:8080
+# Assistant : http://localhost:8092
+# Base : localhost:5432
 services:
   db:
     image: postgres:16
@@ -33,10 +36,16 @@ services:
     ports:
       - "8080:8080"
 
+  assistant:
+    build: ./assistant
+    ports:
+      - "8092:8090"
+
   frontend:
     build: ./frontend
     depends_on:
       - backend
+      - assistant
     ports:
       - "8081:80"
 

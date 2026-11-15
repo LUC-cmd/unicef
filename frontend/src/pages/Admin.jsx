@@ -1,12 +1,42 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
 
-/** Outil de démonstration : lance le cycle des rappels « comme si » on était quelques jours plus tard. */
+const SERVICES = [
+  ['Site', 'Cette interface, servie à part.', null],
+  ['API', 'Dossiers, rôles, rappels, synchronisation.', '/actuator/health'],
+  ['Base', 'PostgreSQL. L’API ne démarre pas sans elle.', null],
+  ['Assistant', 'Questions sur les contenus. Aucun accès aux dossiers.', '/assistant/health'],
+]
+
+async function joignable(url, accepte) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(4000) })
+    if (!r.ok) return false
+    const corps = await r.json().catch(() => null)
+    return accepte(corps)
+  } catch {
+    return false
+  }
+}
+
+/** Coulisses : l'état des quatre services, et l'horloge de démonstration. */
 export default function Admin() {
-  const [jours, setJours] = useState(3)
+  const [etats, setEtats] = useState({})
+  const [jours, setJours] = useState(5)
   const [resultat, setResultat] = useState(null)
   const [erreur, setErreur] = useState('')
+
+  useEffect(() => {
+    let annule = false
+    async function lire() {
+      const apiOk = await joignable('/api/public/sujets', Array.isArray)
+      const assistantOk = await joignable('/assistant/health', (c) => c?.statut === 'ok')
+      if (!annule) setEtats({ API: apiOk, Base: apiOk, Assistant: assistantOk, Site: true })
+    }
+    lire()
+    return () => { annule = true }
+  }, [])
 
   async function lancer() {
     setErreur('')
@@ -19,32 +49,57 @@ export default function Admin() {
   }
 
   return (
-    <main className="page etroite">
-      <h1>Démonstration : faire avancer le temps</h1>
-      <p>
-        Lance le cycle des rappels comme si l'on était dans quelques jours : les rendez-vous non faits deviennent
-        « manqués », les rappels sans réponse passent « sans réponse », et les familles remontent dans la liste de l'agent.
-      </p>
-      <div className="carte">
-        <label>Avancer de (jours)
-          <input type="number" min="0" max="30" value={jours} onChange={(e) => setJours(e.target.value)} />
-        </label>
-        <button className="bouton" onClick={lancer}>Lancer le cycle</button>
-        <p className="petit">Attention : l'effet est permanent dans la base de démonstration (les dates passées ne reviennent pas).</p>
-      </div>
-      {erreur && <p className="erreur" role="alert">{erreur}</p>}
-      {resultat && (
-        <div className="carte" role="status">
-          <h2>Cycle du {resultat.date}</h2>
+    <main className="page">
+      <p className="surtitre">Réservé à l'administration de la démo</p>
+      <h1>Coulisses</h1>
+      <p>Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.</p>
+
+      <section className="services" aria-label="État des services">
+        {SERVICES.map(([nom, detail]) => {
+          const ok = etats[nom]
+          return (
+            <article className="service" key={nom}>
+              <p className={`etat ${ok ? 'ok' : 'ko'}`}>{ok === undefined ? 'lecture…' : ok ? 'en service' : 'arrêté'}</p>
+              <h2>{nom}</h2>
+              <p className="petit">{detail}</p>
+            </article>
+          )
+        })}
+      </section>
+
+      <div className="deux-colonnes">
+        <section className="carte">
+          <h2>Horloge de démonstration</h2>
+          <p>Avance le cycle des rappels. Les rendez-vous non faits deviennent manqués, les familles silencieuses remontent dans la liste de l'agent.</p>
+          <label>Avancer de (jours)
+            <input type="number" min="0" max="30" value={jours} onChange={(e) => setJours(e.target.value)} />
+          </label>
+          <button className="bouton" onClick={lancer}>Lancer le cycle</button>
+          <p className="petit">L'effet reste dans la base de démonstration.</p>
+          {erreur && <p className="erreur" role="alert">{erreur}</p>}
+          {resultat && (
+            <ul role="status">
+              <li>Cycle du {resultat.date}</li>
+              <li>{resultat.rendezVousManques} rendez-vous manqués</li>
+              <li>{resultat.rappelsSansReponse} rappels sans réponse</li>
+              <li>{resultat.rappelsCrees} rappels préparés</li>
+              <li>{resultat.rappelsAuxProches} rappels aux proches</li>
+              <li>{resultat.jeuxEnvoyes} jeux envoyés</li>
+            </ul>
+          )}
+        </section>
+        <section className="carte">
+          <h2>Ce que le jury peut ouvrir</h2>
           <ul>
-            <li>{resultat.rendezVousManques} rendez-vous devenus manqués</li>
-            <li>{resultat.rappelsSansReponse} rappels passés sans réponse</li>
-            <li>{resultat.rappelsCrees} nouveaux rappels SMS préparés</li>
-            <li>{resultat.rappelsAuxProches} rappels généraux envoyés aux proches</li>
-            <li>{resultat.jeuxEnvoyes} jeux de la semaine envoyés par SMS</li>
+            <li>Téléphone <b>90000031</b>, puis l'onglet USSD <b>*789#</b></li>
+            <li>Assistant : une question sur les vaccins, une sur les convulsions</li>
+            <li><b>agent.vo</b> — liste priorisée, saisie hors ligne</li>
+            <li><b>mairie</b> — valider, la famille reçoit un avis</li>
+            <li><b>decideur</b> — carte anonyme</li>
           </ul>
-        </div>
-      )}
+          <p className="petit">Mot de passe de démonstration : FilDor2026!demo</p>
+        </section>
+      </div>
     </main>
   )
 }

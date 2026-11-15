@@ -1,0 +1,56 @@
+[
+  {
+    "sujet": "GROSSESSE",
+    "titre": "Pendant la grossesse",
+    "texte": "Allez à la consultation prénatale dès que possible, puis à chaque rendez-vous. Mangez varié, buvez de l'eau propre et dormez sous une moustiquaire. En cas de saignement, de forte douleur, de fièvre ou si le bébé bouge moins, allez tout de suite au centre de santé.",
+    "mots": ["grossesse", "enceinte", "prenatal", "prenatale", "bebe", "moustiquaire", "consultation"]
+  },
+  {
+    "sujet": "NOUVEAU_NE",
+    "titre": "Le nouveau-né",
+    "texte": "Gardez bébé au chaud, peau contre peau. Lavez-vous les mains avant de le toucher et gardez le cordon propre et sec. Présentez-le au centre de santé pour ses vaccins de naissance. S'il ne tète plus, a de la fièvre ou respire vite, allez tout de suite au centre de santé.",
+    "mots": ["nouveau", "ne", "cordon", "peau", "naissance", "chaud"]
+  },
+  {
+    "sujet": "ALLAITEMENT",
+    "titre": "L'allaitement",
+    "texte": "Jusqu'à 6 mois, le lait de la mère suffit : ni eau, ni autre aliment. Donnez le sein à la demande, de jour comme de nuit. Si vous avez mal ou si vous avez des questions, parlez-en à l'agent de santé.",
+    "mots": ["allaitement", "sein", "lait", "teter", "tete", "six", "mois"]
+  },
+  {
+    "sujet": "VACCINS",
+    "titre": "Les vaccins",
+    "texte": "Les vaccins protègent votre enfant de maladies graves. Apportez le carnet à chaque rendez-vous. Si un vaccin a été manqué, allez au centre de santé : il n'est pas trop tard, on reprend là où on s'est arrêté.",
+    "mots": ["vaccin", "vaccins", "injection", "carnet", "rappel", "penta", "rougeole"]
+  },
+  {
+    "sujet": "NUTRITION",
+    "titre": "Bien nourrir son enfant",
+    "texte": "À partir de 6 mois, continuez l'allaitement et ajoutez des bouillies enrichies, des légumes, des fruits, des œufs, du poisson ou des légumineuses, en petites quantités, plusieurs fois par jour. Le ruban de l'agent permet de repérer tôt un enfant qui maigrit.",
+    "mots": ["nourrir", "nutrition", "bouillie", "manger", "aliment", "repas", "maigrit", "ruban", "fruit", "poisson"]
+  },
+  {
+    "sujet": "HYGIENE",
+    "titre": "L'hygiène",
+    "texte": "Lavez-vous les mains à l'eau et au savon avant de préparer les repas, avant de donner à manger et après les toilettes. Utilisez de l'eau propre et gardez-la couverte.",
+    "mots": ["hygiene", "mains", "savon", "eau", "toilette", "propre"]
+  },
+  {
+    "sujet": "NAISSANCE",
+    "titre": "Déclarer la naissance",
+    "texte": "Déclarez la naissance dans les 45 jours : c'est gratuit. Après ce délai, il faut un jugement supplétif qui coûte 6 000 francs CFA. L'agent de santé peut lancer la déclaration avec vous.",
+    "mots": ["declarer", "declaration", "acte", "mairie", "etat", "civil", "45", "6000", "gratuit"]
+  },
+  {
+    "sujet": "EVEIL",
+    "titre": "Un jeu par jour",
+    "texte": "Parlez à votre enfant, chantez, racontez des histoires. Jouez avec ce que vous avez à la maison : comptez des graines, empilez des fruits, cachez un objet sous un tissu. Dix minutes par jour suffisent.",
+    "mots": ["jeu", "jouer", "histoire", "chanter", "chanson", "eveil", "graine", "prescolaire"]
+  },
+  {
+    "sujet": "DANGER",
+    "titre": "Signes de danger",
+    "texte": "Ceci n'est pas un diagnostic. Allez tout de suite au centre de santé le plus proche si l'enfant ne boit ou ne tète plus, vomit tout, a des convulsions, est très faible ou difficile à réveiller, respire difficilement, ou s'il a de la fièvre et moins de 2 mois. Pour une femme enceinte : saignement, fièvre, forte douleur ou maux de tête avec vue trouble.",
+    "mots": ["danger", "urgence", "convulsion", "vomit", "fievre", "saignement", "respiration", "faible"]
+  }
+]

@@ -19,7 +19,7 @@ avec ou sans réseau : un seul carnet, quatre portes d'entrée (voix et SMS, age
 | **Proches / numéro relais** | Père, grand-parent ou relais reçoivent des rappels généraux sans détail, avec leur accord. Essayez `91000046` dans le simulateur. |
 | **Mairie** (`/mairie`) | Reçoit les dossiers de naissance pré-remplis, valide ou rejette (motif obligatoire). |
 | **Carte des zones oubliées** (`/carte`) | Indice d'oubli par zone, anonyme, sans point GPS précis ; zones de moins de 5 familles masquées. |
-| **Démo** (`/admin`) | Fait avancer le temps de quelques jours pour montrer les rendez-vous manqués et les familles qui remontent. |
+| **Coulisses** (`/admin`) | État des quatre services, et horloge qui fait avancer le temps pour montrer les rendez-vous manqués. |
 
 ## Lancer le projet
 
@@ -27,7 +27,7 @@ avec ou sans réseau : un seul carnet, quatre portes d'entrée (voix et SMS, age
 ```bash
 docker compose up --build
 ```
-Site : http://localhost:8081 · API : http://localhost:8080
+Site : http://localhost:8081 · API : http://localhost:8080 · Assistant : http://localhost:8092 · Base : localhost:5432
 
 ### Option 2 : en développement
 Prérequis : Java 21, Maven 3.9, Node 22, PostgreSQL 16.
@@ -40,7 +40,10 @@ createdb -U postgres fildor      # ou : docker compose up db
 # 2. Serveur (migrations Flyway et données fictives au premier démarrage)
 cd backend && mvn spring-boot:run          # http://localhost:8080
 
-# 3. Site
+# 3. Assistant (questions sur les contenus, aucun accès aux dossiers)
+cd assistant && pip install -r requirements.txt && python -m uvicorn app:app --host 127.0.0.1 --port 8092
+
+# 4. Site
 cd frontend && npm install && npm run dev  # http://localhost:5173
 ```
 
@@ -70,13 +73,16 @@ Téléphones de démo pour le simulateur : familles `90000001` à `90000045` ; p
 1. **Agent** (`agent.golfe`) : « Inscrire une famille », ajouter un enfant et un proche relais, cocher « sans réseau » : l'inscription part au retour du réseau, sans doublon.
 2. **Simulateur** : numéro `91000046` (relais) : messages généraux seulement. Numéro `90000001` : onglet « Jeu du jour », puis « Structures » > « Me rappeler ».
 3. **Structure** (`structure.golfe`) : voir la demande par code famille, répondre : la famille reçoit un SMS.
-4. **Démo** (`admin`) : lancer le cycle : rappels aux proches et jeux de la semaine.
+4. **Coulisses** (`admin`) : les quatre services, puis le cycle (rappels aux proches et jeux de la semaine). **Assistant** : une question sur les vaccins, une sur les convulsions.
 
 ## Architecture
 ```
 frontend/ (React + Vite)  ──/api──▶  backend/ (Spring Boot 3, Java 21)  ──JDBC──▶  PostgreSQL 16
    mode hors ligne (file locale)        API REST, sécurité par rôle                  migrations Flyway
+        │
+        └──/assistant──▶  assistant/ (Python)   textes approuvés seulement, aucun dossier
 ```
+Si `uvicorn` ne démarre pas, `python serveur.py` dans `assistant/` sert les mêmes adresses sur le port 8092.
 - **Priorité de visite** (`PrioriteService`) : périmètre brachial bas, rappels sans réponse, rendez-vous manqués, naissance non déclarée. Chaque score est renvoyé avec ses raisons.
 - **Hors ligne** : chaque saisie porte un identifiant créé sur le téléphone ; le serveur ignore ce qu'il a déjà reçu (`ON CONFLICT DO NOTHING`).
 - **Cycle des rappels** (`RappelService`) : chaque jour à 6 h, ou à la demande via `/api/admin/cycle`.

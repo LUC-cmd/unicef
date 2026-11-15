@@ -26,6 +26,7 @@ export default function Accueil() {
         </p>
         <div className="actions-heros">
           <Link className="bouton" to="/telephone">Ouvrir le téléphone</Link>
+          <Link className="bouton secondaire" to="/assistant">Poser une question</Link>
           <Link className="bouton secondaire" to="/connexion">Entrer dans la démo</Link>
         </div>
       </section>
@@ -67,7 +68,7 @@ export default function Accueil() {
             <li>Compte <b>admin</b> : avancer de 5 jours. Des rendez-vous deviennent manqués.</li>
             <li>Compte <b>agent.vo</b> : la liste est triée. Cocher « village sans réseau », saisir un périmètre brachial de 112 mm, lancer une déclaration.</li>
             <li>Décocher « village sans réseau » : la synchronisation part. La relancer ne crée aucun doublon.</li>
-            <li>Compte <b>mairie</b> pour valider, puis <b>decideur</b> pour la carte : Vo, Yoto et Lacs en rouge ou orange.</li>
+            <li>Compte <b>mairie</b> pour valider, puis <b>decideur</b> pour la carte. L'assistant répond sans ouvrir de dossier.</li>
           </ol>
         </section>
         <section className="carte">
