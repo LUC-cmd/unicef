@@ -69,12 +69,12 @@ export default function Assistant() {
             {erreur && <p className="erreur" role="alert">{erreur}</p>}
             {reponse && (
               <div className="echange" role="status">
-                {posee && <div className="bulle vous"><p>{posee}</p></div>}
-                <article className={`bulle assistant ${reponse.niveau === 'URGENCE' ? 'urgence' : reponse.niveau === 'INFO' ? 'info' : ''}`}>
+                {posee && <div className="msg vous"><p>{posee}</p></div>}
+                <article className={`msg assistant ${reponse.niveau === 'URGENCE' ? 'urgence' : reponse.niveau === 'INFO' ? 'info' : ''}`}>
                   <span className="niveau">{reponse.niveau === 'URGENCE' ? 'Orientation immédiate' : reponse.niveau === 'INFO' ? 'Contenu approuvé' : 'Hors des contenus'}</span>
                   <p>{reponse.reponse}</p>
                   {(reponse.sources?.length > 0 || reponse.limite) && (
-                    <p className="source">
+                    <p className="msg-source">
                       {reponse.sources?.length > 0 && <>Source : {reponse.sources.map((s) => s.titre).join(', ')}. </>}
                       {reponse.limite}
                     </p>

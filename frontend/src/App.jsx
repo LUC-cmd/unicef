@@ -64,13 +64,6 @@ export default function App() {
   return (
     <div className="coque">
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
-      <div className="barre-haute no-print">
-        <div className="interieur">
-          <span><strong>Hack4Children Togo 2026</strong> · candidature au concours</span>
-          <span>Version de démonstration : toutes les données sont fictives</span>
-        </div>
-      </div>
-
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}`}>
         <header className="entete">
           <div className="interieur">
@@ -167,17 +160,15 @@ export default function App() {
               </ul>
             </div>
           </div>
+          <div className="pied-bas">
+            <p>
+              Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
+              doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026,
+              version de démonstration : toutes les données sont fictives. Ce n'est pas un service officiel de l'UNICEF.
+            </p>
+            <span>© 2026 Fil d'Or</span>
+          </div>
         </div>
-      <div className="pied-bas-bloc no-print">
-        <div className="pied-bas">
-          <p>
-            Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
-            doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026 :
-            ce n'est pas un service officiel de l'UNICEF.
-          </p>
-          <span>© 2026 Fil d'Or</span>
-        </div>
-      </div>
       </footer>
     </div>
   )
