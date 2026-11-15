@@ -479,6 +479,30 @@ function MainsPropres({ contexte }) {
   )
 }
 
+/* ---------- 8. La suite (logique) ---------- */
+
+const SUITES = [
+  { motif: ['🔴', '🟡', '🔴', '🟡'], suite: '🔴', voix: 'rouge, jaune, rouge, jaune' },
+  { motif: ['🥭', '🥭', '🍌', '🥭', '🥭'], suite: '🍌', voix: 'mangue, mangue, banane, mangue, mangue' },
+  { motif: ['⭐', '⭐', '🌙', '⭐', '⭐'], suite: '🌙', voix: 'étoile, étoile, lune, étoile, étoile' },
+  { motif: ['🥚', '🐟', '🥚', '🐟'], suite: '🥚', voix: 'œuf, poisson, œuf, poisson' },
+  { motif: ['🟩', '🟩', '🟦', '🟩', '🟩'], suite: '🟦', voix: 'vert, vert, bleu, vert, vert' },
+]
+
+function fabriquerSuite(rang) {
+  const s = SUITES[rang % SUITES.length]
+  const leurres = ['🌽', '🐓', '💧', '🟧'].filter((x) => x !== s.suite)
+  const choix = melanger([s.suite, ...melanger(leurres).slice(0, 2)])
+  return {
+    consigne: 'Qu’est-ce qui vient ensuite ?',
+    voix: `Regarde la suite. ${s.voix}. Qu'est-ce qui vient ensuite ?`,
+    visuel: <div className="jeu-objets" aria-hidden="true">{s.motif.map((e, i) => <span key={i}>{e}</span>)}<span className="suite-point">?</span></div>,
+    choix: choix.map((e) => ({ id: e, aria: e, contenu: <span className="gros-emoji">{e}</span> })),
+    bonne: s.suite,
+    felicitation: 'Bravo ! Tu as trouvé la suite.',
+  }
+}
+
 /* ---------- catalogue ---------- */
 
 const JEUX = [
@@ -489,6 +513,7 @@ const JEUX = [
   { id: 'assiette', titre: 'Mon assiette', age: '3 à 5 ans', icone: '🍠', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
   { id: 'memoire', titre: 'Les animaux jumeaux', age: '3 à 5 ans', icone: '🐓', texte: 'Retrouver les paires d’animaux de la ferme.', memoire: true },
   { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', icone: '🧼', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
+  { id: 'suite', titre: 'La suite', age: '3 à 5 ans', icone: '🔴', texte: 'Trouver ce qui vient ensuite. Un jeu de logique, sans réseau.', fin: 'Tu suis bien la suite.', fabrique: fabriquerSuite },
 ]
 
 /* ---------- page ---------- */
@@ -540,7 +565,7 @@ export default function Jeux() {
       >
         {jeu
           ? 'Un adulte reste à côté. On écoute la consigne, on touche la bonne image. Il n’y a pas de perdant : on essaie jusqu’à réussir.'
-          : 'Des jeux courts pour apprendre en s’amusant : compter, reconnaître les couleurs et les formes, bien manger, se laver les mains. Chaque bonne réponse donne une étoile.'}
+          : 'Des jeux courts pour éveiller la logique : compter, reconnaître, trouver la suite. Ils restent sur l’appareil, sans compte et sans envoi de donnée.'}
       </Bandeau>
 
       <main className="page">
@@ -569,13 +594,13 @@ export default function Jeux() {
                 </Link>
               ))}
             </div>
+            <p className="avertissement">Sans réseau, les jeux déjà ouverts continuent. Rien n’est envoyé : pas de nom, pas de score sur un serveur. Les étoiles restent sur cet appareil.</p>
             <div className="carte jeux-note">
               <h2>Pour les parents et les agents</h2>
               <ul className="liste-coches">
                 <li>Les jeux se jouent à deux : l'adulte lit la consigne, l'enfant touche. Pas de compte, aucune donnée enregistrée sur l'enfant.</li>
-                <li>Les étoiles restent seulement sur ce téléphone ou cet ordinateur.</li>
+                <li>Au village sans écran, le jeu du jour se fait avec les objets de la maison. Le SMS ne fait que le rappeler.</li>
                 <li>Les voix en éwé, kabyè et tem ne sont pas encore enregistrées : les consignes sont lues en français.</li>
-                <li>Sans écran : le « jeu du jour » avec des objets de la maison arrive par SMS aux familles suivies (voir le <Link to="/telephone">simulateur de téléphone</Link>).</li>
               </ul>
             </div>
           </>

@@ -25,12 +25,13 @@ export default function Connexion() {
   const [username, setUsername] = useState('')
   const [mdp, setMdp] = useState('')
 
-  async function entrer(id, motDePasse, cible) {
+  async function entrer(id, motDePasse) {
     setErreur('')
     setEnCours(id)
     try {
       await connexion(id, motDePasse)
-      navigate(lieu.state?.depuis || cible || '/', { replace: true })
+      const depuis = lieu.state?.depuis
+      navigate(depuis && depuis !== '/connexion' ? depuis : '/tableau', { replace: true })
     } catch (err) {
       setErreur(err.statut === 401 ? 'Identifiant ou mot de passe incorrect.' : err.message)
     } finally {
@@ -40,47 +41,48 @@ export default function Connexion() {
 
   function envoyerFormulaire(e) {
     e.preventDefault()
-    const id = username.trim()
-    entrer(id, mdp, COMPTES.find((c) => c.id === id)?.cible)
+    entrer(username.trim(), mdp)
   }
 
   return (
     <>
-    <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
-      Choisissez un rôle : la connexion est immédiate. Chaque rôle voit une partie différente du système. Toutes les données sont fictives.
+    <Bandeau surtitre="Comptes professionnels" titre="Entrer dans Fil d'Or">
+      Un identifiant, un rôle, un tableau de bord. L’agent ne voit que sa zone, la mairie ne voit que les naissances, le responsable régional ne voit que des zones.
     </Bandeau>
     <main className="page connexion-page">
-
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
-      <div className="comptes-grille">
-        {COMPTES.map(({ id, role, lieu: zone, detail, cible, Icone }) => (
-          <button key={id} type="button" className="compte-carte" disabled={enCours !== null} onClick={() => entrer(id, MDP_DEMO, cible)}>
-            <span className="icone"><Icone /></span>
-            <span className="texte">
-              <b>{role}</b>
-              <em>{zone}</em>
-              <span>{detail}</span>
-            </span>
-            <span className="entrer">{enCours === id ? 'Connexion…' : 'Entrer'}</span>
-          </button>
-        ))}
-      </div>
-
-      <details className="autre-compte">
-        <summary>Se connecter avec un identifiant</summary>
-        <form className="carte" onSubmit={envoyerFormulaire}>
-          <div className="formulaire-ligne">
-            <label>Identifiant
-              <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
-            </label>
-            <label>Mot de passe
-              <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
-            </label>
-          </div>
-          <button className="bouton" disabled={enCours !== null}>Se connecter</button>
+      <div className="connexion-layout">
+        <form className="carte connexion-form" onSubmit={envoyerFormulaire}>
+          <h2>Connexion</h2>
+          <p className="petit">Après la connexion, vous arrivez sur votre tableau de bord.</p>
+          <label>Identifiant
+            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
+          </label>
+          <label>Mot de passe
+            <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
+          </label>
+          <button className="bouton" disabled={enCours !== null}>{enCours === username.trim() ? 'Connexion…' : 'Se connecter'}</button>
         </form>
-      </details>
+
+        <section>
+          <h2>Comptes de démonstration</h2>
+          <p className="petit">Un clic ouvre le tableau de bord du rôle. Mot de passe commun de la démo, données fictives.</p>
+          <div className="comptes-grille">
+            {COMPTES.map(({ id, role, lieu: zone, detail, Icone }) => (
+              <button key={id} type="button" className="compte-carte" disabled={enCours !== null} onClick={() => entrer(id, MDP_DEMO)}>
+                <span className="icone"><Icone /></span>
+                <span className="texte">
+                  <b>{role}</b>
+                  <em>{zone}</em>
+                  <span>{detail}</span>
+                </span>
+                <span className="entrer">{enCours === id ? 'Connexion…' : 'Entrer'}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
     </>
   )
