@@ -5,7 +5,7 @@ const CACHE = 'fildor-coque-1'
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(['/', '/index.html', '/jeux', '/favicon.svg']))
+      .then((cache) => cache.addAll(['/', '/index.html', '/jeux', '/favicon.svg', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']))
       .then(() => self.skipWaiting()),
   )
 })

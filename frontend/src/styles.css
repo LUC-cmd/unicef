@@ -389,7 +389,8 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .compte-carte:disabled { opacity: 0.6; cursor: wait; }
 .compte-carte .icone { width: 52px; height: 52px; border-radius: 12px; background: var(--ciel); color: var(--bleu); display: grid; place-items: center; }
 .compte-carte .texte b { display: block; color: var(--nuit); font-family: var(--police-titre); font-weight: 600; font-size: 1.05rem; }
-.compte-carte .texte em { display: block; font-style: normal; font-weight: 700; color: var(--bleu-fonce); font-size: 0.85rem; margin-bottom: 0.25rem; }
+.compte-carte .texte em { display: block; font-style: normal; font-weight: 700; color: var(--bleu-fonce); font-size: 0.85rem; margin-bottom: 0.15rem; }
+.identifiant { display: inline-block; margin: 0 0 0.3rem; background: var(--fond); color: var(--nuit); border-radius: 6px; padding: 0.05rem 0.45rem; font-size: 0.82rem; }
 .compte-carte .texte span { display: block; font-size: 0.88rem; color: var(--texte-doux); line-height: 1.4; }
 .compte-carte .entrer { background: var(--bleu); color: #fff; font-weight: 700; border-radius: 8px; padding: 0.5rem 1rem; min-height: 40px; display: grid; place-items: center; }
 .compte-carte:hover:not(:disabled) .entrer { background: var(--nuit); color: #fff; }
@@ -436,6 +437,26 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .jeu-niveau { text-align: center; font-weight: 700; color: var(--bleu-fonce); margin: 0 0 0.6rem; }
 .credits-photos { margin-top: 1rem; color: var(--texte-doux); font-size: 0.85rem; }
 .credits-photos summary { cursor: pointer; font-weight: 700; }
+
+@media (max-width: 720px) {
+  .barre-haute { font-size: 0.75rem; }
+  .barre-haute .interieur { padding: 0.35rem 0.9rem; }
+  .logo { font-size: 1.12rem; gap: 0.5rem; }
+  .logo small { max-width: 11rem; }
+  .page { padding-left: 0.9rem; padding-right: 0.9rem; }
+  .bureau-tete h1 { font-size: 1.65rem; }
+  .bureau-tete .bouton { width: 100%; }
+  .tuiles { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .tuile b { font-size: 1.45rem; }
+  .espace-pro nav { flex-wrap: wrap; overflow: visible; }
+  .espace-pro nav a { padding: 0.7rem 0.6rem; font-size: 0.88rem; }
+  .session .qui b { font-size: 0.85rem; }
+  .jeu-choix.n2, .jeu-choix.n3 { grid-template-columns: 1fr; }
+  .photo-carte, .photo-reelle { width: 88px; height: 88px; }
+  .jeu-objets .photo-reelle { width: 72px; height: 72px; }
+  .memoire-grille { grid-template-columns: repeat(3, 1fr); }
+  .bandeau h1 { font-size: 1.55rem; }
+}
 
 /* ----- Page « Le projet » ----- */
 .tete-page { background: var(--ciel); border-bottom: 1px solid #c7e3f2; color: var(--texte); padding: 3.5rem 1.25rem 2.5rem; }
@@ -643,3 +664,6 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .chemin-etape span { font-size: 0.93rem; color: var(--texte); }
 .chemin-fleche { align-self: center; font-size: 2rem; color: var(--cyan-fonce); line-height: 1; }
 @media (max-width: 980px) { .chemin { grid-template-columns: 1fr; } .chemin-fleche { transform: rotate(90deg); text-align: center; } }
+@media (max-width: 720px) {
+  .tuiles { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+}

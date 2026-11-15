@@ -8,12 +8,14 @@ import Bandeau from '../components/Bandeau.jsx'
 const MDP_DEMO = import.meta.env.VITE_MDP_DEMO || 'FilDor2026!demo'
 
 const COMPTES = [
-  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles.', cible: '/agent', Icone: IconeAgent },
-  { id: 'agent.golfe', role: 'Agent de santé', lieu: 'Zone du Golfe', detail: 'Même application, autre zone : chaque agent ne voit que la sienne.', cible: '/agent', Icone: IconeAgent },
-  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Reçoit les dossiers de naissance pré-remplis, les valide ou les rejette.', cible: '/mairie', Icone: IconeCarnet },
-  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel et d’orientation, met à jour ses horaires.', cible: '/structure', Icone: IconeBouclier },
-  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte anonyme des zones oubliées : où envoyer une équipe en premier.', cible: '/carte', Icone: IconeZone },
-  { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Fait avancer le temps pour montrer les rappels sans réponse.', cible: '/admin', Icone: IconeBouclier },
+  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Inscrire les familles, visites, saisie hors ligne.', cible: '/tableau', Icone: IconeAgent },
+  { id: 'agent.golfe', role: 'Agent de santé', lieu: 'Zone du Golfe', detail: 'Le même tableau de bord, seulement les familles du Golfe.', cible: '/tableau', Icone: IconeAgent },
+  { id: 'agent.zio', role: 'Agent de santé', lieu: 'Zone de Zio', detail: 'Le même tableau de bord, seulement les familles de Zio.', cible: '/tableau', Icone: IconeAgent },
+  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Dossiers de naissance à valider ou à renvoyer.', cible: '/tableau', Icone: IconeCarnet },
+  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Demandes de rappel et horaires du centre.', cible: '/tableau', Icone: IconeBouclier },
+  { id: 'structure.vo', role: 'Centre de santé', lieu: 'Vo', detail: 'Les demandes des familles de Vo.', cible: '/tableau', Icone: IconeBouclier },
+  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte des zones, sans voir un enfant en particulier.', cible: '/tableau', Icone: IconeZone },
+  { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Tous les tableaux, plus les coulisses.', cible: '/tableau', Icone: IconeBouclier },
 ]
 
 export default function Connexion() {
@@ -46,8 +48,8 @@ export default function Connexion() {
 
   return (
     <>
-    <Bandeau surtitre="Un clic, vous êtes dedans" titre="Choisissez votre place">
-      Pas de mot de passe à retenir. Chaque place ouvre son tableau de bord. Les données sont fictives.
+    <Bandeau surtitre="Un clic, ou les identifiants" titre="Choisissez votre place">
+      Chaque carte ouvre son tableau de bord. Pour les taper : l'identifiant est sous le rôle, le mot de passe est le même pour tous, <b>{MDP_DEMO}</b>.
     </Bandeau>
     <main className="page connexion-page">
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
@@ -58,6 +60,7 @@ export default function Connexion() {
             <span className="texte">
               <b>{role}</b>
               <em>{zone}</em>
+              <code className="identifiant">{id}</code>
               <span>{detail}</span>
             </span>
             <span className="entrer">{enCours === id ? 'Ouverture…' : 'Entrer'}</span>
