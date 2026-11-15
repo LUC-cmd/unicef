@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { useReseau } from '../lib/contexte.jsx'
 import {
@@ -30,6 +30,7 @@ function Pastille({ niveau, score }) {
 }
 
 export default function Agent() {
+  const [params] = useSearchParams()
   const { enLigne, simuleHorsLigne, setSimuleHorsLigne } = useReseau()
   const [liste, setListe] = useState(() => lireCache(CLE_LISTE) || [])
   const [horsLigne, setHorsLigne] = useState(false)
@@ -79,6 +80,11 @@ export default function Agent() {
   }, [charger, rafraichirAttente])
 
   // Au retour du réseau : on envoie ce qui attendait, puis on rafraîchit la liste.
+  useEffect(() => {
+    const code = params.get('enfant')
+    if (code) setChoisi(code)
+  }, [params])
+
   useEffect(() => {
     rafraichirAttente()
     if (enLigne) { synchroniser().then(charger) } else { setHorsLigne(true) }

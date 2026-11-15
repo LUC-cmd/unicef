@@ -169,7 +169,7 @@ legend { font-weight: 700; color: var(--nuit); padding: 0 0.4rem; }
 
 /* ----- Listes de travail (agent, structure) ----- */
 .liste-visites { list-style: none; padding: 0; margin: 0; max-height: 70vh; overflow: auto; }
-.ligne { display: flex; justify-content: space-between; gap: 0.7rem; width: 100%; text-align: left; background: #fff; border: 1px solid var(--bord); border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 0.45rem; transition: border-color 0.15s, box-shadow 0.15s; }
+.ligne, a.ligne { display: flex; justify-content: space-between; gap: 0.7rem; width: 100%; text-align: left; background: #fff; border: 1px solid var(--bord); border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 0.45rem; transition: border-color 0.15s, box-shadow 0.15s; color: inherit; text-decoration: none; }
 .ligne:hover { border-color: var(--bleu); }
 .ligne.choisie { border-color: var(--bleu); background: var(--ciel); box-shadow: inset 4px 0 0 var(--bleu); }
 .raisons { display: block; font-size: 0.83rem; color: var(--rouge); }
@@ -378,6 +378,11 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .connexion-form .bouton { width: 100%; margin-top: 0.3rem; }
 @media (max-width: 900px) { .connexion-layout { grid-template-columns: 1fr; } }
 .comptes-grille { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin: 0.4rem 0 0; }
+.comptes-grille.entree-grille { grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 800px) { .comptes-grille.entree-grille { grid-template-columns: 1fr; } }
+.autre-compte { margin-top: 1.4rem; }
+.autre-compte summary { cursor: pointer; font-weight: 700; color: var(--bleu-fonce); padding: 0.4rem 0; }
+.autre-compte form { margin-top: 0.8rem; max-width: 640px; }
 @media (max-width: 860px) { .comptes-grille { grid-template-columns: 1fr; } }
 .compte-carte { display: grid; grid-template-columns: 52px 1fr auto; gap: 1rem; align-items: center; text-align: left; background: #fff; border: 1.5px solid var(--bord); border-radius: 14px; padding: 1.1rem 1.2rem; transition: border-color 0.15s, box-shadow 0.15s; }
 .compte-carte:hover:not(:disabled) { border-color: var(--cyan); box-shadow: 0 10px 28px rgba(10, 43, 64, 0.1); }
@@ -401,6 +406,36 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .principe p { color: var(--texte-doux); font-size: 0.95rem; }
 .principe-note { margin-top: 1rem; max-width: 78ch; }
 @media (max-width: 800px) { .principes { grid-template-columns: 1fr; } }
+
+.bureau-tete { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.bureau-tete h1 { margin: 0 0 0.4rem; }
+.bureau-tete h1::after { content: ""; display: block; width: 56px; height: 4px; border-radius: 2px; background: var(--or); margin-top: 0.55rem; }
+.bureau-tete p { margin: 0.7rem 0 0; max-width: 62ch; color: var(--texte-doux); }
+.bureau-corps { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.8fr); gap: 1.2rem; align-items: start; }
+.bureau-liste h2 { margin-top: 0; }
+@media (max-width: 900px) { .bureau-corps { grid-template-columns: 1fr; } }
+.village { background: var(--nuit); color: #e7f2f8; border-radius: 16px; padding: 1.3rem 1.35rem 1.2rem; border-top: 4px solid var(--or); }
+.village h2 { color: #fff; margin-top: 0; }
+.village p, .village li { color: #d5e4ee; }
+.village ol { margin: 0 0 1rem; padding-left: 1.2rem; }
+.village .bouton { background: #fff; border-color: #fff; color: var(--nuit); width: 100%; margin-bottom: 0.9rem; }
+.village .bouton:hover:not(:disabled) { background: var(--or); border-color: var(--or); color: var(--nuit); }
+.village .interrupteur { color: #fff; }
+.village-note { margin: 0.6rem 0 0; color: #c5d7e3; }
+
+.photo-reelle { width: 96px; height: 96px; object-fit: cover; border-radius: 16px; display: block; background: #e7eef2; }
+.photo-carte { width: 120px; height: 120px; }
+.jeu-icone { overflow: hidden; padding: 0; }
+.jeu-icone .photo-reelle { width: 76px; height: 76px; border-radius: 18px; }
+.jeu-objets .photo-reelle { width: 92px; height: 92px; }
+.carte-memoire { overflow: hidden; padding: 0; }
+.carte-memoire .photo-reelle { width: 100%; height: 100%; border-radius: 14px; }
+.memoire-grille { grid-template-columns: repeat(4, 1fr); }
+.taille-photo { display: block; overflow: hidden; border-radius: 18px; }
+.taille-photo .photo-reelle { width: 100%; height: 100%; }
+.jeu-niveau { text-align: center; font-weight: 700; color: var(--bleu-fonce); margin: 0 0 0.6rem; }
+.credits-photos { margin-top: 1rem; color: var(--texte-doux); font-size: 0.85rem; }
+.credits-photos summary { cursor: pointer; font-weight: 700; }
 
 /* ----- Page « Le projet » ----- */
 .tete-page { background: var(--ciel); border-bottom: 1px solid #c7e3f2; color: var(--texte); padding: 3.5rem 1.25rem 2.5rem; }

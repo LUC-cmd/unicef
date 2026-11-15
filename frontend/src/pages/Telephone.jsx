@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Ussd from '../components/Ussd.jsx'
 import { api } from '../lib/api.js'
 import Bandeau from '../components/Bandeau.jsx'
@@ -29,9 +30,10 @@ const ONGLETS_FAMILLE = [['appel', 'Appeler'], ['ussd', 'USSD'], ['sms', 'Messag
 const ONGLETS_PROCHE = [['sms', 'Messages'], ['appel', 'Appeler']]
 
 export default function Telephone() {
+  const [params] = useSearchParams()
   const [numero, setNumero] = useState('90000001')
   const [profil, setProfil] = useState(null)
-  const [onglet, setOnglet] = useState('appel')
+  const [onglet, setOnglet] = useState(params.get('porte') === 'ussd' ? 'ussd' : 'appel')
   const [langue, setLangue] = useState('')
   const [message, setMessage] = useState(null)
   const [sms, setSms] = useState([])

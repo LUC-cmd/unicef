@@ -1,6 +1,9 @@
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../lib/contexte.jsx'
-import Bandeau from '../components/Bandeau.jsx'
+import { api } from '../lib/api.js'
+import { useAuth, useReseau } from '../lib/contexte.jsx'
+import { LIBELLE_PORTE, ageLisible } from '../lib/format.js'
+import { lireFile, nombreEnAttente } from '../lib/offline.js'
 
 const LIBELLE = {
   AGENT: 'Agent de santé',
@@ -10,89 +13,135 @@ const LIBELLE = {
   ADMIN: 'Administrateur',
 }
 
-const ESPACES = {
-  AGENT: {
-    phrase: 'Votre liste est classée : les familles silencieuses passent en premier. La saisie reste sur le téléphone s’il n’y a pas de réseau.',
-    actions: [
-      { to: '/agent', titre: 'Mes visites', texte: 'Ouvrir la liste priorisée, la fiche enfant et la saisie hors ligne.' },
-      { to: '/agent/inscription', titre: 'Inscrire une famille', texte: 'Un code, un accord, une langue. Jamais de nom ni d’adresse.' },
-      { to: '/jeux', titre: 'Jeux d’éveil', texte: 'Compter, suites logiques, mémoire. Ça marche sans compte et sans réseau.' },
-    ],
-  },
+export default function Tableau() {
+  const { session } = useAuth()
+  if (session.role === 'AGENT' || session.role === 'ADMIN') return <BureauAgent session={session} />
+  return <BureauSimple session={session} />
+}
+
+function BureauAgent({ session }) {
+  const { enLigne, simuleHorsLigne, setSimuleHorsLigne } = useReseau()
+  const [liste, setListe] = useState([])
+  const [erreur, setErreur] = useState('')
+  const [attente] = useState(() => nombreEnAttente(lireFile()))
+  const prenom = (session.nomComplet || 'Bonjour').split(' ')[0]
+
+  const charger = useCallback(async () => {
+    if (!enLigne) { setErreur('hors'); return }
+    try {
+      setListe(await api.get('/api/agent/visites'))
+      setErreur('')
+    } catch (e) {
+      setErreur(e.message)
+    }
+  }, [enLigne])
+
+  useEffect(() => { charger() }, [charger])
+
+  const urgents = liste.filter((l) => l.priorite.niveau === 'URGENT')
+  const grossesses = liste.filter((l) => l.statut === 'GROSSESSE')
+  const apercu = (urgents.length ? urgents : liste).slice(0, 6)
+
+  return (
+    <main className="page bureau">
+      <header className="bureau-tete">
+        <div>
+          <span className="bandeau-sur">{LIBELLE[session.role]}</span>
+          <h1>Bonjour {prenom}</h1>
+          <p>Inscrivez une famille, ou ouvrez celles qui n'ont pas répondu. Sans réseau, la saisie reste sur ce téléphone.</p>
+        </div>
+        <Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>
+      </header>
+
+      <div className="tuiles">
+        <div className="tuile"><b>{liste.length || '—'}</b><span>familles et grossesses</span></div>
+        <div className={`tuile ${urgents.length ? 'alerte' : ''}`}><b>{liste.length ? urgents.length : '—'}</b><span>à voir en urgence</span></div>
+        <div className="tuile"><b>{liste.length ? grossesses.length : '—'}</b><span>grossesses suivies</span></div>
+        <div className="tuile"><b>{attente}</b><span>en attente d'envoi</span></div>
+      </div>
+
+      <div className="bureau-corps">
+        <section className="carte bureau-liste">
+          <div className="barre-titre">
+            <h2>À voir maintenant</h2>
+            <Link to="/agent">Toute la liste</Link>
+          </div>
+          {erreur && (
+            <p>Le serveur ne répond pas, ou le village est sans réseau. L'inscription fonctionne quand même : elle partira au retour du réseau.</p>
+          )}
+          <ul className="liste-visites">
+            {apercu.map((l) => (
+              <li key={l.codeEnfant}>
+                <Link className="ligne" to={`/agent?enfant=${encodeURIComponent(l.codeEnfant)}`}>
+                  <span>
+                    <b>{l.codeEnfant}</b> <span className="petit">{l.codeFamille} · {l.zone}</span><br />
+                    <span className="petit">
+                      {l.statut === 'GROSSESSE' ? 'Grossesse' : ageLisible(l.dateNaissance)} · {LIBELLE_PORTE[l.porte]}
+                    </span>
+                    {l.priorite.raisons[0] && <span className="raisons">{l.priorite.raisons[0]}</span>}
+                  </span>
+                  <span className={`pastille ${l.priorite.niveau.toLowerCase()}`}>
+                    {l.priorite.niveau === 'URGENT' ? 'Urgent' : l.priorite.niveau === 'PRIORITAIRE' ? 'Prioritaire' : 'Normal'}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <aside className="village">
+          <h2>Village sans réseau</h2>
+          <p>La famille n'a pas de compte. Sur un téléphone simple elle compose <b>*789#</b>.</p>
+          <ol>
+            <li>Elle écoute un conseil, ou elle signale un problème.</li>
+            <li>C'est vous qui l'inscrivez, chez elle, avec un code.</li>
+            <li>Votre téléphone garde la fiche. Au centre, elle part toute seule.</li>
+          </ol>
+          <Link className="bouton clair" to="/telephone?porte=ussd">Ouvrir la simulation *789#</Link>
+          <label className="interrupteur">
+            <input type="checkbox" checked={simuleHorsLigne} onChange={(e) => setSimuleHorsLigne(e.target.checked)} />
+            Simuler ce village sans réseau
+          </label>
+          <p className="petit village-note">{enLigne ? 'En ligne : les saisies partent tout de suite.' : 'Hors ligne : rien n\'est perdu.'}</p>
+        </aside>
+      </div>
+    </main>
+  )
+}
+
+const AUTRES = {
   MAIRIE: {
-    phrase: 'Les dossiers arrivent déjà remplis. Vous validez, ou vous refusez en disant ce qui manque. Fil d’Or prépare la preuve, il ne délivre pas l’acte.',
-    actions: [
-      { to: '/mairie', titre: 'Déclarations de naissance', texte: 'Voir les dossiers du jour, valider ou rejeter avec un motif.' },
-      { to: '/fonctionnement', titre: 'Le chemin jusqu’à l’acte', texte: 'Grossesse, naissance, reçu, contrôle au guichet.' },
-    ],
+    phrase: 'Les dossiers de naissance arrivent déjà remplis. Vous validez, ou vous dites ce qui manque.',
+    action: { to: '/mairie', titre: 'Ouvrir les déclarations' },
   },
   STRUCTURE: {
-    phrase: 'Une famille demande un rappel ou une orientation. Vous répondez avec le code famille. Le numéro de téléphone ne s’affiche pas.',
-    actions: [
-      { to: '/structure', titre: 'Demandes reçues', texte: 'Répondre, et mettre à jour les horaires de la structure.' },
-      { to: '/annuaire', titre: 'Annuaire public', texte: 'Vérifier ce que les familles voient de votre structure.' },
-    ],
+    phrase: 'Une famille demande un rappel. Vous répondez avec son code. Son numéro ne s\'affiche pas.',
+    action: { to: '/structure', titre: 'Voir les demandes' },
   },
   DECIDEUR: {
-    phrase: 'La carte montre des zones, jamais des enfants. En dessous de cinq familles, le détail est masqué.',
-    actions: [
-      { to: '/carte', titre: 'Carte des zones', texte: 'Voir où les rappels restent sans réponse, et où envoyer une équipe.' },
-      { to: '/projet', titre: 'Le dossier du projet', texte: 'Les cinq piliers, les portes d’entrée, la protection des données.' },
-    ],
-  },
-  ADMIN: {
-    phrase: 'Vous voyez l’ensemble de la démonstration : le temps, les services, et chaque espace professionnel.',
-    actions: [
-      { to: '/admin', titre: 'Coulisses', texte: 'État des services et horloge de démonstration.' },
-      { to: '/agent', titre: 'Espace agent', texte: 'Visites, inscription, saisie hors ligne.' },
-      { to: '/mairie', titre: 'État civil', texte: 'Dossiers de naissance à valider.' },
-      { to: '/carte', titre: 'Carte', texte: 'Indice d’oubli par zone.' },
-    ],
+    phrase: 'La carte montre des zones, jamais un enfant. En dessous de cinq familles, le détail est masqué.',
+    action: { to: '/carte', titre: 'Ouvrir la carte' },
   },
 }
 
-const PRINCIPES = [
-  { titre: 'Un code, pas une identité', texte: 'Pas de nom, de photo, d’adresse ni de point GPS. Le téléphone est conservé sous forme d’empreinte, jamais en clair.' },
-  { titre: 'L’accord avant la donnée', texte: 'Rien n’est écrit sans le consentement de la famille. Elle peut le retirer : les données du suivi sont alors effacées.' },
-  { titre: 'Grossesse, puis nationalité', texte: 'Le suivi commence au rendez-vous prénatal. À la naissance, le dossier prépare l’acte d’état civil, preuve d’identité. Fil d’Or ne délivre pas la nationalité.' },
-]
-
-export default function Tableau() {
-  const { session } = useAuth()
-  const espace = ESPACES[session.role] ?? ESPACES.ADMIN
-  const prenom = (session.nomComplet || '').split(' ')[0] || 'Bonjour'
-
+function BureauSimple({ session }) {
+  const bloc = AUTRES[session.role] ?? AUTRES.DECIDEUR
+  const prenom = (session.nomComplet || 'Bonjour').split(' ')[0]
   return (
-    <>
-      <Bandeau surtitre={LIBELLE[session.role] ?? 'Espace professionnel'} titre={`Bonjour ${prenom}`}>
-        {espace.phrase}
-      </Bandeau>
-      <main className="page">
-        <div className="tableau-actions">
-          {espace.actions.map((a) => (
-            <Link key={a.to + a.titre} to={a.to} className="tableau-action">
-              <b>{a.titre}</b>
-              <span>{a.texte}</span>
-              <em>Ouvrir</em>
-            </Link>
-          ))}
+    <main className="page bureau">
+      <header className="bureau-tete">
+        <div>
+          <span className="bandeau-sur">{LIBELLE[session.role] ?? 'Espace'}</span>
+          <h1>Bonjour {prenom}</h1>
+          <p>{bloc.phrase}</p>
         </div>
-
-        <section className="principes" aria-labelledby="titre-principes">
-          <h2 id="titre-principes" className="sr-seulement">Ce que le tableau de bord protège</h2>
-          {PRINCIPES.map((p) => (
-            <article key={p.titre} className="principe">
-              <h3>{p.titre}</h3>
-              <p>{p.texte}</p>
-            </article>
-          ))}
-        </section>
-
-        <p className="petit principe-note">
-          Cadre visé : loi n° 2019-014 du 29 octobre 2019. Les contenus de santé doivent être validés avant tout usage réel.
-          Les jeux d’éveil n’ouvrent aucun dossier enfant.
-        </p>
-      </main>
-    </>
+        <Link className="bouton" to={bloc.action.to}>{bloc.action.titre}</Link>
+      </header>
+      <aside className="village">
+        <h2>Sans internet</h2>
+        <p>Dans un village sans réseau, la famille compose <b>*789#</b> sur un téléphone simple. L'agent inscrit sur place. Rien ne dépend d'une application.</p>
+        <Link className="bouton clair" to="/telephone?porte=ussd">Voir le *789#</Link>
+      </aside>
+    </main>
   )
 }
