@@ -29,3 +29,14 @@ describe('clé USB', () => {
     expect(fusionner(un.file, file).ajoutes).toBe(0)
   })
 })
+
+import { aBesoinDeZone, appliquerZone, compter } from './cle.js'
+describe('zone et comptage', () => {
+  it('applique la zone aux inscriptions qui n\'en ont pas', () => {
+    const f = { visites: [], declarations: [], accouchements: [], inscriptions: [{ clientUuid: 'a' }, { clientUuid: 'b', codeZone: 'VO' }] }
+    expect(aBesoinDeZone(f)).toBe(true)
+    const g = appliquerZone(f, 'GOLFE')
+    expect(g.inscriptions.map((i) => i.codeZone)).toEqual(['GOLFE', 'VO']); expect(aBesoinDeZone(g)).toBe(false)
+    expect(compter(g).inscriptions).toBe(2)
+  })
+})

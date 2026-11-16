@@ -43,7 +43,7 @@ export default function Inscription() {
 
     const requete = {
       clientUuid: nouvelUuid(),
-      codeZone: session.role === 'ADMIN' ? codeZone : null,
+      codeZone: session.role === 'ADMIN' ? codeZone : (session.local ? session.zone : null),
       langue,
       porte,
       telephone: telephone.trim() || null,

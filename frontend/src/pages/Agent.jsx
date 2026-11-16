@@ -51,7 +51,7 @@ export default function Agent({ vue = 'visites' }) {
   const rafraichirAttente = useCallback(() => setAttente(nombreEnAttente(lireFile())), [])
 
   const charger = useCallback(async () => {
-    if (!enLigne) { setHorsLigne(true); setChargement(false); return }
+    if (!enLigne || session?.local) { setHorsLigne(true); setChargement(false); return }
     try {
       const l = await api.get('/api/agent/visites')
       setListe(l)
@@ -67,6 +67,10 @@ export default function Agent({ vue = 'visites' }) {
   const synchroniser = useCallback(async () => {
     const file = lireFile()
     if (nombreEnAttente(file) === 0) return
+    if (session?.local) {
+      setMessage({ ok: false, texte: "Vous êtes entré sans réseau : rien ne part sans compte. Copiez les saisies sur une clé USB, ou déconnectez-vous et connectez-vous avec votre compte quand le réseau est là." })
+      return
+    }
     try {
       const r = await api.post('/api/agent/sync', file)
       vider()
@@ -87,12 +91,12 @@ export default function Agent({ vue = 'visites' }) {
     } catch (e) {
       setMessage({ ok: false, texte: `Synchronisation impossible : ${e.message}. Rien n'est perdu, réessayez plus tard.` })
     }
-  }, [charger, rafraichirAttente])
+  }, [charger, rafraichirAttente, session])
 
   // Au retour du réseau : on envoie ce qui attendait, puis on rafraîchit la liste.
   useEffect(() => {
     rafraichirAttente()
-    if (enLigne) { synchroniser().then(charger) } else { setHorsLigne(true) }
+    if (enLigne && !session?.local) { synchroniser().then(charger) } else { setHorsLigne(true) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enLigne])
 
@@ -199,7 +203,7 @@ export default function Agent({ vue = 'visites' }) {
         </Bandeau>
         {etatReseau}
         {retours}
-        <CleUsb key={envoisVersion} agent={session?.username} enLigne={enLigne} onChange={rafraichirAttente} synchroniser={synchroniser} />
+        <CleUsb key={envoisVersion} agent={session?.username} zone={session?.zone} enLigne={enLigne} onChange={rafraichirAttente} synchroniser={synchroniser} />
       </main>
     )
   }

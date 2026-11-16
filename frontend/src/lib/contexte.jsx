@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { api, lireSession } from './api.js'
+import { api, ecrireSession, lireSession } from './api.js'
 
 const ContexteAuth = createContext(null)
 const ContexteReseau = createContext(null)
@@ -12,12 +12,19 @@ export function FournisseurAuth({ children }) {
     setSession(s)
     return s
   }, [])
+  // Entrée sans réseau : un espace agent local. Rien n'est envoyé sans compte : les saisies attendent (ou partent par clé USB).
+  const entrerLocal = useCallback((zone) => {
+    const s = { jeton: null, local: true, zone, role: 'AGENT', username: 'agent-local', nomComplet: 'Agent (sans réseau)' }
+    ecrireSession(s)
+    setSession(s)
+    return s
+  }, [])
   const deconnexion = useCallback(() => {
     api.deconnexion()
     setSession(null)
   }, [])
 
-  const valeur = useMemo(() => ({ session, connexion, deconnexion }), [session, connexion, deconnexion])
+  const valeur = useMemo(() => ({ session, connexion, entrerLocal, deconnexion }), [session, connexion, entrerLocal, deconnexion])
   return <ContexteAuth.Provider value={valeur}>{children}</ContexteAuth.Provider>
 }
 

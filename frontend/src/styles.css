@@ -770,3 +770,5 @@ button:disabled, .bouton[disabled] { opacity: .55; cursor: not-allowed; }
 .note-acte { background: #fff8e1; border-left: 4px solid #ffc20e; border-radius: 8px; padding: .7rem 1rem; margin: .8rem 0; }
 .note-acte p { margin: .3rem 0 0; }
 .rassurant { background: #eaf7f0; border-left: 4px solid #00a651; border-radius: 8px; padding: .6rem .9rem; margin: 0 0 1rem; }
+.entree-locale { margin-top: 1.2rem; border-top: 4px solid #ffc20e; }
+.telechargement { margin-bottom: 1.2rem; border-top: 6px solid #1cabe2; }

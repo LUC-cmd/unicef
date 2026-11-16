@@ -5,6 +5,7 @@ import { useAuth } from '../lib/contexte.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
 import { MDP_DEMO } from '../lib/config.js'
+import { ZONES } from '../lib/format.js'
 
 const COMPTES = [
   { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles. Chaque agent ne voit que sa zone.', cible: '/agent', Icone: IconeAgent },
@@ -15,7 +16,8 @@ const COMPTES = [
 ]
 
 export default function Connexion() {
-  const { connexion } = useAuth()
+  const { connexion, entrerLocal } = useAuth()
+  const [zoneLocale, setZoneLocale] = useState(ZONES[0][0])
   const navigate = useNavigate()
   const lieu = useLocation()
   const [enCours, setEnCours] = useState(null)
@@ -79,6 +81,19 @@ export default function Connexion() {
           <button className="bouton" disabled={enCours !== null}>Se connecter</button>
         </form>
       </details>
+
+      <section className="carte entree-locale">
+        <h2>Pas de réseau ici ?</h2>
+        <p>Entrez quand même : vous pouvez inscrire des familles et saisir des visites. Tout reste sur cet appareil, puis part dans la base par clé USB ou dès que vous vous connectez avec du réseau.</p>
+        <div className="formulaire-ligne">
+          <label>Ma zone de travail
+            <select value={zoneLocale} onChange={(e) => setZoneLocale(e.target.value)}>
+              {ZONES.map(([c, n]) => <option key={c} value={c}>{n}</option>)}
+            </select>
+          </label>
+        </div>
+        <button type="button" className="bouton secondaire" onClick={() => { entrerLocal(zoneLocale); navigate('/agent', { replace: true }) }}>Entrer sans réseau</button>
+      </section>
     </main>
     </>
   )

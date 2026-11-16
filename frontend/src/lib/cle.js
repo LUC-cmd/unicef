@@ -14,10 +14,11 @@ export async function somme(texte) {
 }
 
 /** Contenu du fichier à copier sur la clé. */
-export async function construireFichier(agent, file = lireFile(), maintenant = new Date()) {
-  const donnees = JSON.stringify(Object.fromEntries(LISTES.map((l) => [l, file[l] ?? []])))
+export async function construireFichier(agent, file = lireFile(), maintenant = new Date(), zone = '') {
+  const complet = zone ? appliquerZone(file, zone) : file
+  const donnees = JSON.stringify(Object.fromEntries(LISTES.map((l) => [l, complet[l] ?? []])))
   return JSON.stringify({
-    format: FORMAT, version: 1, creeLe: maintenant.toISOString(), agent: agent || '',
+    format: FORMAT, version: 1, creeLe: maintenant.toISOString(), agent: agent || '', zone: zone || '',
     nombre: nombreEnAttente(file), somme: await somme(donnees), donnees,
   }, null, 1)
 }
@@ -37,7 +38,21 @@ export async function lireFichier(texte) {
   try { d = JSON.parse(c.donnees) } catch { throw new Error('Fichier abîmé.') }
   const file = {}
   for (const l of LISTES) file[l] = Array.isArray(d[l]) ? d[l] : []
-  return { file, agent: c.agent, creeLe: c.creeLe }
+  return { file, agent: c.agent, creeLe: c.creeLe, zone: c.zone || '' }
+}
+
+/** Les inscriptions faites sans connaître la zone reçoivent celle indiquée (le serveur en a besoin pour un administrateur). */
+export function appliquerZone(file, zone) {
+  return { ...file, inscriptions: (file.inscriptions ?? []).map((i) => (i.codeZone ? i : { ...i, codeZone: zone })) }
+}
+
+export function aBesoinDeZone(file) {
+  return (file.inscriptions ?? []).some((i) => !i.codeZone)
+}
+
+export function compter(file) {
+  return { visites: file.visites.length, inscriptions: file.inscriptions.length,
+    accouchements: file.accouchements.length, declarations: file.declarations.length }
 }
 
 /** Ajoute ce qu'il y a dans le fichier à la file locale, sans doublon. Renvoie la nouvelle file et le nombre d'ajouts. */

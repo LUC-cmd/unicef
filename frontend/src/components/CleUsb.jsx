@@ -3,14 +3,14 @@ import { construireFichier, fusionner, lireFichier, nomFichier } from '../lib/cl
 import { lireEnvois, lireFile, nombreEnAttente, remplacerFile } from '../lib/offline.js'
 
 /** Zones sans réseau : copier les saisies sur une clé, les charger là où il y a du réseau. */
-export default function CleUsb({ agent, enLigne, onChange, synchroniser, envois }) {
+export default function CleUsb({ agent, zone, enLigne, onChange, synchroniser, envois }) {
   const entree = useRef(null)
   const [message, setMessage] = useState(null)
   const attente = nombreEnAttente(lireFile())
 
   async function exporter() {
     try {
-      const texte = await construireFichier(agent)
+      const texte = await construireFichier(agent, lireFile(), new Date(), zone)
       const lien = document.createElement('a')
       lien.href = URL.createObjectURL(new Blob([texte], { type: 'application/json' }))
       lien.download = nomFichier()
@@ -43,7 +43,7 @@ export default function CleUsb({ agent, enLigne, onChange, synchroniser, envois 
       <ol className="etapes-cle">
         <li><b>Au village</b> : saisissez normalement. Tout reste sur le téléphone ou l'ordinateur.</li>
         <li><b>Avant de partir</b> : « Copier sur une clé » crée un fichier à glisser sur la clé.</li>
-        <li><b>Là où il y a du réseau</b> : ouvrez Fil d'Or, connectez-vous, « Charger depuis une clé ». Les données partent dans la base.</li>
+        <li><b>Là où il y a du réseau</b> : branchez la clé sur un poste connecté. L'administrateur (ou vous, avec votre compte) charge le fichier : les données partent dans la base.</li>
       </ol>
       <div className="actions">
         <button className="bouton" type="button" onClick={exporter} disabled={attente === 0}>Copier sur une clé ({attente})</button>

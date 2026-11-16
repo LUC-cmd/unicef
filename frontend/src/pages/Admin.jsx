@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
+import ReceptionCles from '../components/ReceptionCles.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
 const SERVICES = [
@@ -24,6 +25,14 @@ async function joignable(url, accepte) {
 
 /** Coulisses : l'état des quatre services, et l'horloge de démonstration. */
 export default function Admin({ vue = 'services' }) {
+  if (vue === 'cles') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administrateur" titre="Réception des clés USB">Les saisies faites sans réseau arrivent ici, puis partent dans la base.</Bandeau>
+        <ReceptionCles />
+      </main>
+    )
+  }
   const [etats, setEtats] = useState({})
   const [jours, setJours] = useState(5)
   const [resultat, setResultat] = useState(null)

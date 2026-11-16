@@ -1,6 +1,6 @@
 // Fil d'Or hors réseau : l'application s'ouvre même sans connexion. Les données, elles, passent par la file
 // d'attente de l'appareil (localStorage) ; l'API n'est jamais mise en cache ici.
-const VERSION = 'fildor-v1'
+const VERSION = 'fildor-v2'
 const COQUE = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (e) => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', (e) => {
   const req = e.request
   const url = new URL(req.url)
   if (req.method !== 'GET' || url.origin !== self.location.origin) return
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/assistant/')) return
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/assistant/') || url.pathname.startsWith('/telechargements/')) return
 
   // Pages : réseau d'abord, sinon la copie gardée. Fichiers du site : copie d'abord, mise à jour en arrière-plan.
   if (req.mode === 'navigate') {

@@ -126,6 +126,7 @@ export function EspaceAdmin() {
   const groupes = [
     { titre: 'Administration', liens: [
       { to: '/admin', nom: 'Coulisses', icone: 'accueil', fin: true },
+      { to: '/admin/cles', nom: 'Recevoir les clés USB', icone: 'cle' },
       { to: '/admin/horloge', nom: 'Horloge de démonstration', icone: 'horloge' },
       { to: '/admin/acces', nom: 'Espaces et comptes', icone: 'bouclier' },
     ] },
@@ -139,6 +140,7 @@ export function EspaceAdmin() {
     <Shell titre="Administrateur" groupes={groupes}>
       <Routes>
         <Route index element={<Admin vue="services" />} />
+        <Route path="cles" element={<Admin vue="cles" />} />
         <Route path="horloge" element={<Admin vue="horloge" />} />
         <Route path="acces" element={<Admin vue="acces" />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
