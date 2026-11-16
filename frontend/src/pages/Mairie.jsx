@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { ageLisible, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import { Squelette } from '../components/Chargement.jsx'
 import { Anneau, Barres } from '../components/Graphiques.jsx'
 import { Link } from 'react-router-dom'
 import { Verification } from './Fonctionnement.jsx'
@@ -13,6 +14,7 @@ const LIBELLE = { ENVOYEE: 'À traiter', VALIDEE: 'Validée', REJETEE: 'Rejetée
 export default function Mairie({ vue = 'declarations' }) {
   const [statut, setStatut] = useState(vue === 'tableau' ? '' : 'ENVOYEE')
   const [liste, setListe] = useState([])
+  const [pret, setPret] = useState(false)
   const [erreur, setErreur] = useState('')
   const [info, setInfo] = useState('')
   const [rejet, setRejet] = useState(null) // { id, motif }
@@ -21,7 +23,7 @@ export default function Mairie({ vue = 'declarations' }) {
     try {
       setListe(await api.get(`/api/mairie/declarations${statut ? `?statut=${statut}` : ''}`))
       setErreur('')
-    } catch (e) { setErreur(e.message) }
+    } catch (e) { setErreur(e.message) } finally { setPret(true) }
   }, [statut])
 
   useEffect(() => { charger() }, [charger])
@@ -56,6 +58,8 @@ export default function Mairie({ vue = 'declarations' }) {
           Où en sont les déclarations de naissance de votre commune, et les actes que les familles doivent encore retirer.
         </Bandeau>
         {erreur && <p className="erreur" role="alert">{erreur}</p>}
+        {info && <p className="succes" role="status">{info}</p>}
+        {!pret ? <Squelette /> : (<>
         <div className="tableau-kpi">
           <div className={`tuile ${comptes('ENVOYEE') ? 'alerte' : ''}`}><b>{comptes('ENVOYEE')}</b><span>déclarations à traiter</span></div>
           <div className="tuile"><b>{comptes('VALIDEE')}</b><span>validées</span></div>
@@ -76,7 +80,26 @@ export default function Mairie({ vue = 'declarations' }) {
             <Barres titre="Déclarations par zone" max={maxZone} items={parZone} />
           </section>
         </div>
+        <section className="carte">
+          <h2>À traiter maintenant</h2>
+          <div className="tableau-conteneur">
+            <table>
+              <thead><tr><th>Reçu</th><th>Enfant</th><th>Zone</th><th>Délai</th><th></th></tr></thead>
+              <tbody>
+                {liste.filter((d) => d.statut === 'ENVOYEE').slice(0, 5).map((d) => (
+                  <tr key={d.id}>
+                    <td>{d.numeroRecu}</td><td>{d.codeEnfant}</td><td>{d.zone}</td>
+                    <td>{d.dansDelaiGratuit ? 'Gratuit' : 'Hors délai'}</td>
+                    <td><button className="bouton petit-bouton" onClick={() => valider(d.id)}>Valider</button></td>
+                  </tr>
+                ))}
+                {comptes('ENVOYEE') === 0 && <tr><td colSpan="5" className="petit">Rien à traiter : tout est à jour.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
         <ActesSuivi role="MAIRIE" resume />
+        </>)}
       </main>
     )
   }

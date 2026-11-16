@@ -20,7 +20,7 @@ export default function ActesSuivi({ role, resume = false }) {
     catch (e) { setErreur(e.message); }
   }
 
-  if (!actes) return erreur ? <p className="erreur" role="alert">{erreur}</p> : null
+  if (!actes) return erreur ? <p className="erreur" role="alert">{erreur}</p> : <div className="sq-bloc sq-carte" role="status" aria-label="Chargement" />
   const aRelancer = actes.lignes.filter((l) => !l.acteRetireLe)
 
   return (

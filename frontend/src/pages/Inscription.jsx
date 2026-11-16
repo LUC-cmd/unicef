@@ -105,6 +105,7 @@ export default function Inscription() {
       <form onSubmit={envoyer}>
         <section className="carte">
           <h2>La famille</h2>
+          <p className="rassurant">Aucun nom n'est demandé, ni pour la mère, ni pour le père, ni pour l'enfant. La famille est suivie par un code : elle peut rester anonyme.</p>
           {session.role === 'ADMIN' && (
             <label>Zone
               <select value={codeZone} onChange={(e) => setCodeZone(e.target.value)}>
@@ -147,6 +148,7 @@ export default function Inscription() {
                     <label>Date de naissance
                       <input type="date" required value={e.dateNaissance} max={aujourdhui} onChange={(ev) => majEnfant(e.cle, { dateNaissance: ev.target.value, etapesFaites: [] })} />
                     </label>
+                    <p className="petit">Date inconnue ? Entrez une date estimée (âge donné par la famille, carnet de vaccination). Elle sert au calendrier de vaccination. <Link to="/agent/acte">Que faire pour l'acte de naissance ?</Link></p>
                     <label>Sexe (facultatif)
                       <select value={e.sexe} onChange={(ev) => majEnfant(e.cle, { sexe: ev.target.value })}>
                         <option value="">—</option><option value="F">Fille</option><option value="M">Garçon</option>

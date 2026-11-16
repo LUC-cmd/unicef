@@ -7,6 +7,7 @@ import {
 } from '../lib/format.js'
 import { ajouterDeclaration, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
 import { Anneau } from '../components/Graphiques.jsx'
+import { Squelette } from '../components/Chargement.jsx'
 import CleUsb from '../components/CleUsb.jsx'
 import Accouchement from '../components/Accouchement.jsx'
 import NouveauNe from '../components/NouveauNe.jsx'
@@ -38,6 +39,7 @@ export default function Agent({ vue = 'visites' }) {
   const { session } = useAuth()
   const [liste, setListe] = useState(() => lireCache(CLE_LISTE) || [])
   const [horsLigne, setHorsLigne] = useState(false)
+  const [chargement, setChargement] = useState(liste.length === 0)
   const [filtre, setFiltre] = useState('')
   const [params] = useSearchParams()
   const [choisi, setChoisi] = useState(params.get('enfant'))
@@ -49,7 +51,7 @@ export default function Agent({ vue = 'visites' }) {
   const rafraichirAttente = useCallback(() => setAttente(nombreEnAttente(lireFile())), [])
 
   const charger = useCallback(async () => {
-    if (!enLigne) { setHorsLigne(true); return }
+    if (!enLigne) { setHorsLigne(true); setChargement(false); return }
     try {
       const l = await api.get('/api/agent/visites')
       setListe(l)
@@ -59,7 +61,7 @@ export default function Agent({ vue = 'visites' }) {
     } catch (e) {
       setErreur(e.message)
       setHorsLigne(e.statut === 0)
-    }
+    } finally { setChargement(false) }
   }, [enLigne])
 
   const synchroniser = useCallback(async () => {
@@ -104,6 +106,7 @@ export default function Agent({ vue = 'visites' }) {
   const prioritaires = liste.filter((l) => l.priorite.niveau === 'PRIORITAIRE').length
   const normaux = liste.length - urgents - prioritaires
   const aVisiter = [...liste].sort((x, y) => y.priorite.score - x.priorite.score).slice(0, 6)
+  const prochains = liste.filter((l) => l.prochainRdv).sort((x, y) => x.prochainRdv.localeCompare(y.prochainRdv)).slice(0, 6)
   const etatReseau = (
     <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
       <span>
@@ -134,6 +137,7 @@ export default function Agent({ vue = 'visites' }) {
         </Bandeau>
         {etatReseau}
         {retours}
+        {chargement ? <Squelette /> : (<>
         <div className="tableau-kpi">
           <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
           <div className={`tuile ${urgents ? 'alerte' : ''}`}><b>{urgents}</b><span>à visiter en urgence</span></div>
@@ -168,6 +172,21 @@ export default function Agent({ vue = 'visites' }) {
             </ul>
           </section>
         </div>
+        <section className="carte">
+          <h2>Prochains rendez-vous</h2>
+          <div className="tableau-conteneur">
+            <table>
+              <thead><tr><th>Date</th><th>Enfant</th><th>Famille</th><th>Zone</th></tr></thead>
+              <tbody>
+                {prochains.map((l) => (
+                  <tr key={l.codeEnfant}><td>{formaterDate(l.prochainRdv)}</td><td><Link to={`/agent/visites?enfant=${l.codeEnfant}`}>{l.codeEnfant}</Link></td><td>{l.codeFamille}</td><td>{l.zone}</td></tr>
+                ))}
+                {prochains.length === 0 && <tr><td colSpan="4" className="petit">Aucun rendez-vous prévu.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        </>)}
       </main>
     )
   }
@@ -271,6 +290,7 @@ function Fiche({ code, enLigne, onChange }) {
       )}
 
       <p><Link to={`/carnet/${fiche.codeFamille}`}>Imprimer le carnet illustré de la famille</Link></p>
+      <p><Link to={fiche.statut === 'ENFANT' && fiche.dateNaissance ? `/agent/acte?naissance=${fiche.dateNaissance}` : '/agent/acte'}>Aider la famille à obtenir l'acte de naissance</Link></p>
 
       <h3>Rendez-vous</h3>
       <ul className="rdvs">

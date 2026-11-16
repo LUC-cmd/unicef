@@ -7,8 +7,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import { MDP_DEMO } from '../lib/config.js'
 
 const COMPTES = [
-  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles.', cible: '/agent', Icone: IconeAgent },
-  { id: 'agent.golfe', role: 'Agent de santé', lieu: 'Zone du Golfe', detail: 'Même application, autre zone : chaque agent ne voit que la sienne.', cible: '/agent', Icone: IconeAgent },
+  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles. Chaque agent ne voit que sa zone.', cible: '/agent', Icone: IconeAgent },
   { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Reçoit les dossiers de naissance pré-remplis, les valide ou les rejette.', cible: '/mairie', Icone: IconeCarnet },
   { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel et d’orientation, met à jour ses horaires.', cible: '/structure', Icone: IconeBouclier },
   { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte anonyme des zones oubliées : où envoyer une équipe en premier.', cible: '/carte', Icone: IconeZone },
@@ -29,7 +28,7 @@ export default function Connexion() {
     setEnCours(id)
     try {
       await connexion(id, motDePasse)
-      navigate(lieu.state?.depuis || cible || '/', { replace: true })
+      navigate('/preparation', { replace: true, state: { cible: lieu.state?.depuis || cible } })
     } catch (err) {
       setErreur(err.statut === 401 ? 'Identifiant ou mot de passe incorrect.' : err.message)
     } finally {
@@ -67,7 +66,7 @@ export default function Connexion() {
       </div>
 
       <details className="autre-compte">
-        <summary>Se connecter avec un identifiant</summary>
+        <summary>Autres comptes : agent du Golfe (agent.golfe), ou un identifiant</summary>
         <form className="carte" onSubmit={envoyerFormulaire}>
           <div className="formulaire-ligne">
             <label>Identifiant

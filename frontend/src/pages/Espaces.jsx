@@ -8,6 +8,7 @@ import Structure from './Structure.jsx'
 import Carte from './Carte.jsx'
 import Admin from './Admin.jsx'
 import Aide from './Aide.jsx'
+import ActeNaissance from './ActeNaissance.jsx'
 
 /** Chaque rôle a son espace : un menu vertical, une barre en haut, et des vues qui marchent. */
 
@@ -17,6 +18,7 @@ export function EspaceAgent() {
       { to: '/agent', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/agent/visites', nom: 'Mes visites', icone: 'liste' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
+      { to: '/agent/acte', nom: 'Obtenir un acte de naissance', icone: 'livre' },
     ] },
     { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Synchronisation et clé USB', icone: 'cle' }] },
     { titre: 'Ressources', liens: [
@@ -32,6 +34,7 @@ export function EspaceAgent() {
         <Route path="inscription" element={<Inscription />} />
         <Route path="synchronisation" element={<Agent vue="synchronisation" />} />
         <Route path="annuaire" element={<Annuaire />} />
+        <Route path="acte" element={<ActeNaissance />} />
         <Route path="aide" element={<Aide role="AGENT" />} />
         <Route path="*" element={<Navigate to="/agent" replace />} />
       </Routes>
@@ -46,6 +49,7 @@ export function EspaceMairie() {
       { to: '/mairie/declarations', nom: 'Déclarations de naissance', icone: 'liste' },
       { to: '/mairie/actes', nom: 'Actes à retirer', icone: 'livre' },
       { to: '/mairie/preuve', nom: 'Vérifier une preuve', icone: 'bouclier' },
+      { to: '/mairie/acte', nom: 'Naissance non déclarée ?', icone: 'aide' },
     ] },
     { titre: 'Ressources', liens: [
       { to: '/mairie/annuaire', nom: 'Annuaire des structures', icone: 'batiment' },
@@ -60,6 +64,7 @@ export function EspaceMairie() {
         <Route path="actes" element={<Mairie vue="actes" />} />
         <Route path="preuve" element={<Mairie vue="preuve" />} />
         <Route path="annuaire" element={<Annuaire />} />
+        <Route path="acte" element={<ActeNaissance />} />
         <Route path="aide" element={<Aide role="MAIRIE" />} />
         <Route path="*" element={<Navigate to="/mairie" replace />} />
       </Routes>

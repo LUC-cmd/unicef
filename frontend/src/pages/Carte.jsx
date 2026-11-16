@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { couleurIndice } from '../lib/format.js'
+import { Squelette } from '../components/Chargement.jsx'
 import { Barres } from '../components/Graphiques.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 import Bandeau from '../components/Bandeau.jsx'
@@ -42,6 +43,8 @@ export default function Carte({ vue = 'carte' }) {
   const totalFamilles = zones.reduce((n, z) => n + z.familles, 0)
   const prioritaire = triees.find((z) => !z.masquee && z.indiceOubli !== null)
 
+  const action = (z) => z.masquee ? 'Trop peu de familles : suivi par l\'agent' : (z.indiceOubli ?? 0) >= 60 ? 'Envoyer une équipe mobile cette semaine' : (z.indiceOubli ?? 0) >= 35 ? 'Renforcer les rappels et les visites' : 'Maintenir le suivi'
+  const attente = zones.length === 0 && !erreur
   const gauche = (
     <>
         <section className="carte carte-carte">
@@ -141,6 +144,15 @@ export default function Carte({ vue = 'carte' }) {
           </details>
   )
 
+  if (attente && vue !== 'actes') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Responsable régional" titre="Chargement des zones…">Calcul des indices par zone.</Bandeau>
+        <Squelette />
+      </main>
+    )
+  }
+
   if (vue === 'tableau') {
     return (
       <main className="page">
@@ -162,6 +174,17 @@ export default function Carte({ vue = 'carte' }) {
           <Link className="bouton secondaire" to="/carte/zones">Comparer les zones</Link>
           <Link className="bouton secondaire" to="/carte/actes">Actes de naissance</Link>
         </div>
+        <section className="carte">
+          <h2>Où agir en premier</h2>
+          <div className="tableau-conteneur"><table>
+            <thead><tr><th>Zone</th><th>Indice</th><th>Action recommandée</th></tr></thead>
+            <tbody>
+              {triees.map((z) => (
+                <tr key={z.code}><td>{z.nom}</td><td><b style={{ color: couleurIndice(z.indiceOubli) }}>{z.indiceOubli ?? '—'}</b></td><td>{action(z)}</td></tr>
+              ))}
+            </tbody>
+          </table></div>
+        </section>
         <div className="grille-deux">
           {barresJsx}
           <ActesSuivi role="DECIDEUR" />

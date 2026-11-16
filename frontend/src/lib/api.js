@@ -1,5 +1,7 @@
 // Appels au serveur. Les identifiants (HTTP Basic) restent en mémoire de l'onglet (sessionStorage), jamais en dur.
 
+import { annoncer, estLecture, etiquette, occupe } from './retours.js'
+
 const CLE_SESSION = 'fildor.session'
 
 export function lireSession() {
@@ -54,11 +56,29 @@ async function appeler(methode, url, corps, extraEntetes = {}) {
   return donnees
 }
 
+// Enveloppe : barre de progression + notification de succès ou d'échec pour chaque action.
+async function suivre(methode, url, corps) {
+  const modifie = methode !== 'GET' && !estLecture(url)
+  occupe(1)
+  try {
+    const r = await appeler(methode, url, corps)
+    if (modifie) annoncer('succes', (r && typeof r.message === 'string' && r.message) || etiquette(url) || 'Enregistré')
+    return r
+  } catch (e) {
+    if (methode !== 'GET') {
+      annoncer(e.statut === 0 ? 'info' : 'erreur', e.statut === 0 ? 'Pas de réseau : action non envoyée. Réessayez ou utilisez le mode hors réseau.' : e.message)
+    }
+    throw e
+  } finally {
+    occupe(-1)
+  }
+}
+
 export const api = {
-  get: (url) => appeler('GET', url),
-  post: (url, corps) => appeler('POST', url, corps ?? {}),
-  put: (url, corps) => appeler('PUT', url, corps ?? {}),
-  del: (url) => appeler('DELETE', url),
+  get: (url) => suivre('GET', url),
+  post: (url, corps) => suivre('POST', url, corps ?? {}),
+  put: (url, corps) => suivre('PUT', url, corps ?? {}),
+  del: (url) => suivre('DELETE', url),
 
   async connexion(username, motDePasse) {
     const jeton = btoa(unescape(encodeURIComponent(`${username}:${motDePasse}`)))

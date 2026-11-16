@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
+import { Squelette } from '../components/Chargement.jsx'
 import { Anneau } from '../components/Graphiques.jsx'
 import { Link } from 'react-router-dom'
 
@@ -21,11 +22,11 @@ export default function Structure({ vue = 'demandes' }) {
 
   useEffect(() => { api.get('/api/structure/moi').then(setMaStructure).catch((e) => setInfo({ ok: false, texte: e.message })) }, [])
   useEffect(() => { chargerDemandes() }, [chargerDemandes])
-  const [bilan, setBilan] = useState({ nouvelles: [], traitees: [] })
+  const [bilan, setBilan] = useState(null)
   useEffect(() => {
     if (vue !== 'tableau') return
     Promise.all([api.get('/api/structure/demandes?statut=NOUVELLE'), api.get('/api/structure/demandes?statut=TRAITEE')])
-      .then(([nouvelles, traitees]) => setBilan({ nouvelles, traitees })).catch(() => {})
+      .then(([nouvelles, traitees]) => setBilan({ nouvelles, traitees })).catch(() => setBilan({ nouvelles: [], traitees: [] }))
   }, [vue])
 
   async function enregistrer(e) {
@@ -53,6 +54,7 @@ export default function Structure({ vue = 'demandes' }) {
   const retour = info && <p className={info.ok ? 'succes' : 'erreur'} role="status">{info.texte}</p>
 
   if (vue === 'tableau') {
+    if (!bilan) return <main className="page"><Bandeau surtitre="Structure d'accueil" titre="Tableau de bord">{titreStructure}</Bandeau><Squelette /></main>
     const tousMotifs = [...bilan.nouvelles, ...bilan.traitees]
     const rappels = tousMotifs.filter((d) => d.motif === 'RAPPEL').length
     return (
@@ -79,6 +81,20 @@ export default function Structure({ vue = 'demandes' }) {
                     parts={[{ nom: 'Rappel', valeur: rappels, couleur: '#1cabe2' }, { nom: 'Orientation', valeur: tousMotifs.length - rappels, couleur: '#374ea2' }]} />
           </section>
         </div>
+        <section className="carte">
+          <h2>Dernières demandes à traiter</h2>
+          <ul className="liste-visites">
+            {bilan.nouvelles.slice(0, 4).map((d) => (
+              <li key={d.id}>
+                <p><b>{d.codeFamille}</b> <span className="petit">· {d.zone} · {LIBELLE_LANGUE[d.langue]} · {d.motif === 'RAPPEL' ? 'demande à être rappelée' : "demande une orientation"}</span></p>
+                <div className="actions">
+                  {REPONSES.map(([v, nom]) => <button key={v} className="bouton secondaire petit-bouton" onClick={() => repondre(d.id, v).then(() => api.get('/api/structure/demandes?statut=NOUVELLE').then((n) => setBilan((b) => ({ nouvelles: n, traitees: [...b.traitees, ...b.nouvelles.filter((x) => x.id === d.id)] }))))}>{nom}</button>)}
+                </div>
+              </li>
+            ))}
+            {bilan.nouvelles.length === 0 && <li className="petit">Aucune demande en attente.</li>}
+          </ul>
+        </section>
       </main>
     )
   }

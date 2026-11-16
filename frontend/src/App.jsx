@@ -1,24 +1,34 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from './lib/contexte.jsx'
-import { EspaceAdmin, EspaceAgent, EspaceDecideur, EspaceMairie, EspaceStructure } from './pages/Espaces.jsx'
-import Visite from './pages/Visite.jsx'
-import HorsReseau from './pages/HorsReseau.jsx'
-import Adolescents from './pages/Adolescents.jsx'
-import Signalement from './pages/Signalement.jsx'
 import Accueil from './pages/Accueil.jsx'
 import Connexion from './pages/Connexion.jsx'
-import Telephone from './pages/Telephone.jsx'
-import Carnet from './pages/Carnet.jsx'
-import Annuaire from './pages/Annuaire.jsx'
-import Ecoute from './pages/Ecoute.jsx'
-import Assistant from './pages/Assistant.jsx'
-import Projet from './pages/Projet.jsx'
-import Jeux from './pages/Jeux.jsx'
-import Fonctionnement from './pages/Fonctionnement.jsx'
 import { ANCRES_PROJET } from './lib/ancres.js'
+import Chargement from './components/Chargement.jsx'
+import Retours from './components/Retours.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
+
+const Visite = lazy(() => import('./pages/Visite.jsx'))
+const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
+const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
+const Signalement = lazy(() => import('./pages/Signalement.jsx'))
+const Projet = lazy(() => import('./pages/Projet.jsx'))
+const Jeux = lazy(() => import('./pages/Jeux.jsx'))
+const Fonctionnement = lazy(() => import('./pages/Fonctionnement.jsx'))
+const Telephone = lazy(() => import('./pages/Telephone.jsx'))
+const Assistant = lazy(() => import('./pages/Assistant.jsx'))
+const Ecoute = lazy(() => import('./pages/Ecoute.jsx'))
+const ActeNaissance = lazy(() => import('./pages/ActeNaissance.jsx'))
+const Annuaire = lazy(() => import('./pages/Annuaire.jsx'))
+const Carnet = lazy(() => import('./pages/Carnet.jsx'))
+const Preparation = lazy(() => import('./pages/Preparation.jsx'))
+const espace = (nom) => lazy(() => import('./pages/Espaces.jsx').then((m) => ({ default: m[nom] })))
+const EspaceAgent = espace('EspaceAgent')
+const EspaceMairie = espace('EspaceMairie')
+const EspaceStructure = espace('EspaceStructure')
+const EspaceDecideur = espace('EspaceDecideur')
+const EspaceAdmin = espace('EspaceAdmin')
 
 const LIBELLE_ROLE = {
   AGENT: 'Agent de santé',
@@ -97,6 +107,7 @@ export default function App() {
                 <summary>Ressources</summary>
                 <div className="menu-liste">
                   <Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link>
+                  <Link to="/acte">Obtenir un acte de naissance</Link>
                   <Link to="/annuaire">Annuaire des structures</Link>
                   <Link to="/ecoute">Point d'écoute</Link>
                   <Link to="/telephone">Simulateur de téléphone</Link>
@@ -106,9 +117,9 @@ export default function App() {
               </details>
               <NavLink to="/assistant">Assistant</NavLink>
               <NavLink to="/jeux">Jeux</NavLink>
-              <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
+              {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
                 <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
-              </span>
+              </span>}
               {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
               {session && <Link className="bouton-entete" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
               {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
@@ -125,14 +136,18 @@ export default function App() {
       </div>
 
       <div className="contenu" id="contenu">
+        <Retours />
+        <Suspense fallback={<Chargement texte="Ouverture de la page…" />}>
         <Routes>
           <Route path="/" element={<Accueil />} />
+          <Route path="/preparation" element={<Preparation />} />
           <Route path="/projet" element={<Projet />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/telephone" element={<Telephone />} />
           <Route path="/ecoute" element={<Ecoute />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/annuaire" element={<Annuaire />} />
+          <Route path="/acte" element={<ActeNaissance />} />
           <Route path="/fonctionnement" element={<Fonctionnement />} />
           <Route path="/visite" element={<Visite />} />
           <Route path="/hors-reseau" element={<HorsReseau />} />
@@ -148,6 +163,7 @@ export default function App() {
           <Route path="/carnet/:code" element={<Protegee page="agent"><Carnet /></Protegee>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </div>
 
       <footer className="pied no-print">
