@@ -3,7 +3,7 @@ import { api } from '../lib/api.js'
 import { Anneau, Barres } from './Graphiques.jsx'
 
 /** Suivi de l'acte de naissance, de la validation jusqu'au retrait par la famille. */
-export default function ActesSuivi({ role }) {
+export default function ActesSuivi({ role, resume = false }) {
   const mairie = role === 'MAIRIE'
   const [actes, setActes] = useState(null)
   const [info, setInfo] = useState('')
@@ -40,7 +40,7 @@ export default function ActesSuivi({ role }) {
       </div>
       {info && <p className="succes" role="status">{info}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
-      {mairie && (
+      {mairie && !resume && (
         <>
           <h3>À suivre ({aRelancer.length})</h3>
           <div className="tableau-conteneur">

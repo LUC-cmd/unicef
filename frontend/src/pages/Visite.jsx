@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/contexte.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
-const MDP_DEMO = import.meta.env.VITE_MDP_DEMO || 'FilDor2026!demo'
+import { MDP_DEMO } from '../lib/config.js'
 
 // Chaque étape ouvre une vraie page, déjà connectée avec le bon rôle : le jury manipule, il ne lit pas.
 const ETAPES = [

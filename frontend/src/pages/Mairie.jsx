@@ -2,14 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { ageLisible, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
-import GuideRole from '../components/GuideRole.jsx'
+import { Anneau, Barres } from '../components/Graphiques.jsx'
+import { Link } from 'react-router-dom'
+import { Verification } from './Fonctionnement.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 
 const STATUTS = [['ENVOYEE', 'À traiter'], ['VALIDEE', 'Validées'], ['REJETEE', 'Rejetées'], ['', 'Toutes']]
 const LIBELLE = { ENVOYEE: 'À traiter', VALIDEE: 'Validée', REJETEE: 'Rejetée', BROUILLON: 'Brouillon' }
 
-export default function Mairie() {
-  const [statut, setStatut] = useState('ENVOYEE')
+export default function Mairie({ vue = 'declarations' }) {
+  const [statut, setStatut] = useState(vue === 'tableau' ? '' : 'ENVOYEE')
   const [liste, setListe] = useState([])
   const [erreur, setErreur] = useState('')
   const [info, setInfo] = useState('')
@@ -42,15 +44,72 @@ export default function Mairie() {
     } catch (e) { setErreur(e.message) }
   }
 
+  const comptes = (st) => liste.filter((d) => d.statut === st).length
+  const parZone = Object.entries(liste.reduce((m, d) => ({ ...m, [d.zone]: (m[d.zone] ?? 0) + 1 }), {})).map(([nom, valeur]) => ({ nom, valeur }))
+  const maxZone = Math.max(1, ...parZone.map((z) => z.valeur))
+  const horsDelai = liste.filter((d) => !d.dansDelaiGratuit).length
+
+  if (vue === 'tableau') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="État civil" titre="Tableau de bord">
+          Où en sont les déclarations de naissance de votre commune, et les actes que les familles doivent encore retirer.
+        </Bandeau>
+        {erreur && <p className="erreur" role="alert">{erreur}</p>}
+        <div className="tableau-kpi">
+          <div className={`tuile ${comptes('ENVOYEE') ? 'alerte' : ''}`}><b>{comptes('ENVOYEE')}</b><span>déclarations à traiter</span></div>
+          <div className="tuile"><b>{comptes('VALIDEE')}</b><span>validées</span></div>
+          <div className="tuile"><b>{comptes('REJETEE')}</b><span>rejetées</span></div>
+          <div className="tuile"><b>{horsDelai}</b><span>hors du délai gratuit (45 jours)</span></div>
+        </div>
+        <div className="raccourcis">
+          <Link className="bouton" to="/mairie/declarations">Traiter les déclarations</Link>
+          <Link className="bouton secondaire" to="/mairie/actes">Suivre les actes à retirer</Link>
+          <Link className="bouton secondaire" to="/mairie/preuve">Vérifier une preuve</Link>
+        </div>
+        <div className="grille-deux">
+          <section className="carte">
+            <Anneau titre="Déclarations par état" centre={liste.length}
+                    parts={[{ nom: 'À traiter', valeur: comptes('ENVOYEE'), couleur: '#ffc20e' }, { nom: 'Validées', valeur: comptes('VALIDEE'), couleur: '#00833d' }, { nom: 'Rejetées', valeur: comptes('REJETEE'), couleur: '#e2231a' }]} />
+          </section>
+          <section className="carte">
+            <Barres titre="Déclarations par zone" max={maxZone} items={parZone} />
+          </section>
+        </div>
+        <ActesSuivi role="MAIRIE" resume />
+      </main>
+    )
+  }
+
+  if (vue === 'actes') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="État civil" titre="Actes à retirer">
+          Une déclaration validée ne suffit pas : l'enfant n'a son acte que lorsque la famille l'a retiré.
+        </Bandeau>
+        <ActesSuivi role="MAIRIE" />
+      </main>
+    )
+  }
+
+  if (vue === 'preuve') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="État civil" titre="Vérifier une preuve de naissance">
+          Un parent ou un enfant présente un numéro de reçu et un code reçu par SMS : vérifiez-les ici.
+        </Bandeau>
+        <Verification />
+      </main>
+    )
+  }
+
   return (
     <>
-    <Bandeau surtitre="État civil" titre="Déclarations de naissance">
-      Dossiers pré-remplis envoyés par les agents de santé. Pas de nom, de photo ni d'adresse ici : un code enfant,
-      la zone et les éléments du dossier. La famille est prévenue après validation.
-    </Bandeau>
     <main className="page">
-      <GuideRole role="MAIRIE" />
-
+      <Bandeau surtitre="État civil" titre="Déclarations de naissance">
+        Dossiers pré-remplis envoyés par les agents de santé. Pas de nom, de photo ni d'adresse ici : un code enfant,
+        la zone et les éléments du dossier. La famille est prévenue après validation.
+      </Bandeau>
       <div className="onglets large" role="tablist">
         {STATUTS.map(([v, nom]) => (
           <button key={v} role="tab" aria-selected={statut === v} className={statut === v ? 'actif' : ''} onClick={() => { setStatut(v); setInfo('') }}>{nom}</button>
@@ -94,7 +153,6 @@ export default function Mairie() {
         </table>
       </div>
 
-      <ActesSuivi role="MAIRIE" />
 
       {rejet && (
         <div className="modale" role="dialog" aria-modal="true" aria-label="Motif du rejet">

@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
-import GuideRole from '../components/GuideRole.jsx'
+import { Anneau } from '../components/Graphiques.jsx'
+import { Link } from 'react-router-dom'
 
 const REPONSES = [['RDV_PROPOSE', 'Proposer un rendez-vous'], ['PAS_DE_PLACE', 'Pas de place'], ['AUTRE_STRUCTURE', 'Conseiller une autre structure']]
 
 /** Console d'une structure : ses informations publiques, et les demandes des familles. */
-export default function Structure() {
+export default function Structure({ vue = 'demandes' }) {
   const [maStructure, setMaStructure] = useState(null)
   const [demandes, setDemandes] = useState([])
   const [statut, setStatut] = useState('NOUVELLE')
@@ -20,6 +21,12 @@ export default function Structure() {
 
   useEffect(() => { api.get('/api/structure/moi').then(setMaStructure).catch((e) => setInfo({ ok: false, texte: e.message })) }, [])
   useEffect(() => { chargerDemandes() }, [chargerDemandes])
+  const [bilan, setBilan] = useState({ nouvelles: [], traitees: [] })
+  useEffect(() => {
+    if (vue !== 'tableau') return
+    Promise.all([api.get('/api/structure/demandes?statut=NOUVELLE'), api.get('/api/structure/demandes?statut=TRAITEE')])
+      .then(([nouvelles, traitees]) => setBilan({ nouvelles, traitees })).catch(() => {})
+  }, [vue])
 
   async function enregistrer(e) {
     e.preventDefault()
@@ -41,16 +48,68 @@ export default function Structure() {
 
   const maj = (champs) => setMaStructure((s) => ({ ...s, ...champs }))
 
-  return (
-    <>
-    <Bandeau surtitre="Structure d'accueil" titre={maStructure ? maStructure.nom : 'Ma structure'}>
-      {maStructure ? `${LIBELLE_TYPE_STRUCTURE[maStructure.type]} · ${maStructure.zone}` : null}
-    </Bandeau>
-    <main className="page">
-      <GuideRole role="STRUCTURE" />
-      {info && <p className={info.ok ? 'succes' : 'erreur'} role="status">{info.texte}</p>}
+  const titreStructure = maStructure ? maStructure.nom : 'Ma structure'
+  const sousTitre = maStructure ? `${LIBELLE_TYPE_STRUCTURE[maStructure.type]} · ${maStructure.zone}` : null
+  const retour = info && <p className={info.ok ? 'succes' : 'erreur'} role="status">{info.texte}</p>
 
-      <div className="deux-colonnes">
+  if (vue === 'tableau') {
+    const tousMotifs = [...bilan.nouvelles, ...bilan.traitees]
+    const rappels = tousMotifs.filter((d) => d.motif === 'RAPPEL').length
+    return (
+      <main className="page">
+        <Bandeau surtitre="Structure d'accueil" titre="Tableau de bord">{titreStructure}{sousTitre ? ` · ${sousTitre}` : ''}</Bandeau>
+        {retour}
+        <div className="tableau-kpi">
+          <div className={`tuile ${bilan.nouvelles.length ? 'alerte' : ''}`}><b>{bilan.nouvelles.length}</b><span>demandes à traiter</span></div>
+          <div className="tuile"><b>{bilan.traitees.length}</b><span>demandes traitées</span></div>
+          <div className="tuile"><b>{maStructure?.actif ? 'Oui' : 'Non'}</b><span>visible dans l'annuaire</span></div>
+          <div className="tuile"><b>{maStructure?.horaires || '—'}</b><span>horaires affichés</span></div>
+        </div>
+        <div className="raccourcis">
+          <Link className="bouton" to="/structure/demandes">Répondre aux familles</Link>
+          <Link className="bouton secondaire" to="/structure/fiche">Mettre à jour mes informations</Link>
+        </div>
+        <div className="grille-deux">
+          <section className="carte">
+            <Anneau titre="Demandes reçues" centre={tousMotifs.length}
+                    parts={[{ nom: 'À traiter', valeur: bilan.nouvelles.length, couleur: '#ffc20e' }, { nom: 'Traitées', valeur: bilan.traitees.length, couleur: '#00833d' }]} />
+          </section>
+          <section className="carte">
+            <Anneau titre="Pourquoi les familles vous écrivent" centre={tousMotifs.length}
+                    parts={[{ nom: 'Rappel', valeur: rappels, couleur: '#1cabe2' }, { nom: 'Orientation', valeur: tousMotifs.length - rappels, couleur: '#374ea2' }]} />
+          </section>
+        </div>
+      </main>
+    )
+  }
+
+  if (vue === 'fiche') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Structure d'accueil" titre="Mes informations publiques">{titreStructure}</Bandeau>
+        {retour}
+        <section>
+          {maStructure && (
+            <form className="carte" onSubmit={enregistrer}>
+              <h2>Informations publiques</h2>
+              <label>Téléphone de la structure <input value={maStructure.telephone ?? ''} maxLength={30} onChange={(e) => maj({ telephone: e.target.value })} /></label>
+              <label>Horaires <input value={maStructure.horaires ?? ''} maxLength={120} onChange={(e) => maj({ horaires: e.target.value })} /></label>
+              <label>Services <textarea rows="3" maxLength={300} value={maStructure.services ?? ''} onChange={(e) => maj({ services: e.target.value })} /></label>
+              <label className="case"><input type="checkbox" checked={maStructure.besoinsSpecifiques} onChange={(e) => maj({ besoinsSpecifiques: e.target.checked })} /> Accueille les enfants à besoins spécifiques</label>
+              <label className="case"><input type="checkbox" checked={maStructure.actif} onChange={(e) => maj({ actif: e.target.checked })} /> Visible dans l'annuaire</label>
+              <button className="bouton">Enregistrer</button>
+              <p className="petit">Dernière mise à jour : {formaterDate(maStructure.miseAJourLe)}</p>
+            </form>
+          )}
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <main className="page">
+      <Bandeau surtitre="Structure d'accueil" titre="Demandes des familles">{titreStructure}{sousTitre ? ` · ${sousTitre}` : ''}</Bandeau>
+      {retour}
         <section>
           <h2>Demandes des familles</h2>
           <p className="petit">
@@ -78,22 +137,6 @@ export default function Structure() {
           </ul>
         </section>
 
-        <section>
-          {maStructure && (
-            <form className="carte" onSubmit={enregistrer}>
-              <h2>Informations publiques</h2>
-              <label>Téléphone de la structure <input value={maStructure.telephone ?? ''} maxLength={30} onChange={(e) => maj({ telephone: e.target.value })} /></label>
-              <label>Horaires <input value={maStructure.horaires ?? ''} maxLength={120} onChange={(e) => maj({ horaires: e.target.value })} /></label>
-              <label>Services <textarea rows="3" maxLength={300} value={maStructure.services ?? ''} onChange={(e) => maj({ services: e.target.value })} /></label>
-              <label className="case"><input type="checkbox" checked={maStructure.besoinsSpecifiques} onChange={(e) => maj({ besoinsSpecifiques: e.target.checked })} /> Accueille les enfants à besoins spécifiques</label>
-              <label className="case"><input type="checkbox" checked={maStructure.actif} onChange={(e) => maj({ actif: e.target.checked })} /> Visible dans l'annuaire</label>
-              <button className="bouton">Enregistrer</button>
-              <p className="petit">Dernière mise à jour : {formaterDate(maStructure.miseAJourLe)}</p>
-            </form>
-          )}
-        </section>
-      </div>
     </main>
-    </>
   )
 }

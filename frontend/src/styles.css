@@ -645,3 +645,51 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 @media (max-width: 700px) { .barre-ancres .ancres { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; } .barre-ancres .ancres a { white-space: nowrap; } }
 
 .barre-ancres.sous-entete { position: static; box-shadow: none; padding: 0.55rem 1.25rem; }
+
+/* Espaces professionnels : menu vertical + barre horizontale */
+.shell { display: grid; grid-template-columns: 250px 1fr; min-height: 70vh; background: var(--fond); }
+.shell-menu { background: #fff; border-right: 1px solid var(--bord); padding: 1.2rem 0.8rem; position: sticky; top: var(--haut-entete, 72px); align-self: start; height: calc(100vh - var(--haut-entete, 72px)); overflow-y: auto; }
+.shell-role { margin: 0 0.6rem 1rem; font-weight: 900; font-size: 1.05rem; color: var(--bleu-fonce); }
+.shell-groupe { margin-bottom: 1.1rem; }
+.shell-groupe-titre { margin: 0 0.6rem 0.3rem; font-size: 0.78rem; font-weight: 700; color: var(--texte-doux); }
+.shell-menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.shell-menu a { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.7rem; border-radius: 10px; color: var(--texte); text-decoration: none; font-weight: 500; }
+.shell-menu a:hover { background: var(--ciel); }
+.shell-menu a.active { background: var(--cyan); color: #fff; font-weight: 700; }
+.shell-badge { margin-left: auto; background: var(--rouge); color: #fff; border-radius: 999px; font-size: 0.75rem; padding: 0.05rem 0.5rem; }
+.shell-corps { min-width: 0; }
+.shell-barre { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; background: #fff; border-bottom: 1px solid var(--bord); padding: 0.6rem 1.4rem; position: sticky; top: var(--haut-entete, 72px); z-index: 15; }
+.shell-fil { margin: 0; flex: 1; color: var(--texte-doux); }
+.shell-fil b { color: var(--texte); }
+.shell-reseau { font-size: 0.85rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 999px; }
+.shell-reseau.en { background: #e3f4e9; color: var(--vert); }
+.shell-reseau.hors { background: #fde7e5; color: var(--rouge); }
+.shell-qui { font-weight: 700; }
+.shell-hamburger { display: none; }
+.shell-contenu { padding: 1.4rem; max-width: 1200px; }
+.shell-contenu .page { padding: 0; max-width: none; margin: 0; }
+.titre-vue { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.titre-vue h1 { margin: 0 0 0.3rem; font-size: 1.7rem; }
+.titre-vue p { margin: 0; color: var(--texte-doux); max-width: 70ch; }
+.tableau-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.9rem; margin-bottom: 1.2rem; }
+.grille-deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; align-items: start; }
+.grille-deux > .carte { margin: 0; }
+.raccourcis { display: flex; flex-wrap: wrap; gap: 0.7rem; margin: 0.4rem 0 1.2rem; }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .shell-menu { display: none; position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--bord); }
+  .shell-menu.ouvert { display: block; }
+  .shell-hamburger { display: inline-block; border: 1px solid var(--bord-fort); background: #fff; border-radius: 8px; padding: 0.35rem 0.8rem; font-weight: 700; }
+  .shell-contenu { padding: 1rem; }
+}
+.liste-visites a.ligne, .liste-visites a.ligne * { text-decoration: none; }
+.liste-visites a.ligne { color: var(--texte); }
+
+/* Pied de page compact */
+.pied-interieur { padding: 1.2rem 1.25rem 1.1rem; }
+.pied-ligne { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem 2rem; }
+.pied .logo { margin: 0; font-size: 1.15rem; }
+.pied .logo svg { width: 34px; height: 34px; }
+.pied-liens { display: flex; flex-wrap: wrap; gap: 0.3rem 1.3rem; }
+.pied-liens a { font-size: 0.92rem; }
+.pied-legal { margin: 0.9rem 0 0; padding-top: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.45); font-size: 0.8rem; line-height: 1.5; max-width: none; color: #fff; }

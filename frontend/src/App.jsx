@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/contexte.jsx'
+import { EspaceAdmin, EspaceAgent, EspaceDecideur, EspaceMairie, EspaceStructure } from './pages/Espaces.jsx'
 import Visite from './pages/Visite.jsx'
 import HorsReseau from './pages/HorsReseau.jsx'
 import Adolescents from './pages/Adolescents.jsx'
@@ -8,16 +9,10 @@ import Signalement from './pages/Signalement.jsx'
 import Accueil from './pages/Accueil.jsx'
 import Connexion from './pages/Connexion.jsx'
 import Telephone from './pages/Telephone.jsx'
-import Agent from './pages/Agent.jsx'
-import Mairie from './pages/Mairie.jsx'
-import Carte from './pages/Carte.jsx'
 import Carnet from './pages/Carnet.jsx'
-import Admin from './pages/Admin.jsx'
 import Annuaire from './pages/Annuaire.jsx'
 import Ecoute from './pages/Ecoute.jsx'
 import Assistant from './pages/Assistant.jsx'
-import Inscription from './pages/Inscription.jsx'
-import Structure from './pages/Structure.jsx'
 import Projet from './pages/Projet.jsx'
 import Jeux from './pages/Jeux.jsx'
 import Fonctionnement from './pages/Fonctionnement.jsx'
@@ -63,6 +58,7 @@ export default function App() {
   const { session, deconnexion } = useAuth()
   const lieu = useLocation()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const dansEspace = /^\/(agent|mairie|carte|structure|admin)(\/|$)/.test(lieu.pathname)
   const peut = (page) => session && ROLES_PAR_PAGE[page].includes(session.role)
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
@@ -99,7 +95,7 @@ export default function App() {
             </nav>
           </div>
         </header>
-        {session && (
+        {session && !dansEspace && (
           <div className="espace-pro">
             <div className="interieur">
               <span className="espace-titre">{LIBELLE_ROLE[session.role] ?? 'Espace professionnel'}</span>
@@ -145,67 +141,36 @@ export default function App() {
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
           <Route path="/jeux/:jeu" element={<Jeux />} />
-          <Route path="/agent" element={<Protegee page="agent"><Agent /></Protegee>} />
-          <Route path="/agent/inscription" element={<Protegee page="agent"><Inscription /></Protegee>} />
-          <Route path="/structure" element={<Protegee page="structure"><Structure /></Protegee>} />
+          <Route path="/agent/*" element={<Protegee page="agent"><EspaceAgent /></Protegee>} />
+          <Route path="/structure/*" element={<Protegee page="structure"><EspaceStructure /></Protegee>} />
+          <Route path="/mairie/*" element={<Protegee page="mairie"><EspaceMairie /></Protegee>} />
+          <Route path="/carte/*" element={<Protegee page="carte"><EspaceDecideur /></Protegee>} />
+          <Route path="/admin/*" element={<Protegee page="admin"><EspaceAdmin /></Protegee>} />
           <Route path="/carnet/:code" element={<Protegee page="agent"><Carnet /></Protegee>} />
-          <Route path="/mairie" element={<Protegee page="mairie"><Mairie /></Protegee>} />
-          <Route path="/carte" element={<Protegee page="carte"><Carte /></Protegee>} />
-          <Route path="/admin" element={<Protegee page="admin"><Admin /></Protegee>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 
       <footer className="pied no-print">
         <div className="pied-interieur">
-          <div className="pied-grille">
-            <div>
-              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
-              <p>Un seul carnet pour suivre chaque enfant de la grossesse à 5 ans : santé, nutrition, état civil, services sociaux et éveil.</p>
-            </div>
-            <div>
-              <h2>Découvrir</h2>
-              <ul>
-                <li><Link to="/projet">Le projet</Link></li>
-                <li><Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link></li>
-                <li><Link to="/jeux">Jeux pour les enfants</Link></li>
-                <li><Link to="/visite">Essayer en 5 minutes</Link></li>
-                <li><Link to="/hors-reseau">Hors réseau et clé USB</Link></li>
-                <li><Link to="/telephone">Simulateur de téléphone</Link></li>
-                <li><Link to="/ecoute">Point d'écoute</Link></li>
-                <li><Link to="/assistant">Poser une question</Link></li>
-                <li><Link to="/annuaire">Annuaire des structures</Link></li>
-                <li><Link to="/adolescents">Adolescents</Link></li>
-                <li><Link to="/signalement">Une situation inquiétante ?</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h2>Espaces professionnels</h2>
-              <ul>
-                <li><Link to="/connexion">Agent de santé</Link></li>
-                <li><Link to="/connexion">État civil</Link></li>
-                <li><Link to="/connexion">Structure d'accueil</Link></li>
-                <li><Link to="/connexion">Responsable régional</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h2>Protection</h2>
-              <ul>
-                <li>Aucun nom, aucune photo, aucune adresse</li>
-                <li>Accord de la famille avant tout suivi</li>
-                <li>Accès par rôle et par zone, journal des consultations</li>
-                <li>Loi n° 2019-014 du 29 octobre 2019</li>
-              </ul>
-            </div>
+          <div className="pied-ligne">
+            <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+            <nav className="pied-liens" aria-label="Liens du site">
+              <Link to="/projet">Le projet</Link>
+              <Link to="/fonctionnement">Fonctionnement</Link>
+              <Link to="/visite">Essayer</Link>
+              <Link to="/hors-reseau">Hors réseau</Link>
+              <Link to="/jeux">Jeux</Link>
+              <Link to="/annuaire">Annuaire</Link>
+              <Link to="/adolescents">Adolescents</Link>
+              <Link to="/signalement">Situation inquiétante</Link>
+            </nav>
           </div>
-          <div className="pied-bas">
-            <p>
-              Fil d'Or informe et oriente, il ne pose aucun diagnostic. Les contenus de santé et le calendrier vaccinal
-              doivent être validés par des professionnels avant tout usage réel. Projet candidat au concours Hack4Children Togo 2026,
-              version de démonstration : toutes les données sont fictives. Ce n'est pas un service officiel de l'UNICEF.
-            </p>
-            <span>© 2026 Fil d'Or</span>
-          </div>
+          <p className="pied-legal">
+            Aucun nom, aucune photo, aucune adresse · Loi n° 2019-014 du 29 octobre 2019 · Fil d'Or informe et oriente, il ne pose aucun
+            diagnostic · Version de démonstration, données fictives · Projet candidat au concours Hack4Children Togo 2026, pas un service
+            officiel de l'UNICEF · © 2026 Fil d'Or
+          </p>
         </div>
       </footer>
     </div>

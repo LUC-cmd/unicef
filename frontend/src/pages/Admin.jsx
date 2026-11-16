@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
-import GuideRole from '../components/GuideRole.jsx'
 
 const SERVICES = [
   ['Site', 'Cette interface, servie à part.', null],
@@ -24,7 +23,7 @@ async function joignable(url, accepte) {
 }
 
 /** Coulisses : l'état des quatre services, et l'horloge de démonstration. */
-export default function Admin() {
+export default function Admin({ vue = 'services' }) {
   const [etats, setEtats] = useState({})
   const [jours, setJours] = useState(5)
   const [resultat, setResultat] = useState(null)
@@ -51,28 +50,10 @@ export default function Admin() {
     } catch (e) { setErreur(e.message) }
   }
 
-  return (
-    <>
-    <Bandeau surtitre="Réservé à l'administration de la démonstration" titre="Coulisses">
-      Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API.
-    </Bandeau>
-    <main className="page">
-      <GuideRole role="ADMIN" />
-
-      <section className="services" aria-label="État des services">
-        {SERVICES.map(([nom, detail]) => {
-          const ok = etats[nom]
-          return (
-            <article className="service" key={nom}>
-              <p className={`etat ${ok ? 'ok' : 'ko'}`}>{ok === undefined ? 'lecture…' : ok ? 'en service' : 'arrêté'}</p>
-              <h2>{nom}</h2>
-              <p className="petit">{detail}</p>
-            </article>
-          )
-        })}
-      </section>
-
-      <div className="deux-colonnes">
+  if (vue === 'horloge') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administration" titre="Horloge de démonstration">Faites avancer le temps pour montrer les rappels et les rendez-vous manqués.</Bandeau>
         <section className="carte">
           <h2>Horloge de démonstration</h2>
           <p>Avance le cycle des rappels. Les rendez-vous non faits deviennent manqués, les familles silencieuses remontent dans la liste de l'agent.</p>
@@ -93,6 +74,14 @@ export default function Admin() {
             </ul>
           )}
         </section>
+      </main>
+    )
+  }
+
+  if (vue === 'acces') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administration" titre="Espaces et comptes">Ouvrez chaque espace comme le ferait l'utilisateur concerné.</Bandeau>
         <section className="carte">
           <h2>Ce que le jury peut ouvrir</h2>
           <ul className="liste-points">
@@ -104,8 +93,34 @@ export default function Admin() {
           </ul>
           <p className="petit">Les comptes de démonstration sont sur la page <Link to="/connexion">Se connecter</Link>.</p>
         </section>
-      </div>
+        <div className="raccourcis">
+          <Link className="bouton secondaire" to="/mairie">Espace état civil</Link>
+          <Link className="bouton secondaire" to="/carte">Espace responsable régional</Link>
+          <Link className="bouton secondaire" to="/agent">Espace agent de santé</Link>
+        </div>
+      </main>
+    )
+  }
+
+  const enService = Object.values(etats).filter(Boolean).length
+  return (
+    <main className="page">
+      <Bandeau surtitre="Administration" titre="Coulisses">
+        Quatre services, séparés. L'assistant ne lit pas la base. La base ne sert que l'API. {enService} sur 4 en service.
+      </Bandeau>
+      <section className="services" aria-label="État des services">
+        {SERVICES.map(([nom, detail]) => {
+          const ok = etats[nom]
+          return (
+            <article className="service" key={nom}>
+              <p className={`etat ${ok ? 'ok' : 'ko'}`}>{ok === undefined ? 'lecture…' : ok ? 'en service' : 'arrêté'}</p>
+              <h2>{nom}</h2>
+              <p className="petit">{detail}</p>
+            </article>
+          )
+        })}
+      </section>
+
     </main>
-    </>
   )
 }

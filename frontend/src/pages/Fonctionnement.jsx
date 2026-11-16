@@ -55,7 +55,7 @@ function moisLisible(aaaaMm) {
   return `${noms[Number(m) - 1] ?? m} ${a}`
 }
 
-function Verification() {
+export function Verification() {
   const [numero, setNumero] = useState('')
   const [code, setCode] = useState('')
   const [resultat, setResultat] = useState(null)

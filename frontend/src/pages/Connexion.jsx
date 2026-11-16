@@ -4,8 +4,7 @@ import { IconeAgent, IconeBouclier, IconeCarnet, IconeZone } from '../components
 import { useAuth } from '../lib/contexte.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
-// Mot de passe commun des comptes de démonstration, défini à la construction du site (VITE_MDP_DEMO).
-const MDP_DEMO = import.meta.env.VITE_MDP_DEMO || 'FilDor2026!demo'
+import { MDP_DEMO } from '../lib/config.js'
 
 const COMPTES = [
   { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles.', cible: '/agent', Icone: IconeAgent },

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
 import {
   LIBELLE_PORTE, MESSAGE_PB, ageEnMois, ageLisible, aujourdhuiIso, classerPB, formaterDate,
 } from '../lib/format.js'
 import { ajouterDeclaration, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
+import { Anneau } from '../components/Graphiques.jsx'
 import CleUsb from '../components/CleUsb.jsx'
 import Accouchement from '../components/Accouchement.jsx'
 import NouveauNe from '../components/NouveauNe.jsx'
@@ -32,13 +33,14 @@ function Pastille({ niveau, score }) {
   return <span className={`pastille ${niveau.toLowerCase()}`}>{libelle} · {score}</span>
 }
 
-export default function Agent() {
+export default function Agent({ vue = 'visites' }) {
   const { enLigne, simuleHorsLigne, setSimuleHorsLigne } = useReseau()
   const { session } = useAuth()
   const [liste, setListe] = useState(() => lireCache(CLE_LISTE) || [])
   const [horsLigne, setHorsLigne] = useState(false)
   const [filtre, setFiltre] = useState('')
-  const [choisi, setChoisi] = useState(null)
+  const [params] = useSearchParams()
+  const [choisi, setChoisi] = useState(params.get('enfant'))
   const [attente, setAttente] = useState(0)
   const [envoisVersion, setEnvoisVersion] = useState(0)
   const [message, setMessage] = useState(null)
@@ -99,39 +101,98 @@ export default function Agent() {
   )
   const urgents = liste.filter((l) => l.priorite.niveau === 'URGENT').length
 
-  return (
+  const prioritaires = liste.filter((l) => l.priorite.niveau === 'PRIORITAIRE').length
+  const normaux = liste.length - urgents - prioritaires
+  const aVisiter = [...liste].sort((x, y) => y.priorite.score - x.priorite.score).slice(0, 6)
+  const etatReseau = (
+    <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
+      <span>
+        <b>{horsLigne ? 'Hors ligne' : 'En ligne'}.</b>{' '}
+        {horsLigne ? 'Vous pouvez tout saisir, ça partira au retour du réseau.' : 'Les saisies partent tout de suite.'}
+        {attente > 0 && (
+          <> {attente} élément(s) en attente. <button className="lien" disabled={!enLigne} onClick={synchroniser}>Synchroniser maintenant</button></>
+        )}
+      </span>
+      <label className="interrupteur">
+        <input type="checkbox" checked={simuleHorsLigne} onChange={(e) => setSimuleHorsLigne(e.target.checked)} />
+        Simuler un village sans réseau
+      </label>
+    </div>
+  )
+  const retours = (
     <>
-    <Bandeau surtitre="Agent de santé" titre="Mes visites"
-             actions={<Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>}>
-      Les familles dont un rappel est resté sans réponse remontent en premier. Tout se saisit hors ligne et part au retour du réseau.
-    </Bandeau>
-    <main className="page">
-      <GuideRole role="AGENT" />
-
-      <div className="tuiles">
-        <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
-        <div className={`tuile ${urgents ? 'alerte' : ''}`}><b>{urgents}</b><span>à visiter en urgence</span></div>
-        <div className="tuile"><b>{liste.filter((l) => l.priorite.niveau === 'PRIORITAIRE').length}</b><span>prioritaires</span></div>
-        <div className="tuile"><b>{attente}</b><span>saisie(s) en attente d'envoi</span></div>
-      </div>
-
-      <div className={`etat-reseau ${horsLigne ? 'hors' : 'en'}`} role="status">
-        <span>
-          <b>{horsLigne ? 'Hors ligne' : 'En ligne'}.</b>{' '}
-          {horsLigne ? 'Vous pouvez tout saisir, ça partira au retour du réseau.' : 'Les saisies partent tout de suite.'}
-          {attente > 0 && (
-            <> {attente} élément(s) en attente. <button className="lien" disabled={!enLigne} onClick={synchroniser}>Synchroniser maintenant</button></>
-          )}
-        </span>
-        <label className="interrupteur">
-          <input type="checkbox" checked={simuleHorsLigne} onChange={(e) => setSimuleHorsLigne(e.target.checked)} />
-          Simuler un village sans réseau
-        </label>
-      </div>
       {message && <p className={message.ok ? 'succes' : 'erreur'} role="status">{message.texte}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
+    </>
+  )
 
-      <CleUsb key={envoisVersion} agent={session?.username} enLigne={enLigne} onChange={rafraichirAttente} synchroniser={synchroniser} />
+  if (vue === 'tableau') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Agent de santé" titre="Tableau de bord">
+          Votre journée en un coup d'œil : qui visiter en premier, ce qui attend d'être envoyé.
+        </Bandeau>
+        {etatReseau}
+        {retours}
+        <div className="tableau-kpi">
+          <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
+          <div className={`tuile ${urgents ? 'alerte' : ''}`}><b>{urgents}</b><span>à visiter en urgence</span></div>
+          <div className="tuile"><b>{prioritaires}</b><span>prioritaires</span></div>
+          <div className="tuile"><b>{attente}</b><span>saisie(s) en attente d'envoi</span></div>
+        </div>
+        <div className="raccourcis">
+          <Link className="bouton" to="/agent/visites">Voir mes visites</Link>
+          <Link className="bouton secondaire" to="/agent/inscription">Inscrire une famille</Link>
+          <Link className="bouton secondaire" to="/agent/synchronisation">Synchronisation et clé USB</Link>
+        </div>
+        <div className="grille-deux">
+          <section className="carte">
+            <Anneau titre="Priorité des familles suivies" centre={liste.length}
+                    parts={[{ nom: 'Urgent', valeur: urgents, couleur: '#e2231a' }, { nom: 'Prioritaire', valeur: prioritaires, couleur: '#f26a21' }, { nom: 'Normal', valeur: normaux, couleur: '#00833d' }]} />
+          </section>
+          <section className="carte">
+            <h2>À visiter en premier</h2>
+            <ul className="liste-visites">
+              {aVisiter.map((l) => (
+                <li key={l.codeEnfant}>
+                  <Link className="ligne" to={`/agent/visites?enfant=${l.codeEnfant}`}>
+                    <span className="ligne-texte">
+                      <strong>{l.codeEnfant}</strong> <span className="petit">{l.codeFamille} · {l.zone}</span>
+                      {l.priorite.raisons.length > 0 && <span className="raisons">{l.priorite.raisons[0]}</span>}
+                    </span>
+                    <Pastille niveau={l.priorite.niveau} score={l.priorite.score} />
+                  </Link>
+                </li>
+              ))}
+              {aVisiter.length === 0 && <li className="petit">Aucune famille pour le moment.</li>}
+            </ul>
+          </section>
+        </div>
+      </main>
+    )
+  }
+
+  if (vue === 'synchronisation') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Agent de santé" titre="Synchronisation et clé USB">
+          Envoyez vos saisies dans la base, avec du réseau ou par une clé USB.
+        </Bandeau>
+        {etatReseau}
+        {retours}
+        <CleUsb key={envoisVersion} agent={session?.username} enLigne={enLigne} onChange={rafraichirAttente} synchroniser={synchroniser} />
+      </main>
+    )
+  }
+
+  return (
+    <main className="page">
+      <Bandeau surtitre="Agent de santé" titre="Mes visites"
+               actions={<Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>}>
+        Les familles dont un rappel est resté sans réponse remontent en premier.
+      </Bandeau>
+      {etatReseau}
+      {retours}
 
       <div className="deux-colonnes">
         <section>
@@ -164,7 +225,6 @@ export default function Agent() {
         </section>
       </div>
     </main>
-    </>
   )
 }
 
