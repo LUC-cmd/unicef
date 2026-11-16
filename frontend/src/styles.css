@@ -693,3 +693,19 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .pied-liens { display: flex; flex-wrap: wrap; gap: 0.3rem 1.3rem; }
 .pied-liens a { font-size: 0.92rem; }
 .pied-legal { margin: 0.9rem 0 0; padding-top: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.45); font-size: 0.8rem; line-height: 1.5; max-width: none; color: #fff; }
+.bouton-entete.sortie { background: transparent; color: #fff; border-color: #fff; }
+.bouton-entete.sortie:hover { background: rgba(255, 255, 255, 0.24); color: #fff; border-color: #fff; }
+
+/* Menu Ressources et état du réseau dans l'en-tête */
+.menu-deroulant { position: relative; }
+.menu-deroulant > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.85rem; color: #fff; font-weight: 700; font-size: 0.97rem; border-radius: 8px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 60, 95, 0.35); }
+.menu-deroulant > summary::-webkit-details-marker { display: none; }
+.menu-deroulant > summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(45deg) translateY(-2px); }
+.menu-deroulant > summary:hover, .menu-deroulant[open] > summary { background: rgba(255, 255, 255, 0.24); }
+.menu-liste { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 270px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(45, 41, 38, 0.22); padding: 0.4rem; display: grid; }
+.nav-principale .menu-liste a { color: var(--texte); text-shadow: none; font-weight: 500; padding: 0.6rem 0.8rem; white-space: normal; border-radius: 8px; }
+.nav-principale .menu-liste a:hover { background: var(--ciel); color: var(--bleu-fonce); }
+.etat-reseau-entete { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; color: #fff; background: rgba(255, 255, 255, 0.2); border-radius: 999px; padding: 0.25rem 0.7rem; margin-left: 0.4rem; white-space: nowrap; }
+.etat-reseau-entete i { width: 9px; height: 9px; border-radius: 50%; background: #80bd41; }
+.etat-reseau-entete.hors i { background: var(--or); }
+@media (max-width: 900px) { .menu-liste { position: static; box-shadow: none; background: rgba(255, 255, 255, 0.95); margin-top: 0.3rem; } .menu-deroulant { width: 100%; } }

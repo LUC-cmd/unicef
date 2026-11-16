@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useAuth } from './lib/contexte.jsx'
+import { useAuth, useReseau } from './lib/contexte.jsx'
 import { EspaceAdmin, EspaceAgent, EspaceDecideur, EspaceMairie, EspaceStructure } from './pages/Espaces.jsx'
 import Visite from './pages/Visite.jsx'
 import HorsReseau from './pages/HorsReseau.jsx'
@@ -27,6 +27,8 @@ const LIBELLE_ROLE = {
   STRUCTURE: 'Structure',
   ADMIN: 'Administrateur',
 }
+
+const ACCUEIL_ROLE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 
 const ROLES_PAR_PAGE = {
   agent: ['AGENT', 'ADMIN'],
@@ -56,13 +58,15 @@ function Protegee({ page, children }) {
 
 export default function App() {
   const { session, deconnexion } = useAuth()
+  const { enLigne } = useReseau()
   const lieu = useLocation()
   const [menuOuvert, setMenuOuvert] = useState(false)
-  const dansEspace = /^\/(agent|mairie|carte|structure|admin)(\/|$)/.test(lieu.pathname)
-  const peut = (page) => session && ROLES_PAR_PAGE[page].includes(session.role)
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
-  useEffect(() => { setMenuOuvert(false); window.scrollTo(0, 0) }, [lieu.pathname])
+  useEffect(() => {
+    setMenuOuvert(false); window.scrollTo(0, 0)
+    document.querySelectorAll('.menu-deroulant[open]').forEach((d) => d.removeAttribute('open'))
+  }, [lieu.pathname])
 
   // Hauteur de l'en-tête collant : les barres d'ancres des pages se calent juste dessous.
   useEffect(() => {
@@ -89,33 +93,28 @@ export default function App() {
               <NavLink to="/projet">Le projet</NavLink>
               <NavLink to="/visite">Essayer</NavLink>
               <NavLink to="/hors-reseau">Hors réseau</NavLink>
+              <details className="menu-deroulant">
+                <summary>Ressources</summary>
+                <div className="menu-liste">
+                  <Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link>
+                  <Link to="/annuaire">Annuaire des structures</Link>
+                  <Link to="/ecoute">Point d'écoute</Link>
+                  <Link to="/telephone">Simulateur de téléphone</Link>
+                  <Link to="/adolescents">Adolescents</Link>
+                  <Link to="/signalement">Une situation inquiétante ?</Link>
+                </div>
+              </details>
               <NavLink to="/assistant">Assistant</NavLink>
               <NavLink to="/jeux">Jeux</NavLink>
+              <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
+                <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+              </span>
               {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
+              {session && <Link className="bouton-entete" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
+              {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
             </nav>
           </div>
         </header>
-        {session && !dansEspace && (
-          <div className="espace-pro">
-            <div className="interieur">
-              <span className="espace-titre">{LIBELLE_ROLE[session.role] ?? 'Espace professionnel'}</span>
-              <nav aria-label="Espace professionnel">
-                {peut('agent') && <NavLink to="/agent" end>Mes visites</NavLink>}
-                {peut('agent') && <NavLink to="/agent/inscription">Inscrire une famille</NavLink>}
-                {peut('mairie') && <NavLink to="/mairie">Déclarations de naissance</NavLink>}
-                {peut('carte') && <NavLink to="/carte">Carte des zones</NavLink>}
-                {peut('structure') && <NavLink to="/structure">Ma structure</NavLink>}
-                {peut('admin') && <NavLink to="/mairie">État civil</NavLink>}
-                {peut('admin') && <NavLink to="/carte">Carte</NavLink>}
-                {peut('admin') && <NavLink to="/admin">Coulisses</NavLink>}
-              </nav>
-              <div className="session">
-                <div className="qui"><b>{session.nomComplet}</b></div>
-                <button className="bouton secondaire petit-bouton" onClick={deconnexion}>Se déconnecter</button>
-              </div>
-            </div>
-          </div>
-        )}
         {lieu.pathname === '/projet' && (
           <nav className="barre-ancres sous-entete" aria-label="Sur cette page">
             <div className="ancres">
