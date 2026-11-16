@@ -3,6 +3,7 @@ import { api } from '../lib/api.js'
 import { ageLisible, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
 import GuideRole from '../components/GuideRole.jsx'
+import ActesSuivi from '../components/ActesSuivi.jsx'
 
 const STATUTS = [['ENVOYEE', 'À traiter'], ['VALIDEE', 'Validées'], ['REJETEE', 'Rejetées'], ['', 'Toutes']]
 const LIBELLE = { ENVOYEE: 'À traiter', VALIDEE: 'Validée', REJETEE: 'Rejetée', BROUILLON: 'Brouillon' }
@@ -92,6 +93,8 @@ export default function Mairie() {
           </tbody>
         </table>
       </div>
+
+      <ActesSuivi role="MAIRIE" />
 
       {rejet && (
         <div className="modale" role="dialog" aria-modal="true" aria-label="Motif du rejet">

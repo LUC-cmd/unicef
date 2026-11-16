@@ -13,7 +13,8 @@ const ANCRES = [
 
 const CONSTATS = [
   ['Retard de croissance', '23,8 %', "Près d'un enfant sur quatre grandit moins bien qu'il ne le devrait. Le repérer tôt change la suite."],
-  ['Acte de naissance', '≥ 59 % (2017)', "Au moins 59 % des moins de 5 ans en avaient un ; chiffre ancien, à actualiser. Sans acte, l'accès à l'école et aux services est plus difficile."],
+  ['Acte de naissance', '17,7 % sans acte', "17,7 % des moins de 5 ans n'ont pas d'acte de naissance (UNICEF Togo, octobre 2026). À Vo, 184 actes sur 454 n'étaient pas retirés (40 %). Sans acte, l'accès à l'école et aux services est plus difficile."],
+  ['Préscolaire', '27,6 %', "Seuls 27,6 % des enfants entrent au préscolaire (UNICEF Togo, octobre 2026). Fil d'Or prépare le passage dès 30 mois."],
   ['Vaccination', '34 496', 'Enfants de 0 à 11 mois sans la 3e dose des vaccins contre cinq maladies.'],
   ['Téléphone et internet', '100,31 % de SIM · 4,93 M internet', "Presque une carte SIM par habitant, mais seulement 4,93 millions d'abonnements internet mobile (fin septembre 2025, ARCEP). Le téléphone est répandu, pas internet."],
 ]

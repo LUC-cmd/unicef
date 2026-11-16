@@ -1,17 +1,15 @@
 {
-  "name": "Fil d'Or — suivi de l'enfant",
+  "name": "Fil d'Or",
   "short_name": "Fil d'Or",
-  "description": "Suivi de l'enfant, de la grossesse à 5 ans, avec ou sans réseau.",
-  "start_url": "/",
+  "description": "Suivi de chaque enfant, de la grossesse à 5 ans, avec ou sans réseau.",
+  "lang": "fr",
+  "start_url": "/agent",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0a2b40",
-  "theme_color": "#0a2b40",
-  "lang": "fr",
+  "background_color": "#ffffff",
+  "theme_color": "#1cabe2",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

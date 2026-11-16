@@ -78,3 +78,21 @@ export function nombreEnAttente(file = lireFile()) {
 export function vider() {
   return ecrire({ visites: [], declarations: [], inscriptions: [], accouchements: [] })
 }
+
+/** Remplace la file (chargement d'un fichier de clé USB). */
+export function remplacerFile(file) {
+  return ecrire(file)
+}
+
+// Journal des derniers envois vers la base, gardé sur l'appareil pour montrer que les données sont bien parties.
+const CLE_ENVOIS = 'fildor.envois'
+
+export function lireEnvois() {
+  try { return JSON.parse(stockage()?.getItem(CLE_ENVOIS) || '[]') } catch { return [] }
+}
+
+export function noterEnvoi(entree) {
+  const s = stockage()
+  if (!s) return
+  try { s.setItem(CLE_ENVOIS, JSON.stringify([entree, ...lireEnvois()].slice(0, 6))) } catch { /* plein */ }
+}

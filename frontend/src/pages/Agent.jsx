@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
-import { useReseau } from '../lib/contexte.jsx'
+import { useAuth, useReseau } from '../lib/contexte.jsx'
 import {
-  LIBELLE_PORTE, MESSAGE_PB, ageLisible, aujourdhuiIso, classerPB, formaterDate,
+  LIBELLE_PORTE, MESSAGE_PB, ageEnMois, ageLisible, aujourdhuiIso, classerPB, formaterDate,
 } from '../lib/format.js'
-import { ajouterDeclaration, ajouterVisite, lireFile, nombreEnAttente, vider } from '../lib/offline.js'
+import { ajouterDeclaration, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
+import CleUsb from '../components/CleUsb.jsx'
 import Accouchement from '../components/Accouchement.jsx'
+import NouveauNe from '../components/NouveauNe.jsx'
+import Developpement from '../components/Developpement.jsx'
 import Eveil from '../components/Eveil.jsx'
 import Orienter from '../components/Orienter.jsx'
 import Proches from '../components/Proches.jsx'
@@ -30,13 +33,14 @@ function Pastille({ niveau, score }) {
 }
 
 export default function Agent() {
-  const [params] = useSearchParams()
   const { enLigne, simuleHorsLigne, setSimuleHorsLigne } = useReseau()
+  const { session } = useAuth()
   const [liste, setListe] = useState(() => lireCache(CLE_LISTE) || [])
   const [horsLigne, setHorsLigne] = useState(false)
   const [filtre, setFiltre] = useState('')
   const [choisi, setChoisi] = useState(null)
   const [attente, setAttente] = useState(0)
+  const [envoisVersion, setEnvoisVersion] = useState(0)
   const [message, setMessage] = useState(null)
   const [erreur, setErreur] = useState('')
 
@@ -63,6 +67,8 @@ export default function Agent() {
       const r = await api.post('/api/agent/sync', file)
       vider()
       rafraichirAttente()
+      noterEnvoi({ le: new Date().toISOString(), resume: `${r.visitesCreees} visite(s), ${r.declarationsCreees} déclaration(s), ${r.inscriptionsCreees} inscription(s), ${r.accouchementsCrees} naissance(s) enregistrée(s) dans la base` })
+      setEnvoisVersion((v) => v + 1)
       setMessage({
         ok: true,
         texte: `Synchronisé : ${r.visitesCreees} visite(s), ${r.declarationsCreees} déclaration(s), `
@@ -80,11 +86,6 @@ export default function Agent() {
   }, [charger, rafraichirAttente])
 
   // Au retour du réseau : on envoie ce qui attendait, puis on rafraîchit la liste.
-  useEffect(() => {
-    const code = params.get('enfant')
-    if (code) setChoisi(code)
-  }, [params])
-
   useEffect(() => {
     rafraichirAttente()
     if (enLigne) { synchroniser().then(charger) } else { setHorsLigne(true) }
@@ -129,6 +130,8 @@ export default function Agent() {
       </div>
       {message && <p className={message.ok ? 'succes' : 'erreur'} role="status">{message.texte}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
+
+      <CleUsb key={envoisVersion} agent={session?.username} enLigne={enLigne} onChange={rafraichirAttente} synchroniser={synchroniser} />
 
       <div className="deux-colonnes">
         <section>
@@ -223,6 +226,8 @@ function Fiche({ code, enLigne, onChange }) {
         <Accouchement fiche={fiche} enLigne={enLigne} onChange={() => { onChange(); rafraichir() }} />
       )}
       {fiche.statut === 'ENFANT' && <Naissance fiche={fiche} onChange={onChange} />}
+      {fiche.statut === 'ENFANT' && <NouveauNe code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} ageMois={ageEnMois(fiche.dateNaissance)} />}
+      {fiche.statut === 'ENFANT' && <Developpement code={fiche.codeEnfant} ageMois={ageEnMois(fiche.dateNaissance)} />}
       {fiche.statut === 'ENFANT' && <Eveil eveil={fiche.eveil} aujourdhui={aujourdhuiIso()} />}
       <Saisie fiche={fiche} onChange={onChange} />
       <Orienter codeFamille={fiche.codeFamille} demandes={fiche.demandes} enLigne={enLigne && !depuisCache} onChange={rafraichir} />

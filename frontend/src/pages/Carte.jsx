@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { couleurIndice } from '../lib/format.js'
+import { Barres } from '../components/Graphiques.jsx'
+import ActesSuivi from '../components/ActesSuivi.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GuideRole from '../components/GuideRole.jsx'
 
@@ -80,20 +82,20 @@ export default function Carte() {
                    onClick={() => setChoisie(z.code)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setChoisie(z.code)}
                    style={{ cursor: 'pointer' }}>
                   <circle cx={x} cy={y} r={r + 8} fill={couleurIndice(z.indiceOubli)} fillOpacity="0.16" />
-                  <circle cx={x} cy={y} r={r} fill={couleurIndice(z.indiceOubli)} stroke={actif ? '#0a2b40' : '#fff'} strokeWidth={actif ? 4 : 3}
+                  <circle cx={x} cy={y} r={r} fill={couleurIndice(z.indiceOubli)} stroke={actif ? '#2d2926' : '#fff'} strokeWidth={actif ? 4 : 3}
                           strokeDasharray={z.masquee ? '5 4' : undefined} />
                   <text x={x} y={y + 6} textAnchor="middle" fontSize="17" fontWeight="700" fill="#fff" style={{ fontFamily: 'var(--police-titre)' }}>{z.indiceOubli ?? '?'}</text>
                   <rect x={x - 46} y={y + r + 6} width="92" height="20" rx="10" fill="#fff" fillOpacity="0.92" />
-                  <text x={x} y={y + r + 20} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0a2b40">{z.nom.replace(/ \(.*\)/, '')}</text>
+                  <text x={x} y={y + r + 20} textAnchor="middle" fontSize="12" fontWeight="700" fill="#2d2926">{z.nom.replace(/ \(.*\)/, '')}</text>
                 </g>
               )
             })}
           </svg>
           <div className="legende" aria-hidden="true">
-            <span><i style={{ background: '#2e7d32' }} /> bien suivie (0–34)</span>
-            <span><i style={{ background: '#e08a00' }} /> à surveiller (35–59)</span>
-            <span><i style={{ background: '#b3261e' }} /> oubliée (60–100)</span>
-            <span><i style={{ background: '#9e9e9e' }} /> non détaillée</span>
+            <span><i style={{ background: '#00833d' }} /> bien suivie (0–34)</span>
+            <span><i style={{ background: '#f26a21' }} /> à surveiller (35–59)</span>
+            <span><i style={{ background: '#e2231a' }} /> oubliée (60–100)</span>
+            <span><i style={{ background: '#777779' }} /> non détaillée</span>
           </div>
         </section>
 
@@ -120,6 +122,15 @@ export default function Carte() {
             <div className="carte"><p>Cliquez sur une zone pour voir le détail. Où envoyer une équipe mobile en premier ?</p></div>
           )}
 
+          <div className="carte">
+            <Barres titre="Indice d'oubli par zone (0 = bien suivie, 100 = oubliée)"
+                    items={triees.map((z) => ({ nom: z.nom.replace(/ \(.*\)/, ''), valeur: z.masquee ? null : z.indiceOubli, couleur: couleurIndice(z.indiceOubli) }))} />
+            <Barres titre="Rendez-vous réalisés, par zone" unite=" %"
+                    items={triees.map((z) => ({ nom: z.nom.replace(/ \(.*\)/, ''), valeur: z.masquee ? null : z.tauxSuiviPct, couleur: '#1cabe2' }))} />
+          </div>
+
+          <details className="carte">
+            <summary>Voir le tableau détaillé</summary>
           <div className="tableau-conteneur">
             <table>
               <thead><tr><th>Zone</th><th>Indice</th><th>Rdv réalisés</th><th>Naissances</th><th>Éveil</th><th>Sans réponse</th></tr></thead>
@@ -137,8 +148,10 @@ export default function Carte() {
               </tbody>
             </table>
           </div>
+          </details>
         </section>
       </div>
+      <ActesSuivi role="DECIDEUR" />
     </main>
     </>
   )

@@ -67,10 +67,10 @@ export const LIBELLE_LANGUE = { fr: 'Français', ewe: 'Éwé', kabye: 'Kabyè', 
 
 /** Couleur de l'indice d'oubli (0 bien suivie, 100 oubliée). */
 export function couleurIndice(indice) {
-  if (indice === null || indice === undefined) return '#9e9e9e'
-  if (indice >= 60) return '#b3261e'
-  if (indice >= 35) return '#e08a00'
-  return '#2e7d32'
+  if (indice === null || indice === undefined) return '#777779'
+  if (indice >= 60) return '#e2231a'
+  if (indice >= 35) return '#f26a21'
+  return '#00833d'
 }
 
 export const LIBELLE_ROLE_PROCHE = {
@@ -83,6 +83,7 @@ export const LIBELLE_ROLE_PROCHE = {
 export const LIBELLE_TYPE_STRUCTURE = {
   CENTRE_SANTE: 'Centre de santé',
   CRECHE: 'Crèche',
+  PRESCOLAIRE: 'Préscolaire (3 à 5 ans)',
   CENTRE_SOCIAL: 'Centre social',
   ETAT_CIVIL: 'État civil',
 }
@@ -101,3 +102,12 @@ export const ZONES = [
 
 const NOMS_JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 export const nomDuJour = (i) => NOMS_JOURS[i]
+
+/** Âge en mois entiers (0 si la date est absente). */
+export function ageEnMois(naissanceIso, aujourdhui = new Date()) {
+  if (!naissanceIso) return 0
+  const n = new Date(naissanceIso)
+  let m = (aujourdhui.getFullYear() - n.getFullYear()) * 12 + aujourdhui.getMonth() - n.getMonth()
+  if (aujourdhui.getDate() < n.getDate()) m -= 1
+  return Math.max(0, m)
+}

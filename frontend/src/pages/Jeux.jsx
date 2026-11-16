@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
-import { ANIMAUX, CreditsPhotos, PHOTOS, Photo } from '../components/PhotoReelle.jsx'
 
 /* ---------- utilitaires ---------- */
 
@@ -68,14 +67,12 @@ function sonner(type) {
   }
 }
 
-const MANCHES = 6
-const NIVEAUX = 3
+const MANCHES = 5
 
 /* ---------- jeu à questions : le même moteur pour plusieurs jeux ---------- */
 
 function Quiz({ fabrique, finMessage, contexte }) {
-  const [niveau, setNiveau] = useState(0)
-  const [question, setQuestion] = useState(() => fabrique(0, 0))
+  const [question, setQuestion] = useState(() => fabrique(0))
   const [numero, setNumero] = useState(0)
   const [retour, setRetour] = useState(null)
   const [essai, setEssai] = useState(0)
@@ -95,25 +92,15 @@ function Quiz({ fabrique, finMessage, contexte }) {
       contexte.parler(question.felicitation)
       setTimeout(() => {
         if (numero + 1 >= MANCHES) {
-          if (niveau + 1 >= NIVEAUX) {
-            setFini(true)
-            contexte.parler(finMessage)
-          } else {
-            const suivant = niveau + 1
-            setNiveau(suivant)
-            setNumero(0)
-            setQuestion(fabrique(0, suivant))
-            setRetour(null)
-            setEssai(0)
-            contexte.parler(`Niveau ${suivant + 1}`)
-          }
+          setFini(true)
+          contexte.parler(finMessage)
         } else {
           setNumero((n) => n + 1)
-          setQuestion(fabrique(numero + 1, niveau))
+          setQuestion(fabrique(numero + 1))
           setRetour(null)
           setEssai(0)
         }
-      }, 1400)
+      }, 1700)
     } else {
       contexte.rate()
       setEssai((e) => e + 1)
@@ -123,9 +110,8 @@ function Quiz({ fabrique, finMessage, contexte }) {
   }
 
   function rejouer() {
-    setNiveau(0)
     setNumero(0)
-    setQuestion(fabrique(0, 0))
+    setQuestion(fabrique(0))
     setRetour(null)
     setEssai(0)
     setFini(false)
@@ -144,8 +130,7 @@ function Quiz({ fabrique, finMessage, contexte }) {
 
   return (
     <div className="jeu-zone">
-      <p className="jeu-niveau">Niveau {niveau + 1} sur {NIVEAUX}</p>
-      <div className="jeu-progres" aria-label={`Niveau ${niveau + 1}, question ${numero + 1} sur ${MANCHES}`}>
+      <div className="jeu-progres" aria-label={`Question ${numero + 1} sur ${MANCHES}`}>
         {Array.from({ length: MANCHES }, (_, i) => (
           <span key={i} className={i < numero ? 'fait' : i === numero ? 'en-cours' : ''} />
         ))}
@@ -179,19 +164,25 @@ function Quiz({ fabrique, finMessage, contexte }) {
 
 /* ---------- 1. Compte avec moi ---------- */
 
-const OBJETS = ['banane', 'oeuf', 'poisson', 'coq', 'chevre']
+const OBJETS = [
+  ['🥭', 'mangue', 'mangues'],
+  ['🍌', 'banane', 'bananes'],
+  ['🥚', 'œuf', 'œufs'],
+  ['🐟', 'poisson', 'poissons'],
+  ['🍊', 'orange', 'oranges'],
+  ['🌽', 'épi de maïs', 'épis de maïs'],
+]
 
-function fabriquerCompte(rang, niveau = 0) {
-  const max = 3 + niveau * 2
-  const n = 1 + Math.floor(Math.random() * Math.min(max, 8))
-  const id = tirer(OBJETS)
-  const { un, plusieurs } = PHOTOS[id]
+function fabriquerCompte(rang) {
+  const max = rang < 2 ? 3 : rang < 4 ? 5 : 7
+  const n = 1 + Math.floor(Math.random() * max)
+  const [emoji, un, plusieurs] = tirer(OBJETS)
   const autres = melanger([1, 2, 3, 4, 5, 6, 7, 8].filter((x) => x !== n && Math.abs(x - n) <= 3)).slice(0, 2)
   const choix = melanger([n, ...autres]).map((v) => ({ id: v, aria: String(v), contenu: <span className="gros-chiffre">{v}</span> }))
   return {
     consigne: `Combien y a-t-il de ${n > 1 ? plusieurs : un} ?`,
     voix: `Combien y a-t-il de ${n > 1 ? plusieurs : un} ?`,
-    visuel: <div className="jeu-objets" aria-label={`${n} ${n > 1 ? plusieurs : un}`}>{Array.from({ length: n }, (_, i) => <Photo key={i} id={id} />)}</div>,
+    visuel: <div className="jeu-objets" aria-label={`${n} ${n > 1 ? plusieurs : un}`}>{Array.from({ length: n }, (_, i) => <span key={i}>{emoji}</span>)}</div>,
     choix,
     bonne: n,
     felicitation: `Bravo ! Il y a ${n} ${n > 1 ? plusieurs : un}.`,
@@ -201,12 +192,12 @@ function fabriquerCompte(rang, niveau = 0) {
 /* ---------- 2. Touche la couleur ---------- */
 
 const COULEURS = [
-  ['rouge', '#d62828'],
-  ['bleu', '#1b6ec2'],
-  ['jaune', '#f5c400'],
-  ['vert', '#2e9e4f'],
-  ['orange', '#f28c00'],
-  ['violet', '#7b4fc2'],
+  ['rouge', '#e2231a'],
+  ['bleu', '#374ea2'],
+  ['jaune', '#ffc20e'],
+  ['vert', '#00833d'],
+  ['orange', '#f26a21'],
+  ['violet', '#6a1e74'],
 ]
 
 function fabriquerCouleur() {
@@ -245,7 +236,7 @@ const FORMES = {
 function fabriquerForme() {
   const trois = melanger(Object.keys(FORMES)).slice(0, 3)
   const cle = tirer(trois)
-  const couleurs = ['#1cabe2', '#e3a71b', '#2e9e4f', '#d62828', '#7b4fc2']
+  const couleurs = ['#1cabe2', '#ffc20e', '#00833d', '#e2231a', '#6a1e74']
   return {
     consigne: `Où est ${FORMES[cle].nom} ?`,
     voix: `Où est ${FORMES[cle].nom} ?`,
@@ -265,18 +256,18 @@ function fabriquerForme() {
 function fabriquerTaille() {
   const grand = Math.random() < 0.5
   const gauche = Math.random() < 0.5
-  const photo = tirer(OBJETS)
+  const [emoji] = tirer(OBJETS)
   const mot = grand ? 'le plus grand' : 'le plus petit'
-  const tailles = gauche ? [140, 72] : [72, 140]
+  const tailles = gauche ? [92, 48] : [48, 92]
   const ids = gauche ? ['g', 'p'] : ['p', 'g']
   return {
     consigne: `Touche ${mot}.`,
     voix: `Touche ${mot}`,
     visuel: null,
-    choix: ids.map((cle, i) => ({
-      id: cle,
-      aria: cle === 'g' ? 'grand' : 'petit',
-      contenu: <span className="taille-photo" style={{ width: tailles[i], height: tailles[i] }}><Photo id={photo} /></span>,
+    choix: ids.map((id, i) => ({
+      id,
+      aria: id === 'g' ? 'grand' : 'petit',
+      contenu: <span style={{ fontSize: `${tailles[i]}px`, lineHeight: 1 }}>{emoji}</span>,
     })),
     bonne: grand ? 'g' : 'p',
     felicitation: `Bravo ! Tu as touché ${mot}.`,
@@ -286,9 +277,14 @@ function fabriquerTaille() {
 /* ---------- 5. Mon assiette ---------- */
 
 const BONS = [
-  ['poisson', 'le poisson'],
-  ['oeuf', 'les œufs'],
-  ['banane', 'les bananes'],
+  ['🍠', 'les ignames'],
+  ['🌽', 'le maïs'],
+  ['🫘', 'les haricots'],
+  ['🐟', 'le poisson'],
+  ['🥚', 'les œufs'],
+  ['🥭', 'les mangues'],
+  ['🍌', 'les bananes'],
+  ['🥜', 'les arachides'],
 ]
 const SUCRES = [
   ['🍬', 'les bonbons'],
@@ -297,9 +293,9 @@ const SUCRES = [
 ]
 
 function fabriquerAssiette() {
-  const [photo, nom] = tirer(BONS)
+  const [emoji, nom] = tirer(BONS)
   const mauvais = melanger(SUCRES).slice(0, 2)
-  const choix = melanger([[photo, nom, true], ...mauvais.map(([e, n]) => [e, n, false])])
+  const choix = melanger([[emoji, nom, true], ...mauvais.map(([e, n]) => [e, n, false])])
   return {
     consigne: 'Qu’est-ce qui aide un enfant à bien grandir ?',
     voix: "Qu'est-ce qui aide un enfant à bien grandir ?",
@@ -309,7 +305,7 @@ function fabriquerAssiette() {
       aria: n,
       contenu: (
         <>
-          {PHOTOS[e] ? <Photo id={e} className="photo-reelle photo-carte" /> : <span className="gros-emoji">{e}</span>}
+          <span className="gros-emoji">{e}</span>
           <span className="etiquette-couleur">{n}</span>
         </>
       ),
@@ -321,8 +317,10 @@ function fabriquerAssiette() {
 
 /* ---------- 6. Mémoire des animaux ---------- */
 
+const ANIMAUX = ['🐓', '🐐', '🐄', '🐖', '🐟', '🐒', '🐢', '🦜']
+
 function Memoire({ contexte }) {
-  const creer = () => melanger([...ANIMAUX, ...ANIMAUX].map((a, i) => ({ id: i, animal: a })))
+  const creer = () => melanger([...ANIMAUX.slice(0, 6), ...ANIMAUX.slice(0, 6)].map((a, i) => ({ id: i, animal: a })))
   const [cartes, setCartes] = useState(creer)
   const [ouvertes, setOuvertes] = useState([])
   const [trouvees, setTrouvees] = useState([])
@@ -378,7 +376,7 @@ function Memoire({ contexte }) {
               onClick={() => retourner(c)}
               aria-label={visible ? c.animal : 'Carte cachée'}
             >
-              {visible ? <Photo id={c.animal} /> : <span>?</span>}
+              <span>{visible ? c.animal : '?'}</span>
             </button>
           )
         })}
@@ -481,41 +479,16 @@ function MainsPropres({ contexte }) {
   )
 }
 
-/* ---------- 8. La suite (logique) ---------- */
-
-const SUITES = [
-  { motif: ['coq', 'vache', 'coq', 'vache'], suite: 'coq', voix: 'coq, vache, coq, vache' },
-  { motif: ['poisson', 'poisson', 'tortue', 'poisson', 'poisson'], suite: 'tortue', voix: 'poisson, poisson, tortue, poisson, poisson' },
-  { motif: ['chevre', 'singe', 'chevre', 'singe'], suite: 'chevre', voix: 'chèvre, singe, chèvre, singe' },
-  { motif: ['oeuf', 'banane', 'oeuf', 'banane'], suite: 'oeuf', voix: 'œuf, banane, œuf, banane' },
-  { motif: ['perroquet', 'perroquet', 'tortue', 'perroquet', 'perroquet'], suite: 'tortue', voix: 'perroquet, perroquet, tortue, perroquet, perroquet' },
-]
-
-function fabriquerSuite(rang) {
-  const s = SUITES[rang % SUITES.length]
-  const leurres = ANIMAUX.filter((x) => x !== s.suite)
-  const choix = melanger([s.suite, ...melanger(leurres).slice(0, 2)])
-  return {
-    consigne: 'Qu’est-ce qui vient ensuite ?',
-    voix: `Regarde la suite. ${s.voix}. Qu'est-ce qui vient ensuite ?`,
-    visuel: <div className="jeu-objets" aria-hidden="true">{s.motif.map((e, i) => <Photo key={i} id={e} />)}<span className="suite-point">?</span></div>,
-    choix: choix.map((e) => ({ id: e, aria: PHOTOS[e].alt, contenu: <Photo id={e} className="photo-reelle photo-carte" /> })),
-    bonne: s.suite,
-    felicitation: 'Bravo ! Tu as trouvé la suite.',
-  }
-}
-
 /* ---------- catalogue ---------- */
 
 const JEUX = [
-  { id: 'compter', titre: 'Compte avec moi', age: '3 niveaux', photo: 'coq', texte: 'Compter de vrais animaux et de vrais fruits. Ça devient plus long.', fin: 'Tu sais bien compter.', fabrique: fabriquerCompte },
-  { id: 'couleurs', titre: 'Touche la couleur', age: '3 niveaux', photo: 'banane', texte: 'Reconnaître le rouge, le bleu, le jaune…', fin: 'Tu connais les couleurs.', fabrique: fabriquerCouleur },
-  { id: 'formes', titre: 'Les formes', age: '3 niveaux', photo: 'oeuf', texte: 'Trouver le cercle, le carré, le triangle.', fin: 'Tu reconnais les formes.', fabrique: fabriquerForme },
-  { id: 'taille', titre: 'Grand ou petit', age: '3 niveaux', photo: 'vache', texte: 'Montrer le plus grand, le plus petit.', fin: 'Tu vois bien les tailles.', fabrique: fabriquerTaille },
-  { id: 'assiette', titre: 'Mon assiette', age: '3 niveaux', photo: 'poisson', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
-  { id: 'memoire', titre: 'Les animaux jumeaux', age: '7 paires', photo: 'chevre', texte: 'Retrouver les deux photos du même animal.', memoire: true },
-  { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', photo: 'tortue', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
-  { id: 'suite', titre: 'La suite', age: '3 niveaux', photo: 'perroquet', texte: 'Trouver quel animal vient ensuite.', fin: 'Tu suis bien la suite.', fabrique: fabriquerSuite },
+  { id: 'compter', titre: 'Compte avec moi', age: '2 à 4 ans', icone: '🥭', texte: 'Compter des mangues, des œufs, des poissons.', fin: 'Tu sais bien compter.', fabrique: fabriquerCompte },
+  { id: 'couleurs', titre: 'Touche la couleur', age: '2 à 4 ans', icone: '🎨', texte: 'Reconnaître le rouge, le bleu, le jaune…', fin: 'Tu connais les couleurs.', fabrique: fabriquerCouleur },
+  { id: 'formes', titre: 'Les formes', age: '3 à 5 ans', icone: '🔺', texte: 'Trouver le cercle, le carré, le triangle.', fin: 'Tu reconnais les formes.', fabrique: fabriquerForme },
+  { id: 'taille', titre: 'Grand ou petit', age: '2 à 3 ans', icone: '🐘', texte: 'Montrer le plus grand, le plus petit.', fin: 'Tu vois bien les tailles.', fabrique: fabriquerTaille },
+  { id: 'assiette', titre: 'Mon assiette', age: '3 à 5 ans', icone: '🍠', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
+  { id: 'memoire', titre: 'Les animaux jumeaux', age: '3 à 5 ans', icone: '🐓', texte: 'Retrouver les paires d’animaux de la ferme.', memoire: true },
+  { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', icone: '🧼', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
 ]
 
 /* ---------- page ---------- */
@@ -567,7 +540,7 @@ export default function Jeux() {
       >
         {jeu
           ? 'Un adulte reste à côté. On écoute la consigne, on touche la bonne image. Il n’y a pas de perdant : on essaie jusqu’à réussir.'
-          : 'Des jeux courts pour éveiller la logique : compter, reconnaître, trouver la suite. Ils restent sur l’appareil, sans compte et sans envoi de donnée.'}
+          : 'Des jeux courts pour apprendre en s’amusant : compter, reconnaître les couleurs et les formes, bien manger, se laver les mains. Chaque bonne réponse donne une étoile.'}
       </Bandeau>
 
       <main className="page">
@@ -587,7 +560,7 @@ export default function Jeux() {
             <div className="jeux-catalogue">
               {JEUX.map((j) => (
                 <Link key={j.id} to={`/jeux/${j.id}`} className="jeu-carte">
-                  <span className="jeu-icone" aria-hidden="true"><Photo id={j.photo} /></span>
+                  <span className="jeu-icone" aria-hidden="true">{j.icone}</span>
                   <span className="jeu-texte">
                     <b>{j.titre}</b>
                     <span>{j.texte}</span>
@@ -596,16 +569,15 @@ export default function Jeux() {
                 </Link>
               ))}
             </div>
-            <p className="avertissement">Sans réseau, les jeux déjà ouverts continuent. Rien n’est envoyé : pas de nom, pas de score sur un serveur. Les étoiles restent sur cet appareil.</p>
             <div className="carte jeux-note">
               <h2>Pour les parents et les agents</h2>
               <ul className="liste-coches">
                 <li>Les jeux se jouent à deux : l'adulte lit la consigne, l'enfant touche. Pas de compte, aucune donnée enregistrée sur l'enfant.</li>
-                <li>Au village sans écran, le jeu du jour se fait avec les objets de la maison. Le SMS ne fait que le rappeler.</li>
+                <li>Les étoiles restent seulement sur ce téléphone ou cet ordinateur.</li>
                 <li>Les voix en éwé, kabyè et tem ne sont pas encore enregistrées : les consignes sont lues en français.</li>
+                <li>Sans écran : le « jeu du jour » avec des objets de la maison arrive par SMS aux familles suivies (voir le <Link to="/telephone">simulateur de téléphone</Link>).</li>
               </ul>
             </div>
-            <CreditsPhotos />
           </>
         )}
 

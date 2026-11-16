@@ -1,38 +1,36 @@
-/* Met en cache le site déjà visité, pour que les jeux continuent sans réseau.
-   Les appels /api et /assistant ne sont jamais mis en cache. */
-const CACHE = 'fildor-coque-1'
+// Fil d'Or hors réseau : l'application s'ouvre même sans connexion. Les données, elles, passent par la file
+// d'attente de l'appareil (localStorage) ; l'API n'est jamais mise en cache ici.
+const VERSION = 'fildor-v1'
+const COQUE = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => cache.addAll(['/', '/index.html', '/jeux', '/favicon.svg', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']))
-      .then(() => self.skipWaiting()),
-  )
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(COQUE)).then(() => self.skipWaiting()))
 })
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((cles) => Promise.all(cles.filter((c) => c !== CACHE).map((c) => caches.delete(c))))
-      .then(() => self.clients.claim()),
-  )
+self.addEventListener('activate', (e) => {
+  e.waitUntil(caches.keys()
+    .then((cles) => Promise.all(cles.filter((c) => c !== VERSION).map((c) => caches.delete(c))))
+    .then(() => self.clients.claim()))
 })
 
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url)
-  if (event.request.method !== 'GET') return
-  if (url.origin !== self.location.origin) return
-  if (url.pathname.startsWith('/api') || url.pathname.startsWith('/assistant')) return
+self.addEventListener('fetch', (e) => {
+  const req = e.request
+  const url = new URL(req.url)
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/assistant/')) return
 
-  event.respondWith(
-    fetch(event.request)
-      .then((reponse) => {
-        if (reponse.ok) {
-          const copie = reponse.clone()
-          caches.open(CACHE).then((cache) => cache.put(event.request, copie))
-        }
-        return reponse
-      })
-      .catch(() => caches.match(event.request).then((enCache) => enCache || caches.match('/index.html'))),
-  )
+  // Pages : réseau d'abord, sinon la copie gardée. Fichiers du site : copie d'abord, mise à jour en arrière-plan.
+  if (req.mode === 'navigate') {
+    e.respondWith(fetch(req).then((r) => {
+      const copie = r.clone(); caches.open(VERSION).then((c) => c.put('/index.html', copie)); return r
+    }).catch(() => caches.match('/index.html')))
+    return
+  }
+  e.respondWith(caches.match(req).then((trouve) => {
+    const reseau = fetch(req).then((r) => {
+      if (r.ok) { const copie = r.clone(); caches.open(VERSION).then((c) => c.put(req, copie)) }
+      return r
+    }).catch(() => trouve)
+    return trouve || reseau
+  }))
 })

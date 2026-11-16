@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/contexte.jsx'
+import Visite from './pages/Visite.jsx'
+import HorsReseau from './pages/HorsReseau.jsx'
+import Adolescents from './pages/Adolescents.jsx'
+import Signalement from './pages/Signalement.jsx'
 import Accueil from './pages/Accueil.jsx'
 import Connexion from './pages/Connexion.jsx'
 import Telephone from './pages/Telephone.jsx'
@@ -17,7 +21,6 @@ import Structure from './pages/Structure.jsx'
 import Projet from './pages/Projet.jsx'
 import Jeux from './pages/Jeux.jsx'
 import Fonctionnement from './pages/Fonctionnement.jsx'
-import Tableau from './pages/Tableau.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
@@ -35,13 +38,6 @@ const ROLES_PAR_PAGE = {
   carte: ['DECIDEUR', 'ADMIN'],
   structure: ['STRUCTURE'],
   admin: ['ADMIN'],
-}
-
-function Connecte({ children }) {
-  const { session } = useAuth()
-  const lieu = useLocation()
-  if (!session) return <Navigate to="/connexion" state={{ depuis: lieu.pathname }} replace />
-  return children
 }
 
 function Protegee({ page, children }) {
@@ -75,12 +71,6 @@ export default function App() {
     <div className="coque">
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}`}>
-        <div className="barre-haute">
-          <div className="interieur">
-            <span>Hack4Children Togo 2026</span>
-            <span>Démonstration · données fictives · aucun diagnostic</span>
-          </div>
-        </div>
         <header className="entete">
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
@@ -89,13 +79,11 @@ export default function App() {
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <NavLink to="/projet">Le projet</NavLink>
-              <NavLink to="/fonctionnement">Fonctionnement</NavLink>
+              <NavLink to="/visite">Essayer</NavLink>
+              <NavLink to="/hors-reseau">Hors réseau</NavLink>
+              <NavLink to="/assistant">Assistant</NavLink>
               <NavLink to="/jeux">Jeux</NavLink>
-              <NavLink to="/telephone">Téléphone</NavLink>
-              <NavLink to="/annuaire">Annuaire</NavLink>
-              {session
-                ? <NavLink className="bouton-entete" to="/tableau">Tableau de bord</NavLink>
-                : <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
+              {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
             </nav>
           </div>
         </header>
@@ -104,7 +92,6 @@ export default function App() {
             <div className="interieur">
               <span className="espace-titre">{LIBELLE_ROLE[session.role] ?? 'Espace professionnel'}</span>
               <nav aria-label="Espace professionnel">
-                <NavLink to="/tableau">Tableau de bord</NavLink>
                 {peut('agent') && <NavLink to="/agent" end>Mes visites</NavLink>}
                 {peut('agent') && <NavLink to="/agent/inscription">Inscrire une famille</NavLink>}
                 {peut('mairie') && <NavLink to="/mairie">Déclarations de naissance</NavLink>}
@@ -128,12 +115,15 @@ export default function App() {
           <Route path="/" element={<Accueil />} />
           <Route path="/projet" element={<Projet />} />
           <Route path="/connexion" element={<Connexion />} />
-          <Route path="/tableau" element={<Connecte><Tableau /></Connecte>} />
           <Route path="/telephone" element={<Telephone />} />
           <Route path="/ecoute" element={<Ecoute />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/annuaire" element={<Annuaire />} />
           <Route path="/fonctionnement" element={<Fonctionnement />} />
+          <Route path="/visite" element={<Visite />} />
+          <Route path="/hors-reseau" element={<HorsReseau />} />
+          <Route path="/adolescents" element={<Adolescents />} />
+          <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
           <Route path="/jeux/:jeu" element={<Jeux />} />
           <Route path="/agent" element={<Protegee page="agent"><Agent /></Protegee>} />
@@ -151,7 +141,7 @@ export default function App() {
         <div className="pied-interieur">
           <div className="pied-grille">
             <div>
-              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo fond="#164863" /></Link>
+              <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
               <p>Un seul carnet pour suivre chaque enfant de la grossesse à 5 ans : santé, nutrition, état civil, services sociaux et éveil.</p>
             </div>
             <div>
@@ -160,10 +150,14 @@ export default function App() {
                 <li><Link to="/projet">Le projet</Link></li>
                 <li><Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link></li>
                 <li><Link to="/jeux">Jeux pour les enfants</Link></li>
+                <li><Link to="/visite">Essayer en 5 minutes</Link></li>
+                <li><Link to="/hors-reseau">Hors réseau et clé USB</Link></li>
                 <li><Link to="/telephone">Simulateur de téléphone</Link></li>
-                <li><Link to="/annuaire">Annuaire des structures</Link></li>
                 <li><Link to="/ecoute">Point d'écoute</Link></li>
                 <li><Link to="/assistant">Poser une question</Link></li>
+                <li><Link to="/annuaire">Annuaire des structures</Link></li>
+                <li><Link to="/adolescents">Adolescents</Link></li>
+                <li><Link to="/signalement">Une situation inquiétante ?</Link></li>
               </ul>
             </div>
             <div>

@@ -28,9 +28,9 @@ describe('format', () => {
   })
 
   it("colore l'indice d'oubli", () => {
-    expect(couleurIndice(80)).toBe('#b3261e')
-    expect(couleurIndice(40)).toBe('#e08a00')
-    expect(couleurIndice(10)).toBe('#2e7d32')
-    expect(couleurIndice(null)).toBe('#9e9e9e')
+    expect(couleurIndice(80)).toBe('#e2231a')
+    expect(couleurIndice(40)).toBe('#f26a21')
+    expect(couleurIndice(10)).toBe('#00833d')
+    expect(couleurIndice(null)).toBe('#777779')
   })
 })
