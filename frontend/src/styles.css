@@ -635,3 +635,13 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .partenaires .interieur { max-width: var(--largeur); margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; }
 .partenaires img { height: 64px; width: auto; }
 .partenaires p { margin: 0; max-width: 62ch; color: var(--texte-doux); }
+
+/* Barre d'ancres : reste visible en haut pendant tout le défilement, juste sous l'en-tête */
+.barre-ancres { position: sticky; top: var(--haut-entete, 72px); z-index: 20; background: var(--ciel); border-bottom: 1px solid #c7e3f2; padding: 0.7rem 1.25rem; box-shadow: 0 2px 8px rgba(45, 41, 38, 0.08); }
+.barre-ancres .ancres { margin: 0; justify-content: center; max-width: var(--largeur); margin-inline: auto; }
+.ancres.barre-ancres { margin: 0 0 1.6rem; justify-content: center; }
+.section[id] { scroll-margin-top: calc(var(--haut-entete, 72px) + 70px); }
+.bloc-page { scroll-margin-top: calc(var(--haut-entete, 72px) + 70px); }
+@media (max-width: 700px) { .barre-ancres .ancres { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; } .barre-ancres .ancres a { white-space: nowrap; } }
+
+.barre-ancres.sous-entete { position: static; box-shadow: none; padding: 0.55rem 1.25rem; }

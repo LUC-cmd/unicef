@@ -144,7 +144,7 @@ export default function Fonctionnement() {
       </Bandeau>
 
       <main className="page">
-        <nav className="ancres ancres-page" aria-label="Sur cette page">
+        <nav className="ancres ancres-page barre-ancres" aria-label="Sur cette page">
           <a href="#naissance">De la naissance à la preuve</a>
           <a href="#sms">Envoi par téléphone</a>
           <a href="#verifier">Vérifier une preuve</a>

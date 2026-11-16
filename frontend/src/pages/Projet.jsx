@@ -1,15 +1,5 @@
 import { Link } from 'react-router-dom'
 
-const ANCRES = [
-  ['probleme', 'Le problème'],
-  ['solution', 'La solution'],
-  ['piliers', 'Cinq piliers'],
-  ['impact', "L'impact attendu"],
-  ['feuille-de-route', 'Feuille de route'],
-  ['equipe', "L'équipe"],
-  ['droits', 'Droits et données'],
-  ['sources', 'Sources'],
-]
 
 const CONSTATS = [
   ['Retard de croissance', '23,8 %', "Près d'un enfant sur quatre grandit moins bien qu'il ne le devrait. Le repérer tôt change la suite."],
@@ -121,9 +111,6 @@ export default function Projet() {
           <span className="mention-concours">Candidature Hack4Children Togo 2026</span>
           <h1>Un carnet unique, de la grossesse à 5 ans</h1>
           <p>Fil d'Or suit chaque enfant avec ou sans téléphone, avec ou sans réseau. Cette page reprend le dossier de candidature : le problème, la solution, l'impact attendu, la feuille de route, l'équipe et les garanties pour les enfants et leurs données.</p>
-          <nav className="ancres" aria-label="Sur cette page">
-            {ANCRES.map(([id, nom]) => <a key={id} href={`#${id}`}>{nom}</a>)}
-          </nav>
         </div>
       </section>
 

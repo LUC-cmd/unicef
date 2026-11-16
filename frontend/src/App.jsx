@@ -21,6 +21,7 @@ import Structure from './pages/Structure.jsx'
 import Projet from './pages/Projet.jsx'
 import Jeux from './pages/Jeux.jsx'
 import Fonctionnement from './pages/Fonctionnement.jsx'
+import { ANCRES_PROJET } from './lib/ancres.js'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
@@ -67,6 +68,17 @@ export default function App() {
   // Ferme le menu mobile et remonte en haut à chaque changement de page
   useEffect(() => { setMenuOuvert(false); window.scrollTo(0, 0) }, [lieu.pathname])
 
+  // Hauteur de l'en-tête collant : les barres d'ancres des pages se calent juste dessous.
+  useEffect(() => {
+    const bloc = document.querySelector('.entete-bloc')
+    if (!bloc) return undefined
+    const mesurer = () => document.documentElement.style.setProperty('--haut-entete', `${bloc.offsetHeight}px`)
+    mesurer()
+    const obs = new ResizeObserver(mesurer)
+    obs.observe(bloc)
+    return () => obs.disconnect()
+  })
+
   return (
     <div className="coque">
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
@@ -107,6 +119,13 @@ export default function App() {
               </div>
             </div>
           </div>
+        )}
+        {lieu.pathname === '/projet' && (
+          <nav className="barre-ancres sous-entete" aria-label="Sur cette page">
+            <div className="ancres">
+              {ANCRES_PROJET.map(([id, nom]) => <a key={id} href={`#${id}`}>{nom}</a>)}
+            </div>
+          </nav>
         )}
       </div>
 
