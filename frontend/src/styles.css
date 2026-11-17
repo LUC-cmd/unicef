@@ -377,6 +377,14 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 @media (max-width: 860px) { .comptes-grille { grid-template-columns: 1fr; } }
 .compte-carte { display: grid; grid-template-columns: 52px 1fr auto; gap: 1rem; align-items: center; text-align: left; background: #fff; border: 1.5px solid var(--bord); border-radius: 14px; padding: 1.1rem 1.2rem; transition: border-color 0.15s, box-shadow 0.15s; }
 .compte-carte:hover:not(:disabled) { border-color: var(--cyan); box-shadow: 0 10px 28px rgba(45, 41, 38, 0.1); }
+.compte-carte.choisi { border-color: var(--cyan); box-shadow: inset 4px 0 0 var(--cyan); background: #f3fbfe; }
+.connexion-saisie { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.4rem; align-items: start; margin-bottom: 1.2rem; }
+.connexion-saisie h2 { margin: 0.2rem 0 0.4rem; }
+.connexion-saisie form { margin: 0; }
+.champ-secret { position: relative; }
+.champ-secret input { padding-right: 5.2rem; }
+.voir-mdp { position: absolute; right: 0.35rem; bottom: 0.45rem; border: 0; background: transparent; color: var(--bleu); font-weight: 700; cursor: pointer; min-height: 36px; }
+@media (max-width: 800px) { .connexion-saisie { grid-template-columns: 1fr; } }
 .compte-carte:disabled { opacity: 0.6; cursor: wait; }
 .compte-carte .icone { width: 52px; height: 52px; border-radius: 12px; background: var(--ciel); color: var(--bleu); display: grid; place-items: center; }
 .compte-carte .texte b { display: block; color: var(--nuit); font-family: var(--police-titre); font-weight: 600; font-size: 1.05rem; }
@@ -658,7 +666,7 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .shell-menu a.active { background: var(--cyan); color: #fff; font-weight: 700; }
 .shell-badge { margin-left: auto; background: var(--rouge); color: #fff; border-radius: 999px; font-size: 0.75rem; padding: 0.05rem 0.5rem; }
 .shell-corps { min-width: 0; }
-.shell-barre { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; background: #fff; border-bottom: 1px solid var(--bord); padding: 0.6rem 1.4rem; position: sticky; top: var(--haut-entete, 72px); z-index: 15; }
+.shell-barre { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; background: #fff; border-bottom: 1px solid var(--bord); box-shadow: inset 0 -2px 0 var(--or); padding: 0.6rem 1.4rem; position: sticky; top: var(--haut-entete, 72px); z-index: 15; }
 .shell-fil { margin: 0; flex: 1; color: var(--texte-doux); }
 .shell-fil b { color: var(--texte); }
 .shell-reseau { font-size: 0.85rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 999px; }
@@ -804,6 +812,20 @@ button:disabled, .bouton[disabled] { opacity: .55; cursor: not-allowed; }
 .shell-pied .shell-qui { margin: 0; font-weight: 700; font-size: .92rem; }
 .shell-pied .lien { font-size: .88rem; }
 .shell-barre { padding: .55rem 1.4rem; }
+.shell-outils { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
+.shell-identite { display: flex; align-items: center; gap: .6rem; text-align: right; }
+.shell-identite b { display: block; font-size: .9rem; color: var(--nuit); }
+.shell-identite span { display: block; font-size: .75rem; color: var(--texte-doux); }
+.notif { position: relative; }
+.notif-bouton { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--bord); background: #fff; color: var(--nuit); display: grid; place-items: center; cursor: pointer; }
+.notif-bouton b { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; border-radius: 99px; background: var(--or); color: var(--nuit); font-size: .7rem; display: grid; place-items: center; }
+.notif-panneau { position: absolute; top: calc(100% + 8px); right: 0; width: min(320px, 80vw); background: #fff; border: 1px solid var(--bord); border-radius: 12px; box-shadow: 0 12px 32px rgba(45, 41, 38, .16); padding: .4rem; z-index: 30; }
+.notif-titre { margin: .4rem .7rem .2rem; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--texte-doux); }
+.notif-panneau a { display: grid; gap: .1rem; padding: .6rem .7rem; border-radius: 8px; text-decoration: none; color: var(--texte); }
+.notif-panneau a:hover { background: var(--ciel); }
+.notif-panneau a b { color: var(--nuit); }
+.notif-panneau a span { font-size: .82rem; color: var(--texte-doux); }
+@media (max-width: 720px) { .shell-identite div { display: none; } }
 .shell-contenu { max-width: 1240px; }
 
 /* ===== Formulaire d'inscription ===== */
