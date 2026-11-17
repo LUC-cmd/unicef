@@ -114,12 +114,16 @@ export default function App() {
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
             <a className="marque-unicef" href="https://www.unicef.org/togo/" target="_blank" rel="noreferrer" aria-label="UNICEF, pour chaque enfant"><img src="/partenaires/unicef-globe.png" alt="UNICEF" width="46" height="45" /><span>Hack4Children<br />Togo 2026</span></a>
-            <button className="menu-bouton" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
-              <IconeMenu /> Menu
+            <div className="entete-action">
+              {!session && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
+              {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
+              {session && dansEspace && <Link className="bouton-entete principal" to="/">Site public</Link>}
+            </div>
+            <button className="menu-bouton" aria-label="Menu" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
+              <IconeMenu /> <span className="txt-menu">Menu</span>
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <div className="nav-liens">
-                <NavLink to="/" end className="lien-site">Site public</NavLink>
                 <NavLink to="/territoire">Carte du Togo</NavLink>
                 <NavLink to="/parcours">Un enfant, un parcours</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
@@ -150,8 +154,6 @@ export default function App() {
                 {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
                   <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
                 </span>}
-                {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
-                {session && <Link className="bouton-entete" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
                 {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
               </div>
             </nav>

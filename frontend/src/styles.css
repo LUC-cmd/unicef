@@ -1248,3 +1248,24 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .partenaires .partenaires-texte p { max-width: 46ch; color: #3d4b59; }
 .partenaires .partenaires-logo { height: 76px; width: auto; }
 @media (max-width: 760px) { .partenaires .partenaires-grille { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; } .partenaires .partenaires-photo { height: 190px; } }
+
+/* ===== En-tête : une action principale toujours visible, lisible, hors du menu ===== */
+.entete .interieur { display: flex; align-items: center; }
+.entete-action { order: 3; display: flex; margin-left: .6rem; flex: none; }
+.nav-principale { order: 2; }
+.entete .bouton-entete.principal, .entete .entete-action a.bouton-entete { background: #fff; color: #0d3b66; border: 2px solid #fff; border-radius: 999px; font-weight: 800; min-height: 44px; padding: .4rem 1.2rem; box-shadow: 0 2px 8px rgba(0, 60, 95, .25); text-decoration: none; white-space: nowrap; }
+.entete .bouton-entete.principal:hover { background: #e8f6fd; color: #0d3b66; }
+.entete .bouton-entete.sortie { color: #fff; background: rgba(13, 59, 102, .35); border: 2px solid rgba(255, 255, 255, .9); }
+.entete .bouton-entete.sortie:hover { background: rgba(13, 59, 102, .55); }
+@media (max-width: 1380px) {
+  .entete .interieur { flex-wrap: wrap; }
+  .entete .logo { order: 0; } .marque-unicef { order: 1; margin-left: auto !important; margin-right: 0 !important; }
+  .entete-action { order: 2; margin-left: .5rem; } .menu-bouton { order: 3; margin-left: .5rem !important; }
+  .nav-principale { order: 4; }
+}
+@media (max-width: 420px) { .entete .bouton-entete.principal { padding: .4rem .9rem; font-size: .92rem; } .entete .logo { font-size: 1.1rem; } .marque-unicef img { height: 30px; } }
+
+.lien-bouton { background: none; border: 0; padding: 0; color: #1d4ed8; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+@media (max-width: 520px) { .entete .interieur { flex-wrap: nowrap; gap: .4rem; } .txt-menu { display: none; } .menu-bouton { padding: .45rem .65rem; min-width: 46px; justify-content: center; } .entete .logo small { display: none; } .entete-action { margin-left: .2rem; } .marque-unicef { margin-left: auto !important; } .entete-bloc.ouvert .nav-principale { flex-basis: 100%; } .entete .interieur { flex-wrap: wrap; } }
+@media (max-width: 520px) { .entete .bouton-entete.principal { padding: .35rem .8rem; font-size: .88rem; min-height: 40px; } .marque-unicef { padding: .15rem; } .marque-unicef img { height: 28px; } .entete .logo { gap: .45rem; font-size: 1.05rem; } .entete .logo svg { width: 38px; height: 38px; } .menu-bouton { min-height: 40px; min-width: 42px; padding: .3rem .5rem; } .entete .interieur { padding-left: .8rem; padding-right: .8rem; } }

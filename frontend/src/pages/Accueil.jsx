@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../lib/contexte.jsx'
+
+const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 import { MereEtEnfant } from '../components/Illustrations.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
@@ -19,6 +22,7 @@ const PARCOURS_ENFANT = [
 ]
 
 export default function Accueil() {
+  const { session } = useAuth()
   return (
     <>
       <section className="heros-accueil" aria-labelledby="titre-accueil">
@@ -33,7 +37,7 @@ export default function Accueil() {
               </p>
               <div className="heros-actions">
                 <Link className="bouton clair" to="/visite">Essayer en 5 minutes</Link>
-                <Link className="bouton contour-clair" to="/hors-reseau">Sans réseau, avec une clé USB</Link>
+                <Link className="bouton contour-clair" to={session ? (ESPACE[session.role] ?? '/connexion') : '/connexion'}>{session ? 'Ouvrir mon tableau de bord' : 'Ouvrir un tableau de bord'}</Link>
               </div>
             </div>
 

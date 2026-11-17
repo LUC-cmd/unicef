@@ -47,7 +47,7 @@ export default function Connexion() {
   return (
     <>
     <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
-      Choisissez un rôle. Données fictives.
+      Aucun mot de passe à saisir : cliquez sur « Entrer » à côté d'un rôle pour ouvrir son tableau de bord de démonstration. Toutes les données sont fictives.
     </Bandeau>
     <main className="page connexion-page">
 
@@ -68,8 +68,9 @@ export default function Connexion() {
       </div>
 
       <details className="autre-compte">
-        <summary>Autres comptes : agent du Golfe (agent.golfe), ou un identifiant</summary>
+        <summary>J'ai un identifiant et un mot de passe</summary>
         <form className="carte" onSubmit={envoyerFormulaire}>
+          <p className="petit">Réservé aux comptes personnels, par exemple un autre agent de santé. Pour essayer, l'identifiant <b>agent.golfe</b> marche avec le mot de passe de démonstration : <button type="button" className="lien-bouton" onClick={() => { setUsername('agent.golfe'); setMdp(MDP_DEMO) }}>remplir pour moi</button>.</p>
           <div className="formulaire-ligne">
             <label>Identifiant
               <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
