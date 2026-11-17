@@ -52,13 +52,13 @@ public class InscriptionRepository {
     }
 
     public void creerFamille(long id, String code, long zoneId, String langue, String porte, boolean aTelephone,
-                             String hash, UUID clientUuid) {
+                             String hash, UUID clientUuid, boolean mereAdolescente) {
         jdbc.sql("""
                 INSERT INTO famille (id, code_famille, zone_id, langue, porte, a_telephone, telephone_hash,
-                                     consentement, consentement_le, client_uuid)
-                VALUES (:id, :code, :zone, :langue, :porte, :tel, :hash, TRUE, now(), :uuid)""")
+                                     consentement, consentement_le, client_uuid, mere_adolescente)
+                VALUES (:id, :code, :zone, :langue, :porte, :tel, :hash, TRUE, now(), :uuid, :ado)""")
                 .param("id", id).param("code", code).param("zone", zoneId).param("langue", langue)
-                .param("porte", porte).param("tel", aTelephone).param("hash", hash).param("uuid", clientUuid)
+                .param("porte", porte).param("tel", aTelephone).param("hash", hash).param("uuid", clientUuid).param("ado", mereAdolescente)
                 .update();
     }
 

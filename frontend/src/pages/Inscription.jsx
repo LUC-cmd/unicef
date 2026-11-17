@@ -43,6 +43,7 @@ export default function Inscription() {
   const [telephone, setTelephone] = useState('')
   const [codeZone, setCodeZone] = useState('GOLFE')
   const [consentement, setConsentement] = useState(false)
+  const [mereAdolescente, setMereAdolescente] = useState(false)
   const [enfants, setEnfants] = useState([enfantVide()])
   const [proches, setProches] = useState([])
   const [erreur, setErreur] = useState('')
@@ -69,6 +70,7 @@ export default function Inscription() {
       porte,
       telephone: telephone.trim() || null,
       consentement: true,
+      mereAdolescente,
       enfants: enfants.map((e) => (e.statut === 'ENFANT'
         ? { statut: 'ENFANT', dateNaissance: e.dateNaissance, sexe: e.sexe || null, etapesFaites: e.etapesFaites }
         : { statut: 'GROSSESSE', dateTermePrevue: e.dateTermePrevue, sexe: null, consultationsFaites: Number(e.consultationsFaites),
@@ -285,6 +287,14 @@ export default function Inscription() {
               </div>
             ))}
             {proches.length < 5 && <button type="button" className="bouton secondaire petit-bouton" onClick={() => setProches((l) => [...l, procheVide()])}>+ Ajouter un proche</button>}
+          </section>
+
+          <section className="etape">
+            <header className="etape-tete"><span className="etape-num">3b</span><div><h2>Jeune mère</h2><p>Pour un suivi renforcé et une orientation adaptée.</p></div></header>
+            <label className="case">
+              <input type="checkbox" checked={mereAdolescente} onChange={(e) => setMereAdolescente(e.target.checked)} />
+              <span>La mère a <b>moins de 20 ans</b>. Aucun âge exact n'est gardé.</span>
+            </label>
           </section>
 
           <section className="etape">

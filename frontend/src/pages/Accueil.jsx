@@ -117,7 +117,8 @@ export default function Accueil() {
 
       <section className="partenaires" aria-label="Concours">
         <div className="interieur">
-          <img src="/partenaires/unicef-logo.png" alt="UNICEF" height="64" />
+          <img src="/partenaires/unicef-logo.png" alt="UNICEF" height="84" />
+          <img className="partenaires-photo" src="/partenaires/enfants-unicef.png" alt="Des enfants en bleu UNICEF, les mains levées" width="390" height="256" />
           <p>Projet candidat au concours <b>Hack4Children Togo 2026</b>, organisé avec l'UNICEF et l'ARCEP. Fil d'Or n'est pas un service officiel de l'UNICEF.</p>
         </div>
       </section>

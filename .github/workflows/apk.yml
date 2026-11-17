@@ -1,0 +1,62 @@
+name: Application Android (APK)
+
+# À lancer à la main : onglet « Actions » > « Application Android (APK) » > « Run workflow ».
+# L'APK est publié dans « Releases » (étiquette apk-latest) et aussi comme fichier du lancement.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Dépendances
+        working-directory: apk
+        run: npm install --no-audit --no-fund
+
+      - name: Projet Android
+        working-directory: apk
+        run: npx cap add android
+
+      - name: Icône
+        working-directory: apk
+        continue-on-error: true
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#1CABE2' --iconBackgroundColorDark '#1CABE2'
+
+      - name: Synchroniser
+        working-directory: apk
+        run: npx cap sync android
+
+      - name: Construire l'APK
+        working-directory: apk/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Renommer
+        run: cp apk/android/app/build/outputs/apk/debug/app-debug.apk Fil-dOr.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fil-dOr-Android
+          path: Fil-dOr.apk
+
+      - name: Publier dans Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest Fil-dOr.apk --title "Fil d'Or pour Android" --notes "Application Android de démonstration. Ouvrez le fichier sur le téléphone et autorisez les sources inconnues si Android le demande."

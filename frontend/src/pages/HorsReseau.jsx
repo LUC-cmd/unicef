@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 
 const LIEN_WINDOWS = '/telechargements/Fil-dOr-Windows.zip'
+const LIEN_ANDROID = globalThis.FILDOR_CONFIG?.apkUrl || ''
 
 export default function HorsReseau() {
   const dansLeLogiciel = Boolean(globalThis.FILDOR_CONFIG?.logiciel)
@@ -39,6 +40,19 @@ export default function HorsReseau() {
               <li>Sur l'écran de connexion, « Entrer sans réseau » : choisissez votre zone et saisissez.</li>
               <li>Avant de partir : <b>Synchronisation et clé USB</b>, « Copier sur une clé ». Un poste avec réseau envoie ensuite le fichier dans la base.</li>
             </ol>
+          </section>
+        )}
+        {!dansLeLogiciel && (
+          <section className="carte telechargement android">
+            <h2>Android : Fil d'Or sur le téléphone</h2>
+            <p>L'application garde les saisies sur le téléphone, même sans réseau, et les envoie au retour du réseau.</p>
+            <div className="actions">
+              {LIEN_ANDROID && <a className="bouton" href={LIEN_ANDROID}>Télécharger l'application Android (APK)</a>}
+              <button type="button" className={`bouton ${LIEN_ANDROID ? 'secondaire' : ''}`} onClick={installer} disabled={!invite || installe}>{installe ? 'Déjà installée' : 'Ajouter à l\u2019écran d\u2019accueil'}</button>
+            </div>
+            {!invite && !installe && <p className="petit">Si le bouton est grisé : ouvrez ce site dans Chrome, menu ⋮, « Ajouter à l'écran d'accueil ».</p>}
+            <p><Link to="/telecharger">Code QR et lien d'installation à partager</Link></p>
+            {LIEN_ANDROID && <p className="petit">Pour installer l'APK : ouvrez le fichier, puis autorisez « les sources inconnues » si Android le demande.</p>}
           </section>
         )}
         <div className="grille">

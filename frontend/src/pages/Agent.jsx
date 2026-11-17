@@ -303,6 +303,20 @@ function Fiche({ code, enLigne, onChange }) {
       {depuisCache && <p className="avertissement">Fiche enregistrée avant le départ : elle peut avoir changé depuis.</p>}
 
       <Pastille niveau={fiche.priorite.niveau} score={fiche.priorite.score} />
+      {fiche.mereAdolescente && (
+        <div className="carte jeune-mere">
+          <h3>Jeune mère : accompagnement renforcé</h3>
+          <ul>
+            <li><b>Santé</b> : consultations prénatales et suivi du bébé sans faute ; orienter vers le centre de santé pour la planification familiale.</li>
+            <li><b>École</b> : une jeune mère garde le droit d'étudier ; en parler au centre social.</li>
+            <li><b>Protection</b> : en cas de violence ou de contrainte, prévenir le centre social tout de suite.</li>
+          </ul>
+          <div className="actions">
+            <Link className="bouton secondaire petit-bouton" to="/agent/annuaire">Centres de santé et centres sociaux</Link>
+            <Link className="bouton secondaire petit-bouton" to="/adolescents">Informations pour les adolescentes</Link>
+          </div>
+        </div>
+      )}
       {fiche.priorite.raisons.length > 0 && (
         <ul className="raisons-liste">{fiche.priorite.raisons.map((r) => <li key={r}>{r}</li>)}</ul>
       )}

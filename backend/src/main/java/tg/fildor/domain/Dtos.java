@@ -30,7 +30,7 @@ public final class Dtos {
                               String statut, LocalDate dateNaissance, LocalDate dateTermePrevue,
                               Priorite priorite, List<RendezVousDto> rendezVous, List<VisiteDto> visites,
                               DeclarationDto declaration, EveilEnfant eveil, List<DemandeDto> demandes,
-                              int nombreProches) {
+                              int nombreProches, boolean mereAdolescente) {
     }
 
     public record Carnet(String codeFamille, String zone, String langue, List<CarnetEnfant> enfants, String codeCarte) {

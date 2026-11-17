@@ -70,7 +70,8 @@ public class InscriptionService {
             String telephone,
             boolean consentement,
             @NotEmpty @Size(max = MAX_ENFANTS) @Valid List<EnfantInscrit> enfants,
-            @Size(max = MAX_PROCHES) @Valid List<ContactInscrit> contacts) {
+            @Size(max = MAX_PROCHES) @Valid List<ContactInscrit> contacts,
+            Boolean mereAdolescente) {
     }
 
     public record InscriptionResultat(UUID clientUuid, boolean creee, String codeFamille, List<String> codesEnfants) {
@@ -128,7 +129,8 @@ public class InscriptionService {
         InscriptionResultat resultat = tx.execute(status -> {
             long id = repo.prochainIdFamille();
             String codeFamille = "F-" + String.format("%04d", id);
-            repo.creerFamille(id, codeFamille, zoneId, r.langue(), r.porte(), hashTel != null, hashTel, r.clientUuid());
+            repo.creerFamille(id, codeFamille, zoneId, r.langue(), r.porte(), hashTel != null, hashTel, r.clientUuid(),
+                    Boolean.TRUE.equals(r.mereAdolescente()));
             List<String> codes = new ArrayList<>();
             for (EnfantInscrit e : r.enfants()) {
                 codes.add(ecrireEnfant(id, e, aujourdhui, u.id()));

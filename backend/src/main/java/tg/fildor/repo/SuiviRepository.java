@@ -34,7 +34,7 @@ public class SuiviRepository {
     public List<LigneBrute> lignesBrutes(Long zoneId, String codeEnfant, LocalDate aujourdhui) {
         String sql = """
                 SELECT e.code_enfant, f.code_famille, z.nom AS zone, f.porte, e.statut, e.date_naissance,
-                       NOT f.a_telephone AS sans_telephone,
+                       NOT f.a_telephone AS sans_telephone, f.mere_adolescente,
                        (SELECT count(*) FROM rendez_vous r WHERE r.enfant_id = e.id AND r.statut = 'MANQUE') AS rdv_manques,
                        (SELECT COALESCE(max(CAST(:today AS DATE) - r.date_prevue), 0) FROM rendez_vous r
                          WHERE r.enfant_id = e.id AND r.statut = 'MANQUE') AS retard_max_jours,
@@ -66,7 +66,7 @@ public class SuiviRepository {
                 new Indicateurs(rs.getString("statut"), Lignes.date(rs, "date_naissance"),
                         rs.getInt("rdv_manques"), rs.getInt("retard_max_jours"), rs.getInt("rappels_sans_reponse"),
                         Lignes.entier(rs, "dernier_muac_mm"), rs.getString("statut_declaration"),
-                        rs.getBoolean("sans_telephone")))).list();
+                        rs.getBoolean("sans_telephone"), rs.getBoolean("mere_adolescente")))).list();
     }
 
     public Optional<EnfantRef> trouverEnfant(String codeEnfant) {
@@ -134,6 +134,11 @@ public class SuiviRepository {
     public Optional<String> languesFamille(String codeFamille) {
         return jdbc.sql("SELECT langue FROM famille WHERE code_famille = :c")
                 .param("c", codeFamille).query(String.class).optional();
+    }
+
+    public boolean mereAdolescente(long familleId) {
+        return jdbc.sql("SELECT mere_adolescente FROM famille WHERE id = :f").param("f", familleId)
+                .query(Boolean.class).optional().orElse(false);
     }
 
     public Optional<String> codeCarte(String codeFamille) {

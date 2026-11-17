@@ -63,6 +63,13 @@ public class PrioriteService {
             }
         }
 
+        boolean petit = "GROSSESSE".equals(i.statut())
+                || (i.dateNaissance() != null && ChronoUnit.DAYS.between(i.dateNaissance(), aujourdhui) < 365);
+        if (i.mereAdolescente() && petit) {
+            score += 20;
+            raisons.add("Jeune mère (moins de 20 ans) : suivi renforcé, orientation santé et école");
+        }
+
         if (i.familleSansTelephone() && score > 0) {
             score += 5;
             raisons.add("Famille sans téléphone : seule la visite peut l'atteindre");

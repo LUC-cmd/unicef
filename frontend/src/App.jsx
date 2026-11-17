@@ -1,3 +1,4 @@
+import BandeauAndroid from './components/BandeauAndroid.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from './lib/contexte.jsx'
@@ -6,11 +7,13 @@ import Connexion from './pages/Connexion.jsx'
 import { ANCRES_PROJET } from './lib/ancres.js'
 import Chargement from './components/Chargement.jsx'
 import Retours from './components/Retours.jsx'
+import BarreRetour from './components/BarreRetour.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
 const Territoire = lazy(() => import('./pages/Territoire.jsx'))
 const Visite = lazy(() => import('./pages/Visite.jsx'))
+const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
 const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
 const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
 const Signalement = lazy(() => import('./pages/Signalement.jsx'))
@@ -102,10 +105,12 @@ export default function App() {
   return (
     <div className="coque">
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
+      <BandeauAndroid />
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}`}>
         <header className="entete">
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+            <a className="marque-unicef" href="https://www.unicef.org/togo/" target="_blank" rel="noreferrer" aria-label="UNICEF, pour chaque enfant"><img src="/partenaires/unicef-globe.png" alt="UNICEF" width="46" height="45" /><span>Hack4Children<br />Togo 2026</span></a>
             <button className="menu-bouton" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
               <IconeMenu /> Menu
             </button>
@@ -157,6 +162,7 @@ export default function App() {
 
       <div className="contenu" id="contenu">
         <Retours />
+        <BarreRetour />
         <Suspense fallback={<Chargement texte="Ouverture de la page…" />}>
         <Routes>
           <Route path="/" element={<Accueil />} />
@@ -172,6 +178,7 @@ export default function App() {
           <Route path="/fonctionnement" element={<Fonctionnement />} />
           <Route path="/visite" element={<Visite />} />
           <Route path="/hors-reseau" element={<HorsReseau />} />
+          <Route path="/telecharger" element={<Telecharger />} />
           <Route path="/adolescents" element={<Adolescents />} />
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
@@ -191,6 +198,7 @@ export default function App() {
         <div className="pied-interieur">
           <div className="pied-ligne">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+            <span className="pied-unicef"><img src="/partenaires/unicef-logo.png" alt="UNICEF" height="44" /><small>Concours Hack4Children Togo 2026</small></span>
             <nav className="pied-liens" aria-label="Liens du site">
               <Link to="/projet">Le projet</Link>
               <Link to="/fonctionnement">Fonctionnement</Link>

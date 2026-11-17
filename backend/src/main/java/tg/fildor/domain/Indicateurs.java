@@ -11,5 +11,13 @@ public record Indicateurs(
         int rappelsSansReponse,
         Integer dernierMuacMm,         // périmètre brachial en mm, null si jamais mesuré
         String statutDeclaration,      // null si aucune déclaration de naissance
-        boolean familleSansTelephone) {
+        boolean familleSansTelephone,
+        boolean mereAdolescente) {
+
+    public Indicateurs(String statut, LocalDate dateNaissance, int rdvManques, int retardMaxJours,
+                       int rappelsSansReponse, Integer dernierMuacMm, String statutDeclaration,
+                       boolean familleSansTelephone) {
+        this(statut, dateNaissance, rdvManques, retardMaxJours, rappelsSansReponse, dernierMuacMm, statutDeclaration,
+                familleSansTelephone, false);
+    }
 }

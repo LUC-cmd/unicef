@@ -28,7 +28,7 @@ const cadre = (b, marge, ratio) => {
   return [cx - w / 2, cy - h / 2, w, h]
 }
 // Sur grand écran, le panneau occupe la droite : on décale la carte vers la gauche pour que rien ne passe dessous.
-const decale = (v, ratio) => (ratio > 1.15 ? [v[0] + v[2] * 0.13, v[1], v[2], v[3]] : v)
+const decale = (v, ratio) => (ratio > 1.15 ? [v[0] + v[2] * 0.13, v[1], v[2], v[3]] : [v[0], v[1] + v[3] * 0.2, v[2], v[3]]) // mobile : le panneau est en bas, on remonte la carte
 const facile = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2)
 const TEINTES = { 'TG-M': '#1CABE2', 'TG-P': '#7CC9EA', 'TG-C': '#A6DAF0', 'TG-K': '#5CB8DF', 'TG-S': '#C4E6F5' }
 const NOM_REGION_ID = Object.fromEntries(REGIONS.map((r) => [r.nom, r.id]))
@@ -73,9 +73,11 @@ export default function CarteImmersive({ prefectures = [], regionChoisie, onRegi
   const vuePaysRef = useRef(vuePays); vuePaysRef.current = vuePays
   const phaseRef = useRef(0); phaseRef.current = phase
   useEffect(() => { if (phaseRef.current === 0 && !reduit.current) setVue(vueAfrique) }, [vueAfrique])
+  const minuteurs = useRef([])
+  const passer = () => { minuteurs.current.forEach(clearTimeout); cancelAnimationFrame(anim.current); setPhase(3); setVue(vuePaysRef.current); onPret?.() }
   useEffect(() => {
     if (reduit.current) { setPhase(3); setVue(vuePaysRef.current); onPret?.(); return undefined }
-    const t = [
+    const t = minuteurs.current = [
       setTimeout(() => { setPhase(1); aller(vuePaysRef.current, 3200) }, 1500),
       setTimeout(() => setPhase(2), 4300),
       setTimeout(() => { setPhase(3); onPret?.() }, 5600),
@@ -89,9 +91,15 @@ export default function CarteImmersive({ prefectures = [], regionChoisie, onRegi
   useEffect(() => {
     if (phase < 3) return
     const r = REGIONS.find((x) => x.nom === regionChoisie)
-    aller(r ? decale(cadre(r.bbox, 14, ratio), ratio) : vuePays, 1300)
+    const p = prefectures.find((x) => x.code === prefChoisie)
+    if (p) {
+      const [x, y] = pt(p.longitude, p.latitude)
+      aller(decale(cadre([x - 22, y - 22, x + 22, y + 22], 6, ratio), ratio), 1100)
+    } else {
+      aller(r ? decale(cadre(r.bbox, 14, ratio), ratio) : vuePays, 1300)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regionChoisie, phase])
+  }, [regionChoisie, prefChoisie, phase])
 
   const echelle = vue[2] / vuePays[2]
   const px = (n) => n * echelle
@@ -155,7 +163,12 @@ export default function CarteImmersive({ prefectures = [], regionChoisie, onRegi
           )
         })}
       </svg>
-      {phase < 3 && <p className="immersive-titre" aria-live="polite">{phase === 0 ? 'Afrique de l’Ouest' : 'Le Togo'}</p>}
+      {phase < 3 && (
+        <>
+          <p className="immersive-titre" aria-live="polite">{phase === 0 ? 'Afrique de l’Ouest' : 'Le Togo'}<small>{phase === 0 ? 'Un enfant, un parcours' : '5 régions · 39 préfectures'}</small></p>
+          <button type="button" className="bouton secondaire petit-bouton immersive-passer" onClick={passer}>Passer l'animation</button>
+        </>
+      )}
     </div>
   )
 }

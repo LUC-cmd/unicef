@@ -5,7 +5,7 @@ import Bandeau from '../components/Bandeau.jsx'
 
 /** Annuaire public des structures : informations sur les structures, jamais sur les familles. */
 export default function Annuaire() {
-  const [zone, setZone] = useState('')
+  const [zone, setZone] = useState(() => new URLSearchParams(window.location.search).get('zone') || '')
   const [type, setType] = useState('')
   const [besoins, setBesoins] = useState(false)
   const [liste, setListe] = useState([])

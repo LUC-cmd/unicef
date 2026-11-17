@@ -1136,3 +1136,68 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .liste-prefectures .pastille { flex: none; }
 .territoire-panneau .retour { background: none; box-shadow: none; text-decoration: none; padding: 0 0 .6rem; }
 .liste-prefectures .pastille { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; }
+
+/* ===== Bouton Retour ===== */
+:root { --haut-retour: 46px; }
+.barre-retour { position: sticky; top: var(--haut-entete, 68px); z-index: 20; height: var(--haut-retour); display: flex; align-items: center; padding: 0 1rem; background: rgba(255,255,255,.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--bord); }
+.bouton-retour { display: inline-flex; align-items: center; gap: .3rem; background: #f1f6f9; color: var(--bleu-fonce, #243775); border: 0; border-radius: 999px; padding: .35rem .95rem .35rem .6rem; font-weight: 700; font-size: .95rem; cursor: pointer; min-height: 34px; }
+.bouton-retour:hover { background: #e1eef6; }
+.territoire { height: calc(100vh - var(--haut-entete, 68px) - var(--haut-retour)); }
+.shell-menu { top: calc(var(--haut-entete, 72px) + var(--haut-retour)); height: calc(100vh - var(--haut-entete, 72px) - var(--haut-retour)); }
+.shell-barre { top: calc(var(--haut-entete, 72px) + var(--haut-retour)); }
+.barre-ancres { top: calc(var(--haut-entete, 72px) + var(--haut-retour)); }
+.section[id], .bloc-page { scroll-margin-top: calc(var(--haut-entete, 72px) + var(--haut-retour) + 70px); }
+@media (max-width: 900px) { .shell-menu { height: auto; top: auto; } }
+
+.immersive-titre small { display: block; font-size: .38em; font-weight: 600; letter-spacing: .02em; color: #31515f; margin-top: .2rem; text-align: center; }
+.immersive-passer { position: absolute; left: 1rem; bottom: 1rem; }
+.tuiles-carte { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin: .8rem 0; }
+.tuile-carte { background: #f3f8fb; border-radius: 12px; padding: .6rem .8rem; display: grid; } .tuile-carte b { font-size: 1.3rem; color: #17475f; } .tuile-carte span { font-size: .8rem; color: var(--texte-doux); }
+.repere-chiffre { margin-top: 1rem; border-left: 4px solid #F26A21; padding-left: .7rem; } .repere-chiffre span { display: block; opacity: .8; }
+.structures-pref { display: grid; gap: .7rem; } .structures-pref h3 { margin: 0 0 .2rem; font-size: 1rem; } .structures-pref ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .3rem; } .structures-pref li { display: grid; background: #f3f8fb; border-radius: 10px; padding: .45rem .7rem; }
+.titre-petit { font-size: 1.05rem; margin: 1rem 0 .4rem; } .dagbekeva { background: #fff7ef; border: 1px solid #f7d9bd; } .dagbekeva h2 { margin: 0; font-size: 1.1rem; }
+.liste-prefectures button { flex-wrap: wrap; } .liste-prefectures button .petit { margin-left: auto; }
+
+/* ===== Téléphone : rien ne dépasse de l'écran ===== */
+.shell, .shell-corps, .shell-contenu, .shell-contenu .page, .page { min-width: 0; }
+.shell-contenu svg, .page svg { max-width: 100%; }
+.tuile-chiffre { min-width: 0; overflow: hidden; } .tuile-texte { min-width: 0; }
+.grille-tuiles.quatre { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .grille-tuiles.quatre { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .grille-tuiles.quatre { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .shell-contenu { padding: .9rem; overflow-x: clip; }
+  .carte-formulaire label, .carte-formulaire input, .carte-formulaire .bouton { width: 100%; min-width: 0; }
+  .titre-vue, .shell-barre { min-width: 0; } .shell-fil { min-width: 0; overflow-wrap: anywhere; }
+  .tableau-conteneur { max-width: 100%; overflow-x: auto; }
+  .actions { flex-wrap: wrap; } .actions .bouton { flex: 1 1 100%; }
+  .entete-dossier { gap: 1rem; }
+}
+@media (max-width: 480px) { .telephone, .telephone-cadre { max-width: 100%; } .ecran-numero { min-width: 0; } }
+.telephone-cadre { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .telephone-cadre { grid-template-columns: minmax(440px, 480px) minmax(0, 1fr); } }
+.tableau-conteneur { position: relative; }
+@media (max-width: 860px) {
+  .shell-menu { display: none; position: static; border-right: 0; border-bottom: 1px solid var(--bord); }
+  .shell-menu.ouvert { display: flex; }
+  .shell-hamburger { display: inline-flex; }
+}
+.ecran-numero { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ecran-numero select, .ecran-numero input { max-width: 100%; min-width: 0; }
+.telephone { box-sizing: border-box; max-width: 100%; }
+
+.jeune-mere { background: #f6f0fb; border: 1px solid #dccbf0; margin: .8rem 0; } .jeune-mere h3 { margin: 0 0 .4rem; color: #5b3a8c; } .jeune-mere ul { margin: 0 0 .6rem; padding-left: 1.1rem; display: grid; gap: .3rem; }
+
+.marque-unicef { display: flex; align-items: center; gap: .5rem; margin-left: .9rem; padding: .2rem .6rem .2rem .3rem; background: #fff; border-radius: 12px; color: #1a4d73; text-decoration: none; font-size: .68rem; line-height: 1.15; font-weight: 700; flex: none; }
+.marque-unicef img { display: block; height: 38px; width: auto; }
+.marque-unicef:hover { color: #1a4d73; }
+@media (max-width: 1100px) { .marque-unicef span { display: none; } .marque-unicef { padding: .2rem; } }
+@media (max-width: 860px) { .entete .interieur { flex-wrap: nowrap; } .marque-unicef { margin-left: auto; margin-right: .5rem; } .marque-unicef img { height: 32px; } }
+.pied-unicef { display: flex; align-items: center; gap: .6rem; background: #fff; border-radius: 12px; padding: .35rem .7rem; } .pied-unicef small { color: #1a4d73; font-weight: 600; max-width: 12ch; line-height: 1.2; }
+.partenaires .interieur { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; } .partenaires-photo { height: 110px; width: auto; border-radius: 12px; object-fit: cover; }
+.qr { background: #fff; border: 1px solid #d7e4ee; border-radius: 14px; padding: .4rem; max-width: 100%; } .qr svg { width: 100%; height: 100%; display: block; }
+.telecharger-haut { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.6rem; align-items: start; } .telecharger-qr { display: grid; gap: .5rem; justify-items: center; max-width: 240px; text-align: center; }
+@media (max-width: 700px) { .telecharger-haut { grid-template-columns: minmax(0, 1fr); } .telecharger-qr { max-width: none; } }
+.bouton.gros { padding: .9rem 1.4rem; font-size: 1.05rem; }
+.bandeau-android { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: .7rem; padding: .5rem .8rem; background: #fff; border-bottom: 2px solid #1CABE2; box-shadow: 0 2px 8px rgba(0,0,0,.12); } .bandeau-android img { border-radius: 9px; } .bandeau-android span { flex: 1; min-width: 0; display: grid; line-height: 1.2; } .bandeau-android small { color: #52606d; } .bandeau-android .fermer { background: none; border: 0; font-size: 1.6rem; line-height: 1; padding: .2rem .5rem; cursor: pointer; color: #52606d; }
+@media (max-width: 860px) { .entete .logo small { display: none; } .entete .logo { font-size: 1.2rem; } .marque-unicef { margin-left: auto; } .menu-bouton { margin-left: 0; flex: none; } }

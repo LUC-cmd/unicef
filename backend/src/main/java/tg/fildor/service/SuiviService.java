@@ -66,7 +66,7 @@ public class SuiviService {
         return new EnfantFiche(e.codeEnfant(), e.codeFamille(), e.zone(), e.porte(), e.langue(), e.statut(),
                 e.dateNaissance(), e.dateTermePrevue(), p, suivi.rendezVous(e.id()), suivi.dernieresVisites(e.id(), 10),
                 declarations.parEnfant(e.id()).orElse(null), eveilEnfant, annuaire.demandesDeFamille(e.familleId()),
-                proches.compter(e.familleId()));
+                proches.compter(e.familleId()), suivi.mereAdolescente(e.familleId()));
     }
 
     public Carnet carnet(AppUser u, String codeFamille, LocalDate aujourdhui) {

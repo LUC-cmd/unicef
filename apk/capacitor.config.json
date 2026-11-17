@@ -1,0 +1,14 @@
+{
+  "appId": "tg.fildor.app",
+  "appName": "Fil d'Or",
+  "webDir": "www",
+  "server": {
+    "url": "https://frontend-production-5667500e.up.railway.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "appendUserAgent": "FilDorApp"
+}
