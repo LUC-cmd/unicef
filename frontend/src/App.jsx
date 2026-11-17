@@ -136,34 +136,33 @@ export default function App() {
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <div className="nav-liens">
                 <NavLink to="/" end className="lien-accueil">Accueil</NavLink>
-                <NavLink to="/parcours">Un enfant, un parcours</NavLink>
-                <NavLink to="/projet">Le projet</NavLink>
+                <NavLink to="/parcours">Parcours</NavLink>
                 <details className="menu-deroulant">
-                  <summary>Essayer</summary>
+                  <summary>Familles</summary>
                   <div className="menu-liste">
-                    <Link to="/visite"><b>Visite guidée</b><small>Parcourir la plateforme en 3 minutes</small></Link>
-                    <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
-                    <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
-                    <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
+                    <Link to="/telephone"><b>Téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
+                    <Link to="/assistant"><b>Assistant</b><small>Une question, à partir des contenus validés</small></Link>
+                    <Link to="/jeux"><b>Jeux d'éveil</b><small>Un jeu par jour, avec les objets de la maison</small></Link>
+                    <Link to="/annuaire"><b>Annuaire</b><small>Centre de santé, crèche, état civil</small></Link>
+                    <Link to="/ecoute"><b>Point d'écoute</b><small>Le même message, sans téléphone</small></Link>
+                    <Link to="/acte"><b>Acte de naissance</b><small>Délais, gratuité, retrait de l'acte</small></Link>
+                    <Link to="/signalement"><b>Situation inquiétante</b><small>Qui prévenir, tout de suite</small></Link>
                   </div>
                 </details>
                 <details className="menu-deroulant">
-                  <summary>Ressources</summary>
+                  <summary>Terrain</summary>
                   <div className="menu-liste">
-                    <Link to="/fonctionnement"><b>Fonctionnement</b><small>Comment circulent les informations</small></Link>
-                    <Link to="/acte"><b>Acte de naissance</b><small>Les étapes, les délais, la gratuité</small></Link>
-                    <Link to="/annuaire"><b>Annuaire des structures</b><small>Centres de santé, crèches, état civil</small></Link>
-                    <Link to="/ecoute"><b>Point d'écoute</b><small>Pour les familles sans téléphone</small></Link>
+                    <Link to="/hors-reseau"><b>Logiciel hors réseau</b><small>Saisir au village, synchroniser au retour</small></Link>
                     <Link to="/creches"><b>Crèches solidaires</b><small>Formation des femmes leaders</small></Link>
-                    <Link to="/adolescents"><b>Adolescents</b><small>Informations et orientation</small></Link>
-                    <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
+                    <Link to="/adolescents"><b>Adolescents</b><small>Repères avant la grossesse</small></Link>
+                    <Link to="/fonctionnement"><b>Fonctionnement</b><small>Qui fait quoi, où vont les données</small></Link>
                   </div>
                 </details>
-                <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel hors réseau</NavLink>
+                <NavLink to="/projet">Le projet</NavLink>
               </div>
               <div className="nav-actions">
-                {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                  <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+                {!enLigne && <span className="etat-reseau-entete hors" role="status" title="Hors ligne : les saisies sont gardées sur cet appareil">
+                  <i aria-hidden="true" />Hors ligne
                 </span>}
               </div>
             </nav>
@@ -219,18 +218,40 @@ export default function App() {
           <div className="pied-ligne">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
             <span className="pied-unicef"><img src="/partenaires/unicef-logo.png" alt="UNICEF" height="44" /><small>Concours Hack4Children Togo 2026</small></span>
-            <nav className="pied-liens" aria-label="Liens du site">
-              <Link to="/parcours">Un enfant, un parcours</Link>
-              <Link to="/projet">Le projet</Link>
-              <Link to="/fonctionnement">Fonctionnement</Link>
-              <Link to="/visite">Essayer</Link>
-              <Link to="/hors-reseau">Hors réseau</Link>
-              <Link to="/jeux">Jeux</Link>
-              <Link to="/annuaire">Annuaire</Link>
-              <Link to="/adolescents">Adolescents</Link>
-              <Link to="/signalement">Situation inquiétante</Link>
-            </nav>
           </div>
+          <nav className="pied-colonnes" aria-label="Liens du site">
+              <div>
+                <h2>Familles</h2>
+                <ul>
+                  <li><Link to="/telephone">Téléphone</Link></li>
+                  <li><Link to="/assistant">Assistant</Link></li>
+                  <li><Link to="/jeux">Jeux d'éveil</Link></li>
+                  <li><Link to="/annuaire">Annuaire</Link></li>
+                  <li><Link to="/ecoute">Point d'écoute</Link></li>
+                  <li><Link to="/acte">Acte de naissance</Link></li>
+                  <li><Link to="/signalement">Situation inquiétante</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h2>Terrain</h2>
+                <ul>
+                  <li><Link to="/connexion">Tableaux de bord</Link></li>
+                  <li><Link to="/hors-reseau">Logiciel hors réseau</Link></li>
+                  <li><Link to="/creches">Crèches solidaires</Link></li>
+                  <li><Link to="/adolescents">Adolescents</Link></li>
+                  <li><Link to="/fonctionnement">Fonctionnement</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h2>Le projet</h2>
+                <ul>
+                  <li><Link to="/parcours">Un enfant, un parcours</Link></li>
+                  <li><Link to="/projet">Le dossier</Link></li>
+                  <li><Link to="/visite">Visite guidée</Link></li>
+                  <li><Link to="/territoire">Le territoire</Link></li>
+                </ul>
+              </div>
+          </nav>
           <p className="pied-legal">
             Aucune photo, aucune adresse, aucun nom sans accord · Loi n° 2019-014 du 29 octobre 2019 · Fil d'Or informe et oriente, il ne pose aucun
             diagnostic · Version de démonstration, données fictives · Projet candidat au concours Hack4Children Togo 2026, pas un service

@@ -692,6 +692,17 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .pied .logo svg { width: 34px; height: 34px; }
 .pied-liens { display: flex; flex-wrap: wrap; gap: 0.3rem 1.3rem; }
 .pied-liens a { font-size: 0.92rem; }
+.pied-colonnes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem 2rem; margin-top: 1.1rem; }
+.pied-colonnes h2 { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 0.45rem; }
+.pied-colonnes h2::after { width: 22px; margin-top: 0.3rem; }
+.pied-colonnes li { margin: 0 0 0.28rem; }
+.pied-colonnes a { font-weight: 600; font-size: 0.92rem; }
+.portes-site { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+.portes-site article { background: #fff; border: 1px solid var(--bord); border-radius: 12px; padding: 1.1rem 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.portes-site h3 { margin: 0; font-size: 1.15rem; }
+.portes-site p { margin: 0; flex: 1; }
+.portes-site a { font-weight: 700; }
+@media (max-width: 700px) { .pied-colonnes { grid-template-columns: 1fr; width: 100%; } }
 .pied-legal { margin: 0.9rem 0 0; padding-top: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.45); font-size: 0.8rem; line-height: 1.5; max-width: none; color: #fff; }
 .bouton-entete.sortie { background: transparent; color: #fff; border-color: #fff; }
 .bouton-entete.sortie:hover { background: rgba(255, 255, 255, 0.24); color: #fff; border-color: #fff; }
@@ -1232,7 +1243,7 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .entete-bloc.espace .lien-site { display: inline-flex; }
 .entete-bloc.espace .nav-liens { margin-right: auto; }
 .entete-bloc.espace .nav-principale { justify-content: flex-end; }
-.pied.compact .pied-liens, .pied.compact .pied-legal { display: none; }
+.pied.compact .pied-liens, .pied.compact .pied-colonnes, .pied.compact .pied-legal { display: none; }
 .pied.compact .pied-interieur { padding-top: .8rem; padding-bottom: .8rem; }
 .pied.compact .pied-ligne { align-items: center; }
 .liste-visites .ligne { display: flex; align-items: center; justify-content: space-between; gap: .7rem; } .liste-visites .ligne-texte { min-width: 0; flex: 1; } .liste-visites .pastille { flex: none; align-self: center; }

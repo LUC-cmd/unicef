@@ -68,10 +68,34 @@ export default function Accueil() {
         <div style={{ height: '3.5rem' }} />
       </section>
 
+      <section className="section blanc" aria-labelledby="titre-entrees">
+        <div className="interieur">
+          <h2 id="titre-entrees" className="titre-section">Trois portes, selon qui vous êtes</h2>
+          <p className="chapeau">Chaque page du site appartient à l'une de ces portes. On ne cherche plus le même sujet à trois endroits.</p>
+          <div className="portes-site">
+            <article>
+              <h3>Une famille</h3>
+              <p>Téléphone, jeu du jour, question à l'assistant, centre le plus proche, acte de naissance.</p>
+              <Link to="/telephone">Ouvrir le téléphone</Link>
+            </article>
+            <article>
+              <h3>Le terrain</h3>
+              <p>Agent, état civil, structure, responsable. Saisie hors réseau, crèches, suivi des adolescentes.</p>
+              <Link to="/connexion">Ouvrir un tableau de bord</Link>
+            </article>
+            <article>
+              <h3>Le projet</h3>
+              <p>Le parcours de l'enfant, le dossier du concours, la visite guidée en cinq minutes.</p>
+              <Link to="/visite">Commencer la visite</Link>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="section parcours-enfant" aria-labelledby="titre-parcours">
         <div className="interieur">
           <h2 id="titre-parcours" className="titre-section">Un enfant, un parcours</h2>
-          <p className="chapeau">De la conception à l'entrée à l'école, un enfant passe d'un service à un autre. Fil d'Or garde le lien à chaque passage.</p>
+          <p className="chapeau">De la conception à l'entrée à l'école, un enfant passe d'un service à un autre. Fil d'Or garde le lien à chaque passage. Le détail de chaque étape est sur la page Parcours.</p>
           <ol className="parcours-grille">
             {PARCOURS_ENFANT.map(([titre, texte, lien, action], i) => (
               <li className="etape-parcours" key={titre}>
@@ -105,8 +129,8 @@ export default function Accueil() {
         <div className="interieur">
           <div className="essai-grille">
           <div>
-          <h2 id="titre-essai" className="titre-section">Essayez, tout est manipulable</h2>
-          <p className="chapeau">Aucun compte à créer. Cinq étapes, un bouton chacune : appel d'une famille, agent de santé, naissance et acte, carte régionale, jeux des enfants.</p>
+          <h2 id="titre-essai" className="titre-section">Cinq minutes, dans l'ordre</h2>
+          <p className="chapeau">La visite guidée enchaîne un appel, un agent, une naissance, la carte, puis les jeux. Rien à installer pour cette démonstration.</p>
           <p className="heros-actions">
             <Link className="bouton" to="/visite">Essayer en 5 minutes</Link>
             <Link className="bouton secondaire" to="/hors-reseau">Voir le mode hors réseau</Link>
