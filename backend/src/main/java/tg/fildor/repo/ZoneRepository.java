@@ -41,6 +41,27 @@ public class ZoneRepository {
                 .list();
     }
 
+    public record PrefecturePublique(String code, String nom, String region, String chefLieu, double latitude,
+                                     double longitude, boolean pilote, Integer familles) {
+    }
+
+    /** Carte publique : le nombre de familles n'est donné qu'à partir de 5 par préfecture, jamais en dessous. */
+    public List<PrefecturePublique> territoire() {
+        return jdbc.sql("""
+                SELECT z.code, z.nom, z.region, z.chef_lieu, z.latitude, z.longitude, z.pilote,
+                       (SELECT count(*) FROM famille f WHERE f.zone_id = z.id AND f.consentement) AS familles
+                FROM zone z
+                ORDER BY CASE z.region WHEN 'Maritime' THEN 1 WHEN 'Plateaux' THEN 2 WHEN 'Centrale' THEN 3
+                                       WHEN 'Kara' THEN 4 ELSE 5 END, z.nom""")
+                .query((rs, n) -> {
+                    int f = rs.getInt("familles");
+                    return new PrefecturePublique(rs.getString("code"), rs.getString("nom"), rs.getString("region"),
+                            rs.getString("chef_lieu"), rs.getDouble("latitude"), rs.getDouble("longitude"),
+                            rs.getBoolean("pilote"), f >= 5 ? f : null);
+                })
+                .list();
+    }
+
     public List<ZoneBrute> comptages(LocalDate aujourdhui) {
         return jdbc.sql("""
                 SELECT z.code, z.nom, z.region, z.latitude, z.longitude, z.couverture_reseau,

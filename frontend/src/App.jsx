@@ -9,6 +9,7 @@ import Retours from './components/Retours.jsx'
 import Logo from './components/Logo.jsx'
 import { IconeMenu } from './components/Icones.jsx'
 
+const Territoire = lazy(() => import('./pages/Territoire.jsx'))
 const Visite = lazy(() => import('./pages/Visite.jsx'))
 const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
 const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
@@ -110,6 +111,7 @@ export default function App() {
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <div className="nav-liens">
+                <NavLink to="/territoire">Carte du Togo</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
                 <details className="menu-deroulant">
                   <summary>Essayer</summary>
@@ -131,7 +133,7 @@ export default function App() {
                     <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
                   </div>
                 </details>
-                <NavLink to="/hors-reseau">Logiciel hors réseau</NavLink>
+                <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel hors réseau</NavLink>
               </div>
               <div className="nav-actions">
                 {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
@@ -160,6 +162,7 @@ export default function App() {
           <Route path="/" element={<Accueil />} />
           <Route path="/preparation" element={<Preparation />} />
           <Route path="/projet" element={<Projet />} />
+          <Route path="/territoire" element={<Territoire />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/telephone" element={<Telephone />} />
           <Route path="/ecoute" element={<Ecoute />} />

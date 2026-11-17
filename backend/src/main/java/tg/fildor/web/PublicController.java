@@ -52,9 +52,11 @@ public class PublicController {
     private final AnnuaireService annuaire;
     private final EcouteService ecoute;
     private final NaissanceService naissances;
+    private final tg.fildor.repo.ZoneRepository zones;
 
     public PublicController(VoixService voix, AnnuaireService annuaire, EcouteService ecoute,
-                            NaissanceService naissances) {
+                            NaissanceService naissances, tg.fildor.repo.ZoneRepository zones) {
+        this.zones = zones;
         this.voix = voix;
         this.annuaire = annuaire;
         this.ecoute = ecoute;
@@ -130,6 +132,11 @@ public class PublicController {
     }
 
     /** Point d'écoute : séance collective, sans donnée de famille. */
+    @GetMapping("/territoire")
+    List<tg.fildor.repo.ZoneRepository.PrefecturePublique> territoire() {
+        return zones.territoire();
+    }
+
     @GetMapping("/ecoute/zones")
     List<tg.fildor.repo.ZoneRepository.ZonePublique> zonesEcoute() {
         return ecoute.zones();

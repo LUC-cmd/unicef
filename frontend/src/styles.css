@@ -1070,3 +1070,69 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 @media (max-width: 560px) { .nat-colonnes { grid-template-columns: 1fr; } }
 
 .grille-tuiles.quatre { grid-template-columns: repeat(4, minmax(0, 1fr)); } @media (max-width: 760px) { .grille-tuiles.quatre { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== Carte de famille ===== */
+.carte-formulaire { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; }
+.carte-formulaire label { display: grid; gap: .3rem; font-weight: 600; } .carte-formulaire input { min-width: 180px; }
+.entete-dossier { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+.entete-dossier > div { display: grid; } .entete-dossier b { font-size: 1.15rem; }
+.dossier-enfant { margin-top: 1rem; } .dossier-enfant h4 { margin: 0 0 .4rem; }
+.liste-rdv { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; gap: .4rem; }
+.pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #1CABE2; margin-right: .4rem; }
+.pastille.ok { background: #00833d; } .pastille.alerte { background: #d33a2c; }
+.mini-courbe { margin: 0 0 .6rem; } .mini-courbe svg { width: 100%; max-width: 360px; height: auto; background: #f6fafc; border-radius: 10px; }
+.badge.ok { background: #e9f6ef; color: #0b5a2c; } .badge.alerte { background: #fde8e6; color: #9a1f14; }
+
+/* ===== Carte immersive ===== */
+.territoire { position: relative; height: calc(100vh - 72px); min-height: 520px; overflow: hidden; background: #cfe6f3; }
+.immersive { position: absolute; inset: 0; } .immersive svg { width: 100%; height: 100%; display: block; }
+.immersive-titre { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); margin: 0; font-size: clamp(1.6rem, 4vw, 3rem); font-weight: 800; color: #17475f; text-shadow: 0 2px 12px #ffffffcc; pointer-events: none; }
+.immersive-region { transition: transform 1.1s cubic-bezier(.2,.7,.2,1), opacity .6s; transform-box: fill-box; }
+.immersive-region.cliquable { cursor: pointer; } .immersive-region.cliquable:hover path { filter: brightness(1.08); }
+.immersive-pref { cursor: pointer; transform-box: fill-box; animation: apparait-pref .5s both; }
+@keyframes apparait-pref { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: scale(1); } }
+.pulse-pref { animation: pulse-pref 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pulse-pref { from { opacity: .8; transform: scale(.7); } to { opacity: 0; transform: scale(1.6); } }
+.repere-togo { animation: repere 1.5s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes repere { from { opacity: 1; transform: scale(.4); } to { opacity: 0; transform: scale(1.5); } }
+.territoire-panneau { position: absolute; top: 1.2rem; right: 1.2rem; bottom: 1.2rem; width: 340px; max-width: calc(100% - 2.4rem); overflow: auto; background: #ffffffee; backdrop-filter: blur(8px); border-radius: 18px; padding: 1.2rem; box-shadow: 0 10px 40px #17475f33; opacity: 0; transform: translateX(30px); pointer-events: none; transition: opacity .7s, transform .7s; }
+.territoire-panneau.visible { opacity: 1; transform: none; pointer-events: auto; }
+.territoire-panneau h1 { font-size: 1.5rem; margin: 0 0 .3rem; }
+.liste-regions, .liste-prefectures { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .4rem; }
+.liste-regions button, .liste-prefectures button { width: 100%; text-align: left; background: #f3f8fb; border: 0; border-radius: 12px; padding: .7rem .9rem; cursor: pointer; display: grid; gap: .1rem; font: inherit; }
+.liste-regions button span { font-size: .85rem; color: var(--texte-doux); }
+.liste-prefectures button { display: flex; align-items: center; gap: .5rem; padding: .55rem .8rem; }
+.liste-regions button:hover, .liste-prefectures button:hover { background: #e3f1f9; } .liste-prefectures button.actif { outline: 2px solid var(--cyan); }
+.territoire-panneau .retour { background: none; border: 0; cursor: pointer; color: var(--bleu); font-weight: 700; padding: 0 0 .6rem; }
+.detail-pref { margin-top: 1rem; display: grid; gap: .4rem; } .detail-pref h2 { margin: 0; font-size: 1.15rem; }
+@media (max-width: 760px) { .territoire-panneau { top: auto; left: 1rem; right: 1rem; width: auto; max-height: 48%; } }
+@media (prefers-reduced-motion: reduce) { .repere-togo, .pulse-pref { animation: none; } .immersive-region { transition: none; } }
+
+/* ===== En-tête, version nette : équilibre des espaces, boutons cohérents ===== */
+.entete { background: linear-gradient(180deg, #25b4ea 0%, #1ca7de 100%); }
+.entete .interieur { min-height: 68px; gap: 1.5rem; }
+.nav-principale { gap: 1rem; }
+.nav-liens { margin: 0 auto; gap: .15rem; }
+.nav-principale a, .menu-deroulant > summary { position: relative; border-radius: 999px; padding: .5rem 1rem; font-weight: 600; text-shadow: none; transition: background .15s; }
+.nav-principale a:hover, .menu-deroulant > summary:hover, .menu-deroulant[open] > summary { background: rgba(255, 255, 255, .2); }
+.nav-principale a.active { background: transparent; color: #fff; }
+.nav-principale a.active::after { content: ""; position: absolute; left: 1rem; right: 1rem; bottom: .15rem; height: 3px; border-radius: 3px; background: #fff; }
+.nav-principale a.lien-logiciel { gap: .45rem; border: 2px solid rgba(255, 255, 255, .85); padding: .35rem 1rem; margin-left: .4rem; }
+.nav-principale a.lien-logiciel:hover { background: #fff; color: #1a6f94; }
+.nav-principale a.lien-logiciel.active::after { display: none; }
+.nav-principale a.lien-logiciel.active { background: #fff; color: #1a6f94; }
+.nav-actions { gap: .6rem; }
+.nav-principale a.bouton-entete, .bouton-entete { border-radius: 999px; min-height: 42px; padding: .45rem 1.3rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 70, 110, .22); margin: 0; }
+.nav-principale a.bouton-entete { color: #17475f; background: #fff; border-color: #fff; }
+.bouton-entete.sortie { box-shadow: none; background: transparent; border: 2px solid rgba(255, 255, 255, .85); }
+.etat-reseau-entete { margin: 0; background: rgba(0, 60, 95, .18); }
+.menu-liste { border-radius: 16px; top: calc(100% + 10px); }
+@media (max-width: 900px) {
+  .nav-liens { margin: 0; }
+  .nav-principale a.active::after { left: .9rem; right: auto; width: 24px; }
+  .nav-principale a.lien-logiciel { margin-left: 0; }
+}
+
+.liste-prefectures .pastille { flex: none; }
+.territoire-panneau .retour { background: none; box-shadow: none; text-decoration: none; padding: 0 0 .6rem; }
+.liste-prefectures .pastille { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; }

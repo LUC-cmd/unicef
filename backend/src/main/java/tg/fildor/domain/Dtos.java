@@ -33,7 +33,7 @@ public final class Dtos {
                               int nombreProches) {
     }
 
-    public record Carnet(String codeFamille, String zone, String langue, List<CarnetEnfant> enfants) {
+    public record Carnet(String codeFamille, String zone, String langue, List<CarnetEnfant> enfants, String codeCarte) {
     }
 
     public record CarnetEnfant(String codeEnfant, String statut, LocalDate dateNaissance, LocalDate dateTermePrevue,

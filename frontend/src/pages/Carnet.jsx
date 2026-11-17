@@ -29,13 +29,14 @@ export default function Carnet() {
         <section className="feuille" key={e.codeEnfant}>
           <header>
             <h1><span className="fil" aria-hidden="true" /> Fil d'Or</h1>
-            <p className="code-famille">Code famille<br /><b>{carnet.codeFamille}</b></p>
+            <p className="code-famille">Code famille<br /><b>{carnet.codeFamille}</b>{carnet.codeCarte && <><br />Code de la carte<br /><b>{carnet.codeCarte}</b></>}</p>
           </header>
           <p>
             Enfant <b>{e.codeEnfant}</b> · {e.statut === 'GROSSESSE' ? `🤰 terme prévu le ${formaterDate(e.dateTermePrevue)}` : `🎂 ${formaterDate(e.dateNaissance)}`}
             {' · '}Langue : {LIBELLE_LANGUE[carnet.langue]}
           </p>
 
+          {carnet.codeCarte && <p className="petit">Si vous changez de région : montrez ces deux codes à l'agent de santé. Votre suivi vous suit.</p>}
           <h2>Mes rendez-vous</h2>
           <table className="grille-carnet">
             <thead><tr><th>Quand</th><th>Quoi</th><th>Fait</th></tr></thead>

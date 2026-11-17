@@ -136,6 +136,11 @@ public class SuiviRepository {
                 .param("c", codeFamille).query(String.class).optional();
     }
 
+    public Optional<String> codeCarte(String codeFamille) {
+        return jdbc.sql("SELECT code_carte FROM famille WHERE code_famille = :c")
+                .param("c", codeFamille).query(String.class).optional();
+    }
+
     public Optional<Long> familleId(String codeFamille) {
         return jdbc.sql("SELECT id FROM famille WHERE code_famille = :c")
                 .param("c", codeFamille).query(Long.class).optional();

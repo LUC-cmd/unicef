@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Shell from '../components/Shell.jsx'
 import Agent from './Agent.jsx'
+import CarteFamille from './CarteFamille.jsx'
 import Inscription from './Inscription.jsx'
 import Annuaire from './Annuaire.jsx'
 import Mairie from './Mairie.jsx'
@@ -19,6 +20,7 @@ export function EspaceAgent() {
       { to: '/agent/visites', nom: 'Mes visites', icone: 'liste' },
       { to: '/agent/familles', nom: 'Familles enregistrées', icone: 'carnet' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
+      { to: '/agent/carte', nom: 'Carte de famille', icone: 'carnet' },
       { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
     ] },
     { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
@@ -34,6 +36,7 @@ export function EspaceAgent() {
         <Route path="visites" element={<Agent vue="visites" />} />
         <Route path="familles" element={<Agent vue="familles" />} />
         <Route path="inscription" element={<Inscription />} />
+        <Route path="carte" element={<CarteFamille />} />
         <Route path="synchronisation" element={<Agent vue="synchronisation" />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />

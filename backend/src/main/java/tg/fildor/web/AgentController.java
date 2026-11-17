@@ -61,11 +61,13 @@ public class AgentController {
     private final InscriptionService inscriptions;
     private final ProchesService proches;
     private final AnnuaireService annuaire;
+    private final tg.fildor.service.CarteService cartes;
     private final Clock clock;
 
     public AgentController(SuiviService suivi, SyncService sync, NaissanceService naissances,
                            InscriptionService inscriptions, ProchesService proches, AnnuaireService annuaire,
-                           Clock clock) {
+                           tg.fildor.service.CarteService cartes, Clock clock) {
+        this.cartes = cartes;
         this.suivi = suivi;
         this.sync = sync;
         this.naissances = naissances;
@@ -84,6 +86,22 @@ public class AgentController {
     @GetMapping("/enfants/{code}")
     EnfantFiche enfant(@AuthenticationPrincipal AppUser u, @PathVariable String code) {
         return suivi.fiche(u, code, LocalDate.now(clock));
+    }
+
+    public record CarteRequest(@jakarta.validation.constraints.NotBlank String codeFamille,
+                               @jakarta.validation.constraints.NotBlank String codeCarte, String codeZone) {
+    }
+
+    @PostMapping("/carte/ouvrir")
+    tg.fildor.service.CarteService.DossierSante ouvrirCarte(@AuthenticationPrincipal AppUser u,
+                                                           @jakarta.validation.Valid @RequestBody CarteRequest r) {
+        return cartes.ouvrir(u, r.codeFamille(), r.codeCarte(), LocalDate.now(clock));
+    }
+
+    @PostMapping("/carte/transferer")
+    Map<String, String> transfererCarte(@AuthenticationPrincipal AppUser u,
+                                        @jakarta.validation.Valid @RequestBody CarteRequest r) {
+        return Map.of("message", cartes.transferer(u, r.codeFamille(), r.codeCarte(), r.codeZone()));
     }
 
     @GetMapping("/familles/{code}/carnet")

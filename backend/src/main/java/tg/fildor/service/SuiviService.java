@@ -85,7 +85,7 @@ public class SuiviService {
                                 ? ChoixJeu.semaine(catalogue, ChoixJeu.ageEnMois(c.dateNaissance(), aujourdhui), aujourdhui)
                                 : List.of()))
                 .toList();
-        return new Carnet(codeFamille, nomZone, langue, enfants);
+        return new Carnet(codeFamille, nomZone, langue, enfants, suivi.codeCarte(codeFamille).orElse(null));
     }
 
     /** Retrouve la famille par son code et vérifie que l'agent a le droit de la voir (même zone). */
