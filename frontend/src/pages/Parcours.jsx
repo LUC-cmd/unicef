@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 
 const ETAPES = [
-  { code: 'adolescence', nom: 'Adolescence', sous: 'Santé sexuelle et reproductive' },
+  { code: 'adolescence', nom: 'Avant la grossesse', sous: 'Santé sexuelle et reproductive' },
   { code: 'grossesse', nom: 'Grossesse', sous: 'Soins prénataux, nutrition de la mère' },
   { code: 'naissance', nom: 'Naissance', sous: 'Accouchement sûr, acte de naissance' },
   { code: 'petite', nom: 'Petite enfance', sous: 'Vaccins, nutrition, croissance' },
   { code: 'eveil', nom: 'Éveil précoce', sous: 'Stimulation, parentalité' },
   { code: 'prescolaire', nom: 'Préscolaire', sous: 'Crèches, jardins d’enfants' },
 ]
-const DOMAINES = ['Santé', 'Nutrition', 'Protection', 'Services sociaux', 'Préscolaire et éveil']
+export const DOMAINES = ['Santé', 'Nutrition', 'Protection', 'Services sociaux', 'Préscolaire et éveil']
 
 // Pour chaque étape et chaque domaine : ce que Fil d'Or fait déjà, et où le voir.
-const MATRICE = {
+export const MATRICE = {
   adolescence: {
     'Santé': ['Informations sur la puberté, la planification familiale et la grossesse précoce ; orientation vers le centre de santé.', '/adolescents'],
     'Nutrition': ['Conseils de nutrition pour la future mère, par la voix et le SMS.', '/telephone'],
@@ -116,6 +116,7 @@ export default function Parcours() {
               </button>
             ))}
           </div>
+          <Link className="bouton petit-bouton ouvrir-etape" to={`/parcours/${etape}`}>Ouvrir la page de cette étape</Link>
           <ul className="matrice">
             {DOMAINES.map((d) => (
               <li key={d}><b>{d}</b><span>{MATRICE[etape][d][0]}</span><Link to={MATRICE[etape][d][1]}>Voir</Link></li>

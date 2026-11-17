@@ -8,12 +8,11 @@ import { MDP_DEMO } from '../lib/config.js'
 import { ZONES } from '../lib/format.js'
 
 const COMPTES = [
-  { id: 'admin', role: 'Administrateur', lieu: 'Toute la plateforme', detail: 'Les quatre services, les comptes, l’horloge de démonstration.', cible: '/admin', Icone: IconeBouclier },
-  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Visites à faire en premier, saisie hors ligne, inscription des familles.', cible: '/agent', Icone: IconeAgent },
-  { id: 'agent.golfe', role: 'Agent de santé', lieu: 'Golfe', detail: 'Le même tableau de bord, limité à la zone du Golfe.', cible: '/agent', Icone: IconeAgent },
-  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Déclarations de naissance déjà remplies, à valider ou à renvoyer.', cible: '/mairie', Icone: IconeCarnet },
-  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Demandes des familles, horaires, fiche publique.', cible: '/structure', Icone: IconeBouclier },
-  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte des zones, sans nom d’enfant.', cible: '/carte', Icone: IconeZone },
+  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles. Chaque agent ne voit que sa zone.', cible: '/agent', Icone: IconeAgent },
+  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Reçoit les dossiers de naissance pré-remplis, les valide ou les rejette.', cible: '/mairie', Icone: IconeCarnet },
+  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel et d’orientation, met à jour ses horaires.', cible: '/structure', Icone: IconeBouclier },
+  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte anonyme des zones oubliées : où envoyer une équipe en premier.', cible: '/carte', Icone: IconeZone },
+  { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Fait avancer le temps pour montrer les rappels sans réponse.', cible: '/admin', Icone: IconeBouclier },
 ]
 
 export default function Connexion() {
@@ -23,17 +22,8 @@ export default function Connexion() {
   const lieu = useLocation()
   const [enCours, setEnCours] = useState(null)
   const [erreur, setErreur] = useState('')
-  const [compte, setCompte] = useState(COMPTES[0])
-  const [username, setUsername] = useState(COMPTES[0].id)
-  const [mdp, setMdp] = useState(MDP_DEMO)
-  const [voirMdp, setVoirMdp] = useState(false)
-
-  function choisir(c) {
-    setCompte(c)
-    setUsername(c.id)
-    setMdp(MDP_DEMO)
-    setErreur('')
-  }
+  const [username, setUsername] = useState('')
+  const [mdp, setMdp] = useState('')
 
   async function entrer(id, motDePasse, cible) {
     setErreur('')
@@ -56,44 +46,42 @@ export default function Connexion() {
 
   return (
     <>
-    <Bandeau surtitre="Tableaux de bord" titre="Entrer dans Fil d'Or">
-      L'identifiant et le mot de passe sont déjà saisis. Choisissez un tableau de bord, affichez le mot de passe si vous voulez le lire, puis cliquez sur Se connecter.
+    <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
+      Aucun mot de passe à saisir : cliquez sur « Entrer » à côté d'un rôle pour ouvrir son tableau de bord de démonstration. Toutes les données sont fictives.
     </Bandeau>
     <main className="page connexion-page">
 
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
-      <section className="carte connexion-saisie">
-        <div>
-          <p className="surtitre">Compte prêt</p>
-          <h2>{compte.role}</h2>
-          <p>{compte.lieu}. {compte.detail}</p>
-        </div>
-        <form onSubmit={envoyerFormulaire}>
-          <label>Identifiant
-            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
-          </label>
-          <label className="champ-secret">Mot de passe
-            <input type={voirMdp ? 'text' : 'password'} value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
-            <button type="button" className="voir-mdp" onClick={() => setVoirMdp((v) => !v)}>{voirMdp ? 'Masquer' : 'Voir'}</button>
-          </label>
-          <button className="bouton" disabled={enCours !== null}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
-        </form>
-      </section>
-
       <div className="comptes-grille">
-        {COMPTES.map((c) => (
-          <button key={c.id} type="button" className={`compte-carte${compte.id === c.id ? ' choisi' : ''}`} aria-pressed={compte.id === c.id} disabled={enCours !== null} onClick={() => choisir(c)}>
-            <span className="icone"><c.Icone /></span>
+        {COMPTES.map(({ id, role, lieu: zone, detail, cible, Icone }) => (
+          <button key={id} type="button" className="compte-carte" disabled={enCours !== null} onClick={() => entrer(id, MDP_DEMO, cible)}>
+            <span className="icone"><Icone /></span>
             <span className="texte">
-              <b>{c.role}</b>
-              <em>{c.lieu}</em>
-              <span>{c.detail}</span>
+              <b>{role}</b>
+              <em>{zone}</em>
+              <span>{detail}</span>
             </span>
-            <span className="entrer">{compte.id === c.id ? 'Sélectionné' : 'Choisir'}</span>
+            <span className="entrer">{enCours === id ? 'Connexion…' : 'Entrer'}</span>
           </button>
         ))}
       </div>
+
+      <details className="autre-compte">
+        <summary>J'ai un identifiant et un mot de passe</summary>
+        <form className="carte" onSubmit={envoyerFormulaire}>
+          <p className="petit">Réservé aux comptes personnels, par exemple un autre agent de santé. Pour essayer, l'identifiant <b>agent.golfe</b> marche avec le mot de passe de démonstration : <button type="button" className="lien-bouton" onClick={() => { setUsername('agent.golfe'); setMdp(MDP_DEMO) }}>remplir pour moi</button>.</p>
+          <div className="formulaire-ligne">
+            <label>Identifiant
+              <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
+            </label>
+            <label>Mot de passe
+              <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
+            </label>
+          </div>
+          <button className="bouton" disabled={enCours !== null}>Se connecter</button>
+        </form>
+      </details>
 
       <section className="carte entree-locale">
         <h2>Pas de réseau ici ?</h2>

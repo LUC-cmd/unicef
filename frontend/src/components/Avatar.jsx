@@ -11,20 +11,16 @@ const initiales = (nom) => (nom || '?').split(/[\s-]+/).filter(Boolean).slice(0,
 /** Photo de profil (gardée sur l'appareil) ou initiales. */
 export default function Avatar({ username, nom, taille = 40 }) {
   const [photo, setPhoto] = useState(() => lirePhoto(username))
-  const [portraitAbsent, setPortraitAbsent] = useState(false)
   useEffect(() => {
     const maj = () => setPhoto(lirePhoto(username))
     maj()
-    setPortraitAbsent(false)
     window.addEventListener('fildor-photo', maj)
     return () => window.removeEventListener('fildor-photo', maj)
   }, [username])
   const style = { width: taille, height: taille, fontSize: taille * 0.4 }
-  if (photo) return <img className="avatar" style={style} src={photo} alt="" />
-  if (username && !portraitAbsent) {
-    return <img className="avatar" style={style} src={`/profils/${username}.svg`} alt="" onError={() => setPortraitAbsent(true)} />
-  }
-  return <span className="avatar avatar-initiales" style={style} aria-hidden="true">{initiales(nom)}</span>
+  return photo
+    ? <img className="avatar" style={style} src={photo} alt="" />
+    : <span className="avatar avatar-initiales" style={style} aria-hidden="true">{initiales(nom)}</span>
 }
 
 /** Recadre une image choisie en carré de 160 px (JPEG) : elle reste sur l'appareil, rien n'est envoyé. */

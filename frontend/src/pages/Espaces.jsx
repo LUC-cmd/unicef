@@ -31,14 +31,8 @@ export function EspaceAgent() {
       { to: '/agent/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
-  const onglets = [
-    { to: '/agent', nom: "Aujourd'hui", fin: true },
-    { to: '/agent/visites', nom: 'À visiter' },
-    { to: '/agent/carte', nom: 'Famille qui arrive' },
-    { to: '/agent/synchronisation', nom: 'Vers la base' },
-  ]
   return (
-    <Shell titre="Agent de santé" groupes={groupes} onglets={onglets}>
+    <Shell titre="Agent de santé" groupes={groupes}>
       <Routes>
         <Route index element={<Agent vue="tableau" />} />
         <Route path="visites" element={<Agent vue="visites" />} />
@@ -71,13 +65,8 @@ export function EspaceMairie() {
       { to: '/mairie/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
-  const onglets = [
-    { to: '/mairie', nom: "Aujourd'hui", fin: true },
-    { to: '/mairie/declarations', nom: 'Naissances à traiter' },
-    { to: '/mairie/actes', nom: 'Actes à retirer' },
-  ]
   return (
-    <Shell titre="État civil" groupes={groupes} onglets={onglets}>
+    <Shell titre="État civil" groupes={groupes}>
       <Routes>
         <Route index element={<Mairie vue="tableau" />} />
         <Route path="declarations" element={<Mairie vue="declarations" />} />
@@ -105,13 +94,8 @@ export function EspaceStructure() {
       { to: '/structure/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
-  const onglets = [
-    { to: '/structure', nom: "Aujourd'hui", fin: true },
-    { to: '/structure/demandes', nom: 'Demandes des familles' },
-    { to: '/structure/fiche', nom: 'Ma fiche' },
-  ]
   return (
-    <Shell titre="Structure d'accueil" groupes={groupes} onglets={onglets}>
+    <Shell titre="Structure d'accueil" groupes={groupes}>
       <Routes>
         <Route index element={<Structure vue="tableau" />} />
         <Route path="demandes" element={<Structure vue="demandes" />} />
@@ -135,14 +119,8 @@ export function EspaceDecideur() {
     ] },
     { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Aide', icone: 'aide' }] },
   ]
-  const onglets = [
-    { to: '/carte', nom: "Aujourd'hui", fin: true },
-    { to: '/carte/carte', nom: 'Carte' },
-    { to: '/carte/zones', nom: 'Comparer' },
-    { to: '/carte/ruptures', nom: 'Où l’enfant se perd' },
-  ]
   return (
-    <Shell titre="Responsable régional" groupes={groupes} onglets={onglets}>
+    <Shell titre="Responsable régional" groupes={groupes}>
       <Routes>
         <Route index element={<Carte vue="tableau" />} />
         <Route path="carte" element={<Carte vue="carte" />} />
@@ -171,14 +149,8 @@ export function EspaceAdmin() {
       { to: '/carte', nom: 'Responsable régional', icone: 'carte' },
     ] },
   ]
-  const onglets = [
-    { to: '/admin', nom: "Aujourd'hui", fin: true },
-    { to: '/admin/acces', nom: 'Comptes' },
-    { to: '/admin/horloge', nom: 'Horloge' },
-    { to: '/admin/cles', nom: 'Clés reçues' },
-  ]
   return (
-    <Shell titre="Administrateur" groupes={groupes} onglets={onglets}>
+    <Shell titre="Administrateur" groupes={groupes}>
       <Routes>
         <Route index element={<Admin vue="services" />} />
         <Route path="cles" element={<Admin vue="cles" />} />

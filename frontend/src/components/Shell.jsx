@@ -2,7 +2,6 @@ import { createContext, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
 import Avatar from './Avatar.jsx'
-import Notifications from './Notifications.jsx'
 
 export const ContexteShell = createContext(false)
 export const useDansShell = () => useContext(ContexteShell)
@@ -36,7 +35,7 @@ export function IconeShell({ nom }) {
  * Cadre commun des espaces professionnels : menu vertical à gauche, barre horizontale en haut.
  * groupes : [{ titre, liens: [{ to, nom, icone, fin?, badge? }] }]
  */
-export default function Shell({ titre, groupes, onglets = [], children }) {
+export default function Shell({ titre, groupes, children }) {
   const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
@@ -49,11 +48,8 @@ export default function Shell({ titre, groupes, onglets = [], children }) {
     <div className="shell">
       <aside className={`shell-menu${ouvert ? ' ouvert' : ''}`} aria-label={`Menu ${titre}`}>
         <div className="shell-entete">
-          <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={44} />
-          <div>
-            <p className="shell-role">{session?.nomComplet || titre}</p>
-            <p className="shell-sous">{titre}{session?.region ? ` · ${session.region}` : ''}</p>
-          </div>
+          <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={40} />
+          <div><p className="shell-role">{session?.nomComplet || titre}</p><p className="shell-sous">{titre}</p></div>
         </div>
         {groupes.map((g) => (
           <div key={g.titre} className="shell-groupe">
@@ -70,7 +66,9 @@ export default function Shell({ titre, groupes, onglets = [], children }) {
           </div>
         ))}
         <div className="shell-pied">
-          <p className="petit">La photo et la déconnexion sont dans le compte, en haut à droite de la page.</p>
+          <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
+          <p className="shell-qui">{session?.nomComplet}</p>
+          <p className="petit">Photo et déconnexion : menu de votre compte, en haut à droite.</p>
         </div>
       </aside>
 
@@ -78,25 +76,7 @@ export default function Shell({ titre, groupes, onglets = [], children }) {
         <div className="shell-barre">
           <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
           <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
-          <div className="shell-outils">
-            <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
-            <Notifications role={session?.role} />
-            <div className="shell-identite">
-              <div>
-                <b>{session?.nomComplet || titre}</b>
-                <span>{titre}</span>
-              </div>
-              <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={36} />
-            </div>
-          </div>
         </div>
-        {onglets.length > 0 && (
-          <nav className="shell-onglets" aria-label="Ce que vous ouvrez">
-            {onglets.map((o) => (
-              <NavLink key={o.to} to={o.to} end={o.fin}>{o.nom}</NavLink>
-            ))}
-          </nav>
-        )}
         <ContexteShell.Provider value={true}>
           <div className="shell-contenu">{children}</div>
         </ContexteShell.Provider>

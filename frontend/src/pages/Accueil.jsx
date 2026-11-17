@@ -3,6 +3,7 @@ import { useAuth } from '../lib/contexte.jsx'
 import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
 
 const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
+import ParcoursCartes from '../components/ParcoursCartes.jsx'
 import { MereEtEnfant } from '../components/Illustrations.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
@@ -12,6 +13,7 @@ const ETAPES = [
   ['0 à 2 ans', 'Vaccins rappelés par SMS, visite si silence'],
   ['5 ans', 'Nutrition, jeux d’éveil, entrée au préscolaire'],
 ]
+
 
 export default function Accueil() {
   const { session } = useAuth()
@@ -59,27 +61,12 @@ export default function Accueil() {
         <div style={{ height: '3.5rem' }} />
       </section>
 
-      <section className="section blanc" aria-labelledby="titre-entrees">
+      <section className="section parcours-enfant" aria-labelledby="titre-parcours">
         <div className="interieur">
-          <h2 id="titre-entrees" className="titre-section">Trois portes, selon qui vous êtes</h2>
-          <p className="chapeau">Chaque page du site appartient à l'une de ces portes. On ne cherche plus le même sujet à trois endroits.</p>
-          <div className="portes-site">
-            <article>
-              <h3>Une famille</h3>
-              <p>Téléphone, jeu du jour, question à l'assistant, centre le plus proche, acte de naissance.</p>
-              <Link to="/telephone">Ouvrir le téléphone</Link>
-            </article>
-            <article>
-              <h3>Le terrain</h3>
-              <p>Agent, état civil, structure, responsable. Saisie hors réseau, crèches, suivi des adolescentes.</p>
-              <Link to="/connexion">Ouvrir un tableau de bord</Link>
-            </article>
-            <article>
-              <h3>Le projet</h3>
-              <p>Le parcours de l'enfant, le dossier du concours, la visite guidée en cinq minutes.</p>
-              <Link to="/visite">Commencer la visite</Link>
-            </article>
-          </div>
+          <h2 id="titre-parcours" className="titre-section">Un enfant, un parcours</h2>
+          <p className="chapeau">De la conception à l'entrée à l'école, un enfant passe d'un service à un autre. Fil d'Or garde le lien à chaque passage.</p>
+          <ParcoursCartes />
+          <p className="principe">Ce n'est pas l'enfant qui doit s'adapter aux institutions : ce sont les services qui se relient autour de lui.</p>
         </div>
       </section>
 
@@ -95,6 +82,36 @@ export default function Accueil() {
             <div className="chiffre"><b>27,6 %</b><span>des enfants entrent au préscolaire</span></div>
           </div>
           <p className="source">Sources : dossier de candidature et fiche thématique UNICEF Togo, octobre 2026. Les données de la démonstration sont fictives.</p>
+        </div>
+      </section>
+
+      <section className="section ciel" aria-labelledby="titre-essai">
+        <div className="interieur">
+          <div className="essai-grille">
+          <div>
+          <h2 id="titre-essai" className="titre-section">Essayez, tout est manipulable</h2>
+          <p className="chapeau">Aucun compte à créer. Cinq étapes, un bouton chacune : appel d'une famille, agent de santé, naissance et acte, carte régionale, jeux des enfants.</p>
+          <p className="heros-actions">
+            <Link className="bouton" to="/visite">Essayer en 5 minutes</Link>
+            <Link className="bouton secondaire" to="/hors-reseau">Voir le mode hors réseau</Link>
+          </p>
+          </div>
+          <figure className="photo-bloc">
+            <img src="/partenaires/mesure-bras.jpg" alt="Un agent de santé mesure le bras d'un enfant tenu par sa mère, avec un ruban de mesure" width="1100" height="733" />
+            <figcaption>Mesure du périmètre brachial d'un enfant, au village (photo d'illustration).</figcaption>
+          </figure>
+          </div>
+        </div>
+      </section>
+
+      <section className="partenaires" aria-label="Concours">
+        <div className="interieur partenaires-grille">
+          <img className="partenaires-photo" src="/partenaires/enfants-unicef.png" alt="Des enfants en bleu UNICEF, les mains levées" width="390" height="256" />
+          <div className="partenaires-texte">
+            <img className="partenaires-logo" src="/partenaires/unicef-logo.png" alt="UNICEF" height="72" />
+            <h2>Un projet pour le concours Hack4Children Togo 2026</h2>
+            <p>Concours organisé avec l'UNICEF et l'ARCEP sur le thème « Un enfant, un parcours ». Fil d'Or est un prototype candidat : ce n'est pas un service officiel de l'UNICEF.</p>
+          </div>
         </div>
       </section>
 
@@ -114,7 +131,7 @@ export default function Accueil() {
         <div className="interieur">
           <div>
             <h2>Voir Fil d'Or fonctionner</h2>
-            <p>Le <Link to="/parcours">parcours complet</Link>, le <Link to="/projet">dossier du concours</Link> et la <Link to="/visite">visite en cinq minutes</Link> restent sur leurs pages. Ici, on entre dans un tableau de bord.</p>
+            <p>Connectez-vous avec un compte de démonstration : agent, état civil, structure ou responsable régional.</p>
           </div>
           <Link className="bouton clair" to="/connexion">Entrer dans la démonstration</Link>
         </div>
