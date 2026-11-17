@@ -3,6 +3,8 @@ import { api } from '../lib/api.js'
 import { couleurIndice } from '../lib/format.js'
 import { Squelette } from '../components/Chargement.jsx'
 import { Barres } from '../components/Graphiques.jsx'
+import { COULEURS, TuileChiffre } from '../components/Courbes.jsx'
+import CarteTogo from '../components/CarteTogo.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import { Link } from 'react-router-dom'
@@ -24,65 +26,36 @@ const lac = proj(1.5, 6.17)
 const pct = (v) => (v === null || v === undefined ? '—' : `${v} %`)
 
 export default function Carte({ vue = 'carte' }) {
-  const [zones, setZones] = useState([])
+  const [toutes, setZones] = useState([])
   const [erreur, setErreur] = useState('')
   const [choisie, setChoisie] = useState(null)
 
+  const [geo, setGeo] = useState([])
   useEffect(() => {
     api.get('/api/decideur/zones').then(setZones).catch((e) => setErreur(e.message))
+    api.get('/api/decideur/geographie').then(setGeo).catch(() => {})
   }, [])
+  const pilotes = useMemo(() => new Set(geo.filter((g) => g.pilote).map((g) => g.code)), [geo])
+  const horsPilote = useMemo(() => geo.filter((g) => !g.pilote), [geo])
 
+  const zones = useMemo(() => (pilotes.size ? toutes.filter((z) => pilotes.has(z.code)) : toutes), [toutes, pilotes])
   const triees = useMemo(
     () => [...zones].sort((a, b) => (b.indiceOubli ?? -1) - (a.indiceOubli ?? -1)),
     [zones],
   )
-  const detail = zones.find((z) => z.code === choisie)
 
   const detaillees = zones.filter((z) => !z.masquee)
   const oubliees = detaillees.filter((z) => (z.indiceOubli ?? 0) >= 60)
   const totalFamilles = zones.reduce((n, z) => n + z.familles, 0)
   const prioritaire = triees.find((z) => !z.masquee && z.indiceOubli !== null)
+  const detail = zones.find((z) => z.code === choisie) ?? prioritaire
+  const suiviMoyen = (() => { const l = detaillees.filter((z) => z.tauxSuiviPct != null); const f = l.reduce((n, z) => n + z.familles, 0); return f ? Math.round(l.reduce((n, z) => n + z.tauxSuiviPct * z.familles, 0) / f) : null })()
 
   const action = (z) => z.masquee ? 'Trop peu de familles : suivi par l\'agent' : (z.indiceOubli ?? 0) >= 60 ? 'Envoyer une équipe mobile cette semaine' : (z.indiceOubli ?? 0) >= 35 ? 'Renforcer les rappels et les visites' : 'Maintenir le suivi'
-  const attente = zones.length === 0 && !erreur
+  const attente = toutes.length === 0 && !erreur
   const gauche = (
     <>
-        <section className="carte carte-carte">
-          <svg viewBox={`0 0 ${L} ${H}`} role="img" aria-label="Carte schématique des zones, colorées selon l'indice d'oubli">
-            <defs>
-              <pattern id="quadrillage" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#dbe7ee" strokeWidth="1" /></pattern>
-            </defs>
-            <rect width={L} height={H} fill="#f3f7f2" />
-            <rect width={L} height={H} fill="url(#quadrillage)" />
-            <path d={mer} fill="#cfeaf7" />
-            <path d={cheminCote} fill="none" stroke="#7fc3e3" strokeWidth="3" strokeLinecap="round" />
-            <ellipse cx={lac.x} cy={lac.y} rx="48" ry="11" fill="#cfeaf7" transform={`rotate(-8 ${lac.x} ${lac.y})`} />
-            <text x="22" y={H - 20} fontSize="14" fill="#4e86a5" fontStyle="italic">Golfe de Guinée</text>
-            {zones.map((z) => {
-              const { x, y } = proj(z.longitude, z.latitude)
-              const r = 17 + Math.min(z.familles, 25) * 0.7
-              const actif = choisie === z.code
-              return (
-                <g key={z.code} tabIndex="0" role="button" aria-label={`${z.nom}, indice d'oubli ${z.indiceOubli ?? 'non détaillé'}`}
-                   onClick={() => setChoisie(z.code)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setChoisie(z.code)}
-                   style={{ cursor: 'pointer' }}>
-                  <circle cx={x} cy={y} r={r + 8} fill={couleurIndice(z.indiceOubli)} fillOpacity="0.16" />
-                  <circle cx={x} cy={y} r={r} fill={couleurIndice(z.indiceOubli)} stroke={actif ? '#2d2926' : '#fff'} strokeWidth={actif ? 4 : 3}
-                          strokeDasharray={z.masquee ? '5 4' : undefined} />
-                  <text x={x} y={y + 6} textAnchor="middle" fontSize="17" fontWeight="700" fill="#fff" style={{ fontFamily: 'var(--police-titre)' }}>{z.indiceOubli ?? '?'}</text>
-                  <rect x={x - 46} y={y + r + 6} width="92" height="20" rx="10" fill="#fff" fillOpacity="0.92" />
-                  <text x={x} y={y + r + 20} textAnchor="middle" fontSize="12" fontWeight="700" fill="#2d2926">{z.nom.replace(/ \(.*\)/, '')}</text>
-                </g>
-              )
-            })}
-          </svg>
-          <div className="legende" aria-hidden="true">
-            <span><i style={{ background: '#00833d' }} /> bien suivie (0–34)</span>
-            <span><i style={{ background: '#f26a21' }} /> à surveiller (35–59)</span>
-            <span><i style={{ background: '#e2231a' }} /> oubliée (60–100)</span>
-            <span><i style={{ background: '#777779' }} /> non détaillée</span>
-          </div>
-        </section>
+        <CarteTogo zones={zones} horsPilote={horsPilote} choisie={choisie} onChoisir={setChoisie} />
 
     </>
   )
@@ -90,7 +63,9 @@ export default function Carte({ vue = 'carte' }) {
     <>
           {detail ? (
             <div className="carte">
+              <p className="petit zone-etiquette">{detail.code === prioritaire?.code && !choisie ? 'À visiter en premier' : `Région ${detail.region}`}</p>
               <h2>{detail.nom}</h2>
+              {!detail.masquee && <p className="action-zone">{action(detail)}</p>}
               {detail.masquee ? (
                 <p>Moins de 5 familles : zone non détaillée pour protéger l'anonymat.</p>
               ) : (
@@ -107,7 +82,7 @@ export default function Carte({ vue = 'carte' }) {
               <p className="petit">L'indice combine : rendez-vous réalisés (50 %), naissances déclarées (30 %), rappels sans réponse (20 %). Sans donnée, une zone compte comme oubliée.</p>
             </div>
           ) : (
-            <div className="carte"><p>Cliquez sur une zone pour voir le détail. Où envoyer une équipe mobile en premier ?</p></div>
+            <div className="carte"><p>Aucune zone dans votre région pour le moment.</p></div>
           )}
 
     </>
@@ -161,13 +136,18 @@ export default function Carte({ vue = 'carte' }) {
         </Bandeau>
         {erreur && <p className="erreur" role="alert">{erreur}</p>}
       {zones.length > 0 && (
-        <div className="tableau-kpi">
-          <div className="tuile"><b>{zones.length}</b><span>zones suivies</span></div>
-          <div className="tuile"><b>{totalFamilles}</b><span>familles dans le fil</span></div>
-          <div className={`tuile ${oubliees.length ? 'alerte' : ''}`}><b>{oubliees.length}</b><span>zone(s) oubliée(s) (indice ≥ 60)</span></div>
-          {prioritaire && <div className="tuile mise-en-avant"><b>{prioritaire.nom}</b><span>à visiter en premier · indice {prioritaire.indiceOubli}</span></div>}
+        <div className="grille-tuiles quatre">
+          <TuileChiffre libelle="Préfectures suivies" valeur={`${zones.length} sur ${geo.length || 39}`} aide="Le pilote commence par la Maritime" couleur={COULEURS.cyan} />
+          <TuileChiffre libelle="Familles dans le fil" valeur={totalFamilles} aide="Anonymes : jamais un nom ici" couleur={COULEURS.bleu} />
+          <TuileChiffre libelle="Rendez-vous réalisés" valeur={suiviMoyen === null ? '—' : `${suiviMoyen} %`} aide="Moyenne pondérée de la région" couleur={COULEURS.violet} />
+          <TuileChiffre libelle="Zones oubliées" valeur={oubliees.length} aide={prioritaire ? `À visiter d'abord : ${prioritaire.nom.replace(/ \(.*\)/, '')}` : 'Indice de 60 ou plus'} couleur={COULEURS.orange} />
         </div>
       )}
+
+        <div className="deux-colonnes">
+          {gauche}
+          <section>{detailJsx}</section>
+        </div>
 
         <div className="raccourcis">
           <Link className="bouton" to="/carte/carte">Ouvrir la carte</Link>

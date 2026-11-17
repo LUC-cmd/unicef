@@ -8,6 +8,7 @@ const https = require('https')
 const path = require('path')
 
 const os = require('os')
+const usb = require('./usb.js')
 // Un fichier journal à côté du logiciel : en cas de souci, il dit pourquoi (à envoyer à l'équipe).
 function journal(texte) {
   const ligne = `${new Date().toISOString()} ${texte}\n`
@@ -36,6 +37,28 @@ const config = lireConfig()
 const SERVEUR = new URL(config.serveur || SERVEUR_PAR_DEFAUT)
 const RACINE = path.join(__dirname, 'site')
 let fenetrePrincipale = null
+let mdpServeur = ''
+
+// Le mot de passe des comptes de démonstration est celui du serveur : on le lit sur le site au démarrage,
+// et on le garde dans un fichier pour les ouvertures sans réseau.
+function chargerMdpServeur() {
+  const fichier = path.join(app.getPath('userData'), 'mdp-demo.txt')
+  try { mdpServeur = fs.readFileSync(fichier, 'utf8').trim() } catch { /* pas encore de copie */ }
+  return new Promise((fin) => {
+    const client = SERVEUR.protocol === 'https:' ? https : http
+    const req = client.get(new URL('/fildor-config.js', SERVEUR), { timeout: 6000 }, (r) => {
+      let corps = ''
+      r.on('data', (c) => { corps += c })
+      r.on('end', () => {
+        const m = /mdpDemo:\s*("(?:[^"\\]|\\.)*")/.exec(corps)
+        if (m) { try { const v = JSON.parse(m[1]); if (v) { mdpServeur = v; fs.writeFileSync(fichier, v) } } catch { /* ignoré */ } }
+        fin()
+      })
+    })
+    req.on('timeout', () => { req.destroy(); fin() })
+    req.on('error', () => fin())
+  })
+}
 
 function relayer(req, res) {
   const client = SERVEUR.protocol === 'https:' ? https : http
@@ -54,12 +77,36 @@ function relayer(req, res) {
   req.pipe(amont)
 }
 
+// Clés USB : réservé à l'application elle-même (en-tête X-Fildor que seul notre site envoie ; un autre site
+// ouvert dans le navigateur ne peut pas l'ajouter sans autorisation).
+async function servirCles(req, res, url) {
+  const json = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)) }
+  if (req.headers['x-fildor'] !== '1' || (req.headers.host || '') !== `127.0.0.1:${PORT}`) return json(403, { erreur: 'Refusé' })
+  try {
+    if (url.pathname === '/local/cles' && req.method === 'GET') return json(200, { cles: await usb.lister() })
+    if (url.pathname === '/local/cles/lire' && req.method === 'GET') {
+      return json(200, { contenu: await usb.lire(url.searchParams.get('id'), url.searchParams.get('nom')) })
+    }
+    if (url.pathname === '/local/cles/ecrire' && req.method === 'POST') {
+      let corps = ''
+      for await (const c of req) { corps += c; if (corps.length > 31 * 1024 * 1024) return json(413, { erreur: 'Trop gros' }) }
+      const d = JSON.parse(corps)
+      return json(200, await usb.ecrire(d.id, d.nom, d.contenu))
+    }
+    return json(404, { erreur: 'Inconnu' })
+  } catch (e) {
+    journal('usb : ' + e.message)
+    return json(e.statut || 500, { erreur: e.message })
+  }
+}
+
 function servir(req, res) {
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`)
+  if (url.pathname.startsWith('/local/cles')) return servirCles(req, res, url)
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/assistant/')) return relayer(req, res)
   if (url.pathname === '/fildor-config.js') {
     res.writeHead(200, { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' })
-    return res.end(`window.FILDOR_CONFIG = ${JSON.stringify({ mdpDemo: config.motDePasseDemo || '', logiciel: true })}`)
+    return res.end(`window.FILDOR_CONFIG = ${JSON.stringify({ mdpDemo: config.motDePasseDemo || mdpServeur || '', logiciel: true })}`)
   }
   let fichier = path.normalize(path.join(RACINE, decodeURIComponent(url.pathname)))
   if (!fichier.startsWith(RACINE)) { res.writeHead(403); return res.end() }
@@ -105,7 +152,7 @@ else {
         ? "Fil d'Or est déjà ouvert, ou le port " + PORT + ' est pris par un autre logiciel.' : String(e))
       app.quit()
     })
-    serveur.listen(PORT, '127.0.0.1', ouvrir)
+    chargerMdpServeur().then(() => serveur.listen(PORT, '127.0.0.1', ouvrir))
   })
   app.on('window-all-closed', () => app.quit())
 }

@@ -49,12 +49,14 @@ public class RappelRepository {
         return jdbc.sql("""
                 INSERT INTO rappel (rendez_vous_id, canal, message, envoye_le, statut)
                 SELECT r.id, 'SMS',
-                       'Fil d''Or : rendez-vous le ' || to_char(r.date_prevue, 'DD/MM') || ' au centre de santé ('
-                           || r.libelle || '). Apportez le carnet.',
+                       replace(replace(COALESCE(CASE WHEN NOT ml.a_valider THEN ml.texte END, mf.texte),
+                                       '{date}', to_char(r.date_prevue, 'DD/MM')), '{libelle}', r.libelle),
                        now(), 'ENVOYE'
                 FROM rendez_vous r
                 JOIN enfant e ON e.id = r.enfant_id
                 JOIN famille f ON f.id = e.famille_id
+                JOIN modele_message mf ON mf.code = 'RAPPEL_RDV' AND mf.langue = 'fr'
+                LEFT JOIN modele_message ml ON ml.code = 'RAPPEL_RDV' AND ml.langue = f.langue
                 WHERE r.statut = 'PLANIFIE'
                   AND r.date_prevue BETWEEN :today AND :limite
                   AND f.a_telephone AND f.consentement

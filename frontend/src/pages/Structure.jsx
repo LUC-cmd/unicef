@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
+import { COULEURS, TuileChiffre } from '../components/Courbes.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import { Squelette } from '../components/Chargement.jsx'
 import { Anneau } from '../components/Graphiques.jsx'
@@ -61,11 +62,13 @@ export default function Structure({ vue = 'demandes' }) {
       <main className="page">
         <Bandeau surtitre="Structure d'accueil" titre="Tableau de bord">{titreStructure}{sousTitre ? ` · ${sousTitre}` : ''}</Bandeau>
         {retour}
-        <div className="tableau-kpi">
-          <div className={`tuile ${bilan.nouvelles.length ? 'alerte' : ''}`}><b>{bilan.nouvelles.length}</b><span>demandes à traiter</span></div>
-          <div className="tuile"><b>{bilan.traitees.length}</b><span>demandes traitées</span></div>
-          <div className="tuile"><b>{maStructure?.actif ? 'Oui' : 'Non'}</b><span>visible dans l'annuaire</span></div>
-          <div className="tuile"><b>{maStructure?.horaires || '—'}</b><span>horaires affichés</span></div>
+        <div className="grille-tuiles">
+          <TuileChiffre libelle="Demandes à traiter" valeur={bilan.nouvelles.length} aide={bilan.nouvelles.length ? 'Des familles attendent une réponse' : 'Aucune demande en attente'} couleur={COULEURS.orange} />
+          <TuileChiffre libelle="Demandes traitées" valeur={bilan.traitees.length} aide="Réponses déjà envoyées" couleur={COULEURS.cyan} />
+          <TuileChiffre libelle="Rappels demandés" valeur={rappels} aide="Familles qui veulent être rappelées" couleur={COULEURS.bleu} />
+          <TuileChiffre libelle="Orientations" valeur={tousMotifs.length - rappels} aide="Familles qui cherchent une structure" couleur={COULEURS.violet} />
+          <TuileChiffre libelle="Annuaire" valeur={maStructure?.actif ? 'Visible' : 'Masquée'} aide="Statut de votre fiche publique" couleur={COULEURS.cyan} />
+          <TuileChiffre libelle="Horaires affichés" valeur={maStructure?.horaires || '—'} aide="Modifiables dans « Mes informations »" couleur={COULEURS.bleu} />
         </div>
         <div className="raccourcis">
           <Link className="bouton" to="/structure/demandes">Répondre aux familles</Link>
@@ -83,16 +86,20 @@ export default function Structure({ vue = 'demandes' }) {
         </div>
         <section className="carte">
           <h2>Dernières demandes à traiter</h2>
-          <ul className="liste-visites">
+          <ul className="liste-demandes">
             {bilan.nouvelles.slice(0, 4).map((d) => (
               <li key={d.id}>
-                <p><b>{d.codeFamille}</b> <span className="petit">· {d.zone} · {LIBELLE_LANGUE[d.langue]} · {d.motif === 'RAPPEL' ? 'demande à être rappelée' : "demande une orientation"}</span></p>
+                <div className="demande-qui">
+                  <b>{d.codeFamille}</b>
+                  <span className={`badge ${d.motif === 'RAPPEL' ? 'role-agent' : 'role-structure'}`}>{d.motif === 'RAPPEL' ? 'Veut être rappelée' : 'Cherche une structure'}</span>
+                  <span className="petit">{d.zone}{LIBELLE_LANGUE[d.langue] ? ` · ${LIBELLE_LANGUE[d.langue]}` : ''}</span>
+                </div>
                 <div className="actions">
                   {REPONSES.map(([v, nom]) => <button key={v} className="bouton secondaire petit-bouton" onClick={() => repondre(d.id, v).then(() => api.get('/api/structure/demandes?statut=NOUVELLE').then((n) => setBilan((b) => ({ nouvelles: n, traitees: [...b.traitees, ...b.nouvelles.filter((x) => x.id === d.id)] }))))}>{nom}</button>)}
                 </div>
               </li>
             ))}
-            {bilan.nouvelles.length === 0 && <li className="petit">Aucune demande en attente.</li>}
+            {bilan.nouvelles.length === 0 && <li className="vide">Aucune demande en attente. Bravo : toutes les familles ont une réponse.</li>}
           </ul>
         </section>
       </main>

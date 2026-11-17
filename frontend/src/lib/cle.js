@@ -5,7 +5,7 @@
 import { lireFile, nombreEnAttente } from './offline.js'
 
 export const FORMAT = 'fildor-cle'
-const LISTES = ['visites', 'declarations', 'inscriptions', 'accouchements']
+const LISTES = ['visites', 'declarations', 'inscriptions', 'accouchements', 'prenoms']
 
 export async function somme(texte) {
   const octets = new TextEncoder().encode(texte)
@@ -52,19 +52,19 @@ export function aBesoinDeZone(file) {
 
 export function compter(file) {
   return { visites: file.visites.length, inscriptions: file.inscriptions.length,
-    accouchements: file.accouchements.length, declarations: file.declarations.length }
+    accouchements: file.accouchements.length, declarations: file.declarations.length, prenoms: (file.prenoms ?? []).length }
 }
 
 /** Ajoute ce qu'il y a dans le fichier à la file locale, sans doublon. Renvoie la nouvelle file et le nombre d'ajouts. */
 export function fusionner(locale, entrante) {
   const cle = { visites: (x) => x.clientUuid, inscriptions: (x) => x.clientUuid,
-    declarations: (x) => x.codeEnfant, accouchements: (x) => x.codeEnfant }
+    declarations: (x) => x.codeEnfant, accouchements: (x) => x.codeEnfant, prenoms: (x) => x.codeEnfant }
   const sortie = {}
   let ajoutes = 0
   for (const l of LISTES) {
     sortie[l] = [...(locale[l] ?? [])]
     const vus = new Set(sortie[l].map(cle[l]))
-    for (const x of entrante[l]) {
+    for (const x of entrante[l] ?? []) {
       const k = cle[l](x)
       if (k && !vus.has(k)) { sortie[l].push(x); vus.add(k); ajoutes += 1 }
     }

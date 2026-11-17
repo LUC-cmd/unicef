@@ -3,10 +3,12 @@ package tg.fildor.web;
 import java.time.Clock;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tg.fildor.repo.ApercuRepository;
 import tg.fildor.service.RappelService;
 
 @RestController
@@ -14,11 +16,19 @@ import tg.fildor.service.RappelService;
 public class AdminController {
 
     private final RappelService rappels;
+    private final ApercuRepository apercu;
     private final Clock clock;
 
-    public AdminController(RappelService rappels, Clock clock) {
+    public AdminController(RappelService rappels, ApercuRepository apercu, Clock clock) {
         this.rappels = rappels;
+        this.apercu = apercu;
         this.clock = clock;
+    }
+
+    /** Vue d'ensemble de la plateforme : totaux, activité des 30 derniers jours, répartitions. */
+    @GetMapping("/apercu")
+    java.util.Map<String, Object> apercu() {
+        return apercu.apercu();
     }
 
     /**

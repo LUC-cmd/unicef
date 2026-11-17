@@ -38,23 +38,29 @@ public class SyncService {
     public record SyncDeclaration(
             @NotBlank String codeEnfant,
             @NotBlank @Pattern(regexp = "CENTRE_SANTE|DOMICILE") String lieuNaissance,
-            boolean certificatAccouchement) {
+            boolean certificatAccouchement,
+            @Pattern(regexp = "AGENT|CENTRE_SANTE|HOPITAL") String source,
+            String mereNom, String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere) {
     }
 
     public record SyncAccouchement(@NotBlank String codeEnfant, @NotNull LocalDate dateNaissance,
                                    List<Integer> etapesFaites) {
     }
 
+    /** Nom donné à l'enfant au 8e jour, saisi sans réseau. */
+    public record SyncPrenom(@NotBlank String codeEnfant, @NotBlank @jakarta.validation.constraints.Size(max = 60) String prenom) {
+    }
+
     public record SyncRequest(@Valid List<SyncVisite> visites, @Valid List<SyncDeclaration> declarations,
                               @Valid List<InscriptionService.InscriptionRequest> inscriptions,
-                              @Valid List<SyncAccouchement> accouchements) {
+                              @Valid List<SyncAccouchement> accouchements, @Valid List<SyncPrenom> prenoms) {
     }
 
     /** Les codes famille et enfant attribués aux inscriptions faites hors ligne sont dans « inscriptions ». */
     public record SyncResultat(int visitesCreees, int visitesDejaConnues, int declarationsCreees,
                                int declarationsDejaConnues, int inscriptionsCreees, int inscriptionsDejaConnues,
                                List<InscriptionService.InscriptionResultat> inscriptions, int accouchementsCrees,
-                               int accouchementsDejaConnus, List<String> erreurs) {
+                               int accouchementsDejaConnus, List<String> erreurs, int prenomsEnregistres) {
     }
 
     private final SuiviRepository suivi;
@@ -136,7 +142,8 @@ public class SyncService {
         for (SyncDeclaration d : req.declarations() == null ? List.<SyncDeclaration>of() : req.declarations()) {
             try {
                 boolean cree = naissances.declarer(u, d.codeEnfant(), d.lieuNaissance(), d.certificatAccouchement(),
-                        aujourdhui).creee();
+                        new NaissanceService.Identite(d.mereNom(), d.pereNom(), d.enfantPrenom(), d.accordMere(),
+                                d.accordPere()), d.source(), aujourdhui).creee();
                 if (cree) {
                     dCrees++;
                 } else {
@@ -147,9 +154,20 @@ public class SyncService {
             }
         }
 
+        int pCrees = 0;
+        for (SyncPrenom p : req.prenoms() == null ? List.<SyncPrenom>of() : req.prenoms()) {
+            try {
+                if (naissances.donnerPrenomUneFois(u, p.codeEnfant(), p.prenom(), aujourdhui)) {
+                    pCrees++;
+                }
+            } catch (ResponseStatusException | IllegalArgumentException ex) {
+                erreurs.add("Nom " + p.codeEnfant() + " : " + messageDe(ex));
+            }
+        }
+
         acces.tracer(u, "SYNCHRONISER", vCrees + " visite(s), " + dCrees + " déclaration(s), " + iCrees + " inscription(s)");
         return new SyncResultat(vCrees, vConnues, dCrees, dConnues, iCrees, iConnues, List.copyOf(codes), aCrees,
-                aConnus, List.copyOf(erreurs));
+                aConnus, List.copyOf(erreurs), pCrees);
     }
 
     private static String messageDe(RuntimeException ex) {

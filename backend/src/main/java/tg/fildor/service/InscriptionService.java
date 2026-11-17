@@ -40,7 +40,20 @@ public class InscriptionService {
             LocalDate dateTermePrevue,
             @Pattern(regexp = "F|M") String sexe,
             List<Integer> etapesFaites,
-            Integer consultationsFaites) {
+            Integer consultationsFaites,
+            @Valid Parents parents) {
+    }
+
+    /** Identité prise aux consultations prénatales. Chaque nom, chaque information n'est gardé qu'avec l'accord de la personne. */
+    public record Parents(
+            @Size(max = 120) String mereNom,
+            @Size(max = 120) String conjointNom,
+            @Pattern(regexp = "CARTE_ELECTEUR|CNI|PASSEPORT|CARTE_SANTE|AUCUNE") String pieceType,
+            @Size(max = 40) String pieceNumero,
+            @Size(max = 40) String nationaliteMere,
+            @Size(max = 40) String nationaliteConjoint,
+            boolean accordMere,
+            boolean accordConjoint) {
     }
 
     public record ContactInscrit(
@@ -118,7 +131,7 @@ public class InscriptionService {
             repo.creerFamille(id, codeFamille, zoneId, r.langue(), r.porte(), hashTel != null, hashTel, r.clientUuid());
             List<String> codes = new ArrayList<>();
             for (EnfantInscrit e : r.enfants()) {
-                codes.add(ecrireEnfant(id, e, aujourdhui));
+                codes.add(ecrireEnfant(id, e, aujourdhui, u.id()));
             }
             for (int i = 0; i < hashProches.size(); i++) {
                 repo.creerContact(id, r.contacts().get(i).role(), hashProches.get(i));
@@ -137,7 +150,7 @@ public class InscriptionService {
         if (existants.size() >= MAX_ENFANTS) {
             throw new IllegalArgumentException("Nombre maximum d'enfants atteint pour cette famille");
         }
-        String code = tx.execute(status -> ecrireEnfant(familleId, e, aujourdhui));
+        String code = tx.execute(status -> ecrireEnfant(familleId, e, aujourdhui, u.id()));
         acces.tracer(u, "AJOUTER_ENFANT", code);
         return List.of(code);
     }
@@ -230,7 +243,7 @@ public class InscriptionService {
     // ------------------------------------------------------------------ écriture
 
     /** Crée l'enfant et son plan de rendez-vous. Le code est « T » + numéro de famille + première lettre libre. */
-    private String ecrireEnfant(long familleId, EnfantInscrit e, LocalDate aujourdhui) {
+    private String ecrireEnfant(long familleId, EnfantInscrit e, LocalDate aujourdhui, long userId) {
         Set<String> pris = new HashSet<>(repo.codesEnfants(familleId));
         String prefixe = "T" + String.format("%03d", familleId);
         String code = null;
@@ -251,6 +264,9 @@ public class InscriptionService {
                 : PlanRendezVous.prenatal(e.dateTermePrevue(),
                         e.consultationsFaites() == null ? 0 : e.consultationsFaites(), aujourdhui);
         plan.forEach(p -> repo.creerRendezVous(enfantId, p));
+        if (e.parents() != null) {
+            repo.enregistrerParents(enfantId, e.parents(), userId);
+        }
         return code;
     }
 }

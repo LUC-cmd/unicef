@@ -16,11 +16,19 @@ import tg.fildor.service.ZoneService;
 public class DecideurController {
 
     private final ZoneService zones;
+    private final tg.fildor.repo.ZoneRepository zonesRepo;
     private final Clock clock;
 
-    public DecideurController(ZoneService zones, Clock clock) {
+    public DecideurController(ZoneService zones, tg.fildor.repo.ZoneRepository zonesRepo, Clock clock) {
         this.zones = zones;
+        this.zonesRepo = zonesRepo;
         this.clock = clock;
+    }
+
+    /** Les 5 régions et 39 préfectures ; les préfectures « pilote » sont celles où Fil d'Or est déployé. */
+    @GetMapping("/geographie")
+    List<tg.fildor.repo.ZoneRepository.Prefecture> geographie() {
+        return zonesRepo.geographie();
     }
 
     @GetMapping("/zones")

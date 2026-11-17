@@ -52,7 +52,7 @@ export const ROLES = {
 }
 
 export const JAMAIS_ENREGISTRE = [
-  'Le nom des enfants et des parents',
+  'Un nom ou une pièce sans l’accord de la personne',
   'Les photos',
   'Les adresses et les points GPS précis',
   'Le numéro de téléphone en clair',

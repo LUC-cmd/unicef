@@ -6,41 +6,13 @@ import { JAMAIS_ENREGISTRE, ROLES } from '../lib/roles.js'
 import { formaterDate } from '../lib/format.js'
 
 const ETAPES_NAISSANCE = [
-  {
-    qui: 'Avant la naissance',
-    titre: 'La grossesse est déjà suivie',
-    texte: 'L’agent inscrit la femme enceinte avec un code, sans nom. Les consultations prénatales sont planifiées et rappelées par SMS ou par voix.',
-  },
-  {
-    qui: 'Le jour de la naissance',
-    titre: 'Au centre de santé ou à la maison',
-    texte: 'Au centre de santé, le soignant remet le certificat d’accouchement. À la maison, c’est l’accoucheuse ou l’agent qui constate. Dans les deux cas l’enfant existe pour le système dès le premier jour.',
-  },
-  {
-    qui: 'Agent de santé',
-    titre: 'Il enregistre la naissance',
-    texte: 'Il saisit la date, le lieu (centre de santé ou domicile) et note si le certificat d’accouchement a été vu. Cela marche sans réseau : la saisie part au retour du réseau.',
-  },
-  {
-    qui: 'Automatique',
-    titre: 'Un reçu horodaté est créé',
-    texte: 'Chaque déclaration reçoit un numéro de reçu unique, de la forme FDO-date-numéro. C’est la preuve que la déclaration a été envoyée, à la date indiquée.',
-  },
-  {
-    qui: 'État civil',
-    titre: 'La mairie valide à distance',
-    texte: 'Elle voit le dossier pré-rempli, sans nom ni adresse. Elle valide, ou rejette en disant ce qui manque. Le motif est obligatoire pour que l’agent sache quoi corriger.',
-  },
-  {
-    qui: 'Famille',
-    titre: 'Un SMS apporte la preuve',
-    texte: 'La famille reçoit le numéro de reçu et un code de vérification. Elle peut les garder, les montrer au guichet, ou les faire contrôler sur cette page.',
-  },
-  {
-    qui: 'État civil',
-    titre: 'Acte de naissance, puis la suite',
-    texte: 'L’acte est délivré par l’état civil : gratuit si la naissance est déclarée dans les 45 jours, jugement supplétif à 6 000 FCFA au-delà. Les pièces d’identité et la nationalité viennent ensuite et relèvent de l’état civil.',
-  },
+  { qui: 'Grossesse', titre: 'Premières consultations', texte: 'L’agent inscrit la femme enceinte. Avec son accord : pièce, nom du mari, nationalité.' },
+  { qui: 'Naissance', titre: 'Au centre ou à la maison', texte: 'Le certificat d’accouchement est remis. L’enfant existe dans le système dès le premier jour.' },
+  { qui: 'Agent de santé', titre: 'Il déclare la naissance', texte: 'Date, lieu, certificat. Cela marche sans réseau : la saisie part au retour du réseau.' },
+  { qui: 'Jour 8', titre: 'Le nom de l’enfant', texte: 'La famille donne le nom ; l’agent le saisit, même sans réseau. Il complète le dossier.' },
+  { qui: 'État civil', titre: 'Il valide à distance', texte: 'Il voit le dossier, valide ou rejette en disant ce qui manque.' },
+  { qui: 'Famille', titre: 'Un SMS avec la preuve', texte: 'Numéro de reçu et code, à garder ou à faire vérifier sur ce site.' },
+  { qui: 'État civil', titre: 'Acte, puis nationalité', texte: 'La validation ouvre le dossier de nationalité : pièces, dépôt, reconnaissance. Même sans papiers.' },
 ]
 
 const RESULTATS = {
@@ -155,7 +127,7 @@ export default function Fonctionnement() {
         <section id="naissance" className="bloc-page">
           <h2>De la naissance à la preuve</h2>
           <p className="chapeau-page">
-            Avant de parler de nationalité, il faut que la naissance soit enregistrée et qu’il en reste une trace sûre. Voici le chemin, étape par étape.
+            De la grossesse à la nationalité, étape par étape.
           </p>
           <ol className="frise-etapes">
             {ETAPES_NAISSANCE.map((e) => (
@@ -168,14 +140,8 @@ export default function Fonctionnement() {
           </ol>
           <div className="carte attention">
             <h3>Si les parents n’ont pas de papiers</h3>
-            <p>
-              Fil d’Or n’exige aucune pièce des parents pour envoyer la déclaration : elle part dans tous les cas, avec la date, le lieu et la mention du certificat d’accouchement.
-              Si la mairie a besoin d’autre chose, elle le dit dans le motif de rejet et l’agent de santé accompagne la famille jusqu’à la correction.
-              L’identité (noms, filiation) est recueillie par l’officier d’état civil au guichet : Fil d’Or ne la garde pas.
-            </p>
-            <p className="petit">
-              Fil d’Or ne donne ni acte de naissance ni nationalité. Ce que le droit exige pour un enfant dont les parents n’ont pas de papiers reste à confirmer avec l’état civil et un juriste avant le pilote.
-            </p>
+            <p>La déclaration part quand même. Le dossier de nationalité s’ouvre alors sur la voie « parents sans papiers » : attestation du chef de quartier, témoins, jugement supplétif si besoin.</p>
+            <p className="petit">Listes de pièces provisoires, à confirmer avec l’état civil et la justice avant le pilote.</p>
           </div>
         </section>
 
@@ -183,20 +149,13 @@ export default function Fonctionnement() {
           <h2>Envoi par téléphone</h2>
           <div className="deux-colonnes">
             <div className="carte">
-              <h3>Quand il y a du réseau</h3>
-              <p>
-                La mairie valide, et un SMS part vers le téléphone de la famille : numéro de reçu, code de vérification, et la mention
-                « ce message n’est pas l’acte de naissance ». Si la famille n’a pas de téléphone, l’agent voit le résultat et le numéro de reçu sur la fiche de l’enfant, et les lui communique.
-              </p>
-              <p>La mairie voit aussi le numéro et le code au moment de la validation : elle peut les lire à la famille, ou les écrire sur le carnet.</p>
+              <h3>Quand la mairie valide</h3>
+              <p>Un SMS part vers la famille : numéro de reçu et code. Sans téléphone, l’agent lit le résultat sur la fiche et le lui donne.</p>
             </div>
             <div className="carte">
-              <h3>Ce que fait la démonstration</h3>
-              <p>Les SMS sont simulés : ils s’écrivent dans la base et s’affichent dans le <Link to="/telephone">simulateur de téléphone</Link>, onglet Messages.</p>
-              <p className="petit">
-                Un vrai envoi demande une passerelle SMS d’un opérateur, comme le paiement mobile du dossier : c’est à confirmer avec lui.
-                Le numéro de la famille n’est conservé que sous forme chiffrée.
-              </p>
+              <h3>Dans la démonstration</h3>
+              <p>Les SMS sont simulés : voyez-les dans le <Link to="/telephone">simulateur de téléphone</Link>.</p>
+              <p className="petit">Un vrai envoi passera par une passerelle SMS d’opérateur, à confirmer.</p>
             </div>
           </div>
         </section>
@@ -261,7 +220,7 @@ export default function Fonctionnement() {
               <p>Le service assistant répond seulement à partir des contenus déjà écrits pour les familles. Il ne voit ni dossier, ni nom, ni numéro.</p>
             </div>
             <div className="carte">
-              <h3>Ce qui n’est jamais enregistré</h3>
+              <h3>Jamais enregistré</h3>
               <ul className="liste-coches non">{JAMAIS_ENREGISTRE.map((t) => <li key={t}>{t}</li>)}</ul>
             </div>
           </div>

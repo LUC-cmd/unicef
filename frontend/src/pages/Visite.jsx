@@ -39,7 +39,7 @@ export default function Visite() {
   return (
     <>
       <Bandeau surtitre="Pour le jury" titre="Essayer Fil d'Or en 5 minutes">
-        Cinq étapes, cinq boutons. Chacun vous connecte avec le bon rôle et ouvre la page à manipuler. Toutes les données sont fictives.
+        Cinq boutons, cinq rôles. Données fictives.
       </Bandeau>
       <main className="page">
         {erreur && <p className="erreur" role="alert">{erreur}</p>}

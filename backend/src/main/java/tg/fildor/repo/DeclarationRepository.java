@@ -76,6 +76,89 @@ public class DeclarationRepository {
                 .update() > 0;
     }
 
+    /** Dossier vu par l'état civil : la déclaration, sa provenance, son avancement et ce que la famille a choisi de communiquer. */
+    public record DossierMairie(long id, String codeEnfant, String statut, String lieuNaissance,
+                                boolean certificatAccouchement, String numeroRecu, java.time.OffsetDateTime envoyeeLe,
+                                boolean dansDelaiGratuit, String motifRejet, LocalDate dateNaissance, String zone,
+                                String source, java.time.OffsetDateTime traiteeLe, java.time.OffsetDateTime actePretLe,
+                                java.time.OffsetDateTime acteRetireLe, boolean identiteDemandee, String mereNom,
+                                String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere,
+                                String pieceType, String pieceNumero, String nationaliteMere,
+                                String nationaliteConjoint, LocalDate prenomAttenduLe, boolean prenomDonne,
+                                boolean prisEnGrossesse) {
+    }
+
+    public List<DossierMairie> dossiers(String statut) {
+        String sql = """
+                SELECT d.id, e.code_enfant, d.statut, d.lieu_naissance, d.certificat_accouchement, d.numero_recu,
+                       d.envoyee_le, d.dans_delai_gratuit, d.motif_rejet, e.date_naissance, z.nom AS zone,
+                       d.source, d.traitee_le, d.acte_pret_le, d.acte_retire_le,
+                       (i.declaration_id IS NOT NULL OR p.enfant_id IS NOT NULL) AS identite_demandee,
+                       COALESCE(i.mere_nom, CASE WHEN p.accord_mere THEN p.mere_nom END) AS mere_nom,
+                       COALESCE(i.pere_nom, CASE WHEN p.accord_conjoint THEN p.conjoint_nom END) AS pere_nom,
+                       COALESCE(d.prenom_enfant, i.enfant_prenom) AS enfant_prenom,
+                       (COALESCE(i.accord_mere, FALSE) OR COALESCE(p.accord_mere, FALSE)) AS accord_mere,
+                       (COALESCE(i.accord_pere, FALSE) OR COALESCE(p.accord_conjoint, FALSE)) AS accord_pere,
+                       p.piece_type, p.piece_numero, p.nationalite_mere, p.nationalite_conjoint,
+                       (d.prenom_enfant IS NOT NULL) AS prenom_donne,
+                       (p.enfant_id IS NOT NULL) AS pris_en_grossesse
+                FROM declaration_naissance d
+                JOIN enfant e ON e.id = d.enfant_id
+                JOIN famille f ON f.id = e.famille_id
+                JOIN zone z ON z.id = f.zone_id
+                LEFT JOIN identite_naissance i ON i.declaration_id = d.id
+                LEFT JOIN identite_parents p ON p.enfant_id = e.id
+                """ + (statut == null || statut.isBlank() ? "" : " WHERE d.statut = :s ")
+                + " ORDER BY d.envoyee_le DESC, d.id DESC LIMIT 200";
+        var requete = jdbc.sql(sql);
+        if (statut != null && !statut.isBlank()) {
+            requete = requete.param("s", statut);
+        }
+        return requete.query((rs, n) -> {
+            LocalDate naissance = Lignes.date(rs, "date_naissance");
+            return new DossierMairie(rs.getLong("id"), rs.getString("code_enfant"),
+                    rs.getString("statut"), rs.getString("lieu_naissance"), rs.getBoolean("certificat_accouchement"),
+                    rs.getString("numero_recu"), rs.getObject("envoyee_le", java.time.OffsetDateTime.class),
+                    rs.getBoolean("dans_delai_gratuit"), rs.getString("motif_rejet"), naissance,
+                    rs.getString("zone"), rs.getString("source"), rs.getObject("traitee_le", java.time.OffsetDateTime.class),
+                    rs.getObject("acte_pret_le", java.time.OffsetDateTime.class),
+                    rs.getObject("acte_retire_le", java.time.OffsetDateTime.class), rs.getBoolean("identite_demandee"),
+                    rs.getString("mere_nom"), rs.getString("pere_nom"), rs.getString("enfant_prenom"),
+                    rs.getBoolean("accord_mere"), rs.getBoolean("accord_pere"),
+                    rs.getString("piece_type"), rs.getString("piece_numero"), rs.getString("nationalite_mere"),
+                    rs.getString("nationalite_conjoint"), naissance == null ? null : naissance.plusDays(8),
+                    rs.getBoolean("prenom_donne"), rs.getBoolean("pris_en_grossesse"));
+        }).list();
+    }
+
+    public void definirPrenom(long enfantId, String prenom) {
+        jdbc.sql("UPDATE declaration_naissance SET prenom_enfant = :p, prenom_donne_le = now() WHERE enfant_id = :e")
+                .param("p", prenom).param("e", enfantId).update();
+    }
+
+    public Optional<String> prenom(long enfantId) {
+        return jdbc.sql("SELECT prenom_enfant FROM declaration_naissance WHERE enfant_id = :e AND prenom_enfant IS NOT NULL")
+                .param("e", enfantId).query(String.class).optional();
+    }
+
+    public void definirSource(long declarationId, String source) {
+        jdbc.sql("UPDATE declaration_naissance SET source = :s WHERE id = :id")
+                .param("s", source).param("id", declarationId).update();
+    }
+
+    /** Ce que la famille a choisi de communiquer pour l'acte. Une seule fois par déclaration. */
+    public void enregistrerIdentite(long declarationId, String mere, String pere, String prenom, boolean accordMere,
+                                    boolean accordPere, String source, long userId) {
+        jdbc.sql("""
+                INSERT INTO identite_naissance (declaration_id, mere_nom, pere_nom, enfant_prenom, accord_mere,
+                                                accord_pere, source, saisi_par)
+                VALUES (:d, :m, :p, :n, :am, :ap, :src, :u)
+                ON CONFLICT (declaration_id) DO NOTHING""")
+                .param("d", declarationId).param("m", mere).param("p", pere).param("n", prenom)
+                .param("am", accordMere).param("ap", accordPere).param("src", source).param("u", userId)
+                .update();
+    }
+
     public record ContexteFamille(long familleId, String codeEnfant, boolean aTelephone, boolean consentement) {
     }
 

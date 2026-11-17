@@ -4,7 +4,7 @@ import { construireFichier, fusionner, lireFichier } from './cle.js'
 const file = {
   visites: [{ clientUuid: 'u1', codeEnfant: 'T001A' }],
   declarations: [{ codeEnfant: 'T002A', lieuNaissance: 'DOMICILE' }],
-  inscriptions: [], accouchements: [],
+  inscriptions: [], accouchements: [], prenoms: [{ codeEnfant: 'T001A', prenom: 'Ama' }],
 }
 
 describe('clé USB', () => {
@@ -23,9 +23,9 @@ describe('clé USB', () => {
     await expect(lireFichier('pas du json')).rejects.toThrow(/pas un fichier/)
   })
   it('ne crée pas de doublon en rechargeant le même fichier', () => {
-    const vide = { visites: [], declarations: [], inscriptions: [], accouchements: [] }
+    const vide = { visites: [], declarations: [], inscriptions: [], accouchements: [], prenoms: [] }
     const un = fusionner(vide, file)
-    expect(un.ajoutes).toBe(2)
+    expect(un.ajoutes).toBe(3)
     expect(fusionner(un.file, file).ajoutes).toBe(0)
   })
 })

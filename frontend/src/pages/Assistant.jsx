@@ -44,8 +44,7 @@ export default function Assistant() {
   return (
     <>
       <Bandeau surtitre="Service assistant" titre="Poser une question">
-        L'assistant répond à partir des contenus de Fil d'Or, déjà écrits pour les familles.
-        Il ne voit aucun dossier, aucun nom, aucun numéro. Il ne remplace pas un soignant.
+        Il répond avec les contenus de Fil d'Or, sans voir aucun dossier. Il ne remplace pas un soignant.
       </Bandeau>
       <main className="page">
         <div className="assistant-grille">

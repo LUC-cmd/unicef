@@ -2,6 +2,7 @@ package tg.fildor.web;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -40,7 +41,10 @@ public class AgentController {
 
     public record NaissanceRequest(@NotBlank String codeEnfant,
                                    @NotBlank @Pattern(regexp = "CENTRE_SANTE|DOMICILE") String lieuNaissance,
-                                   boolean certificatAccouchement) {
+                                   boolean certificatAccouchement,
+                                   @Pattern(regexp = "AGENT|CENTRE_SANTE|HOPITAL") String source,
+                                   String mereNom, String pereNom, String enfantPrenom,
+                                   boolean accordMere, boolean accordPere) {
     }
 
     public record ProcheRequest(@NotBlank @Pattern(regexp = "RELAIS|PERE|GRAND_PARENT|AUTRE_PROCHE") String role,
@@ -93,10 +97,21 @@ public class AgentController {
         return sync.synchroniser(u, req, LocalDate.now(clock));
     }
 
+    public record PrenomRequest(@NotBlank @Size(min = 2, max = 60) String prenom) {
+    }
+
+    /** Le nom de l'enfant, donné à partir du 8e jour : il rejoint le dossier déjà envoyé à l'état civil. */
+    @PostMapping("/naissances/{codeEnfant}/prenom")
+    java.util.Map<String, Object> prenom(@AuthenticationPrincipal AppUser u, @PathVariable String codeEnfant,
+                                         @Valid @RequestBody PrenomRequest r) {
+        return naissances.donnerPrenom(u, codeEnfant, r.prenom(), LocalDate.now(clock));
+    }
+
     @PostMapping("/naissances")
     NaissanceService.Resultat declarer(@AuthenticationPrincipal AppUser u, @Valid @RequestBody NaissanceRequest r) {
         return naissances.declarer(u, r.codeEnfant(), r.lieuNaissance(), r.certificatAccouchement(),
-                LocalDate.now(clock));
+                new NaissanceService.Identite(r.mereNom(), r.pereNom(), r.enfantPrenom(), r.accordMere(), r.accordPere()),
+                r.source(), LocalDate.now(clock));
     }
 
     // ------------------------------------------------------------------ inscription

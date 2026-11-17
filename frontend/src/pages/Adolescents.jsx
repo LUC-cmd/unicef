@@ -12,8 +12,7 @@ export default function Adolescents() {
   return (
     <>
       <Bandeau surtitre="12 à 17 ans" titre="Adolescentes et adolescents">
-        Le fil ne s'arrête pas à 5 ans. Les jeunes mères et les adolescents ont leur place dans le parcours, pour que leurs enfants
-        et eux-mêmes ne soient pas oubliés.
+        Le fil continue après 5 ans, pour les jeunes mères et les adolescents.
       </Bandeau>
       <main className="page">
         <div className="grille">

@@ -22,8 +22,7 @@ export default function Annuaire() {
   return (
     <>
     <Bandeau surtitre="Annuaire public" titre="Annuaire des structures">
-      Centres de santé, crèches, centres sociaux et services d'état civil, par zone. Les structures mettent à jour
-      elles-mêmes leurs horaires et leurs services. Noms et numéros de la démonstration : fictifs.
+      Santé, crèches, centres sociaux et état civil, par zone. Données de démonstration.
     </Bandeau>
     <main className="page">
 

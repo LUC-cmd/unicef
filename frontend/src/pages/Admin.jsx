@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { aujourdhuiIso } from '../lib/format.js'
+import ModelesMessages from '../components/ModelesMessages.jsx'
+import GestionComptes from '../components/GestionComptes.jsx'
+import TableauAdmin from '../components/TableauAdmin.jsx'
 import ReceptionCles from '../components/ReceptionCles.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
@@ -24,15 +27,7 @@ async function joignable(url, accepte) {
 }
 
 /** Coulisses : l'état des quatre services, et l'horloge de démonstration. */
-export default function Admin({ vue = 'services' }) {
-  if (vue === 'cles') {
-    return (
-      <main className="page">
-        <Bandeau surtitre="Administrateur" titre="Réception des clés USB">Les saisies faites sans réseau arrivent ici, puis partent dans la base.</Bandeau>
-        <ReceptionCles />
-      </main>
-    )
-  }
+function AdminAutres({ vue }) {
   const [etats, setEtats] = useState({})
   const [jours, setJours] = useState(5)
   const [resultat, setResultat] = useState(null)
@@ -87,30 +82,6 @@ export default function Admin({ vue = 'services' }) {
     )
   }
 
-  if (vue === 'acces') {
-    return (
-      <main className="page">
-        <Bandeau surtitre="Administration" titre="Espaces et comptes">Ouvrez chaque espace comme le ferait l'utilisateur concerné.</Bandeau>
-        <section className="carte">
-          <h2>Ce que le jury peut ouvrir</h2>
-          <ul className="liste-points">
-            <li>Téléphone <b>90000031</b>, puis l'onglet USSD <b>*789#</b></li>
-            <li>Assistant : une question sur les vaccins, une sur les convulsions</li>
-            <li><b>Agent de Vo</b> : liste priorisée, saisie hors ligne</li>
-            <li><b>État civil</b> : valider, la famille reçoit un avis</li>
-            <li><b>Responsable régional</b> : carte anonyme</li>
-          </ul>
-          <p className="petit">Les comptes de démonstration sont sur la page <Link to="/connexion">Se connecter</Link>.</p>
-        </section>
-        <div className="raccourcis">
-          <Link className="bouton secondaire" to="/mairie">Espace état civil</Link>
-          <Link className="bouton secondaire" to="/carte">Espace responsable régional</Link>
-          <Link className="bouton secondaire" to="/agent">Espace agent de santé</Link>
-        </div>
-      </main>
-    )
-  }
-
   const enService = Object.values(etats).filter(Boolean).length
   return (
     <main className="page">
@@ -132,4 +103,38 @@ export default function Admin({ vue = 'services' }) {
 
     </main>
   )
+}
+
+/** Un écran par vue : chaque vue est son propre composant, pour que React ne mélange pas leurs états. */
+export default function Admin({ vue = 'services' }) {
+  if (vue === 'services') return <TableauAdmin />
+  if (vue === 'langues') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administrateur" titre="Messages et langues">
+          Chaque famille reçoit ses messages dans sa langue. Une traduction ne part qu'une fois relue et validée.
+        </Bandeau>
+        <ModelesMessages />
+      </main>
+    )
+  }
+  if (vue === 'acces') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administrateur" titre="Comptes et structures">
+          Un compte par agent, centre, état civil ou responsable, rattaché à sa zone.
+        </Bandeau>
+        <GestionComptes />
+      </main>
+    )
+  }
+  if (vue === 'cles') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administrateur" titre="Réception des clés USB">Les saisies faites sans réseau arrivent ici, puis partent dans la base.</Bandeau>
+        <ReceptionCles />
+      </main>
+    )
+  }
+  return <AdminAutres vue={vue} />
 }

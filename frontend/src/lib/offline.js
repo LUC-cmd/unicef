@@ -13,7 +13,7 @@ function stockage() {
 
 export function lireFile() {
   const s = stockage()
-  if (!s) return { visites: [], declarations: [], inscriptions: [], accouchements: [] }
+  if (!s) return { visites: [], declarations: [], inscriptions: [], accouchements: [], prenoms: [] }
   try {
     const f = JSON.parse(s.getItem(CLE) || 'null')
     return {
@@ -21,9 +21,10 @@ export function lireFile() {
       declarations: f?.declarations ?? [],
       inscriptions: f?.inscriptions ?? [],
       accouchements: f?.accouchements ?? [],
+      prenoms: f?.prenoms ?? [],
     }
   } catch {
-    return { visites: [], declarations: [], inscriptions: [], accouchements: [] }
+    return { visites: [], declarations: [], inscriptions: [], accouchements: [], prenoms: [] }
   }
 }
 
@@ -71,12 +72,19 @@ export function ajouterAccouchement(a) {
   return ecrire(f)
 }
 
+/** Le nom de l'enfant donné au 8e jour : un seul par enfant, il part avec la prochaine synchronisation. */
+export function ajouterPrenom(p) {
+  const f = lireFile()
+  if (!f.prenoms.some((x) => x.codeEnfant === p.codeEnfant)) f.prenoms.push(p)
+  return ecrire(f)
+}
+
 export function nombreEnAttente(file = lireFile()) {
-  return file.visites.length + file.declarations.length + file.inscriptions.length + file.accouchements.length
+  return file.visites.length + file.declarations.length + file.inscriptions.length + file.accouchements.length + (file.prenoms?.length ?? 0)
 }
 
 export function vider() {
-  return ecrire({ visites: [], declarations: [], inscriptions: [], accouchements: [] })
+  return ecrire({ visites: [], declarations: [], inscriptions: [], accouchements: [], prenoms: [] })
 }
 
 /** Remplace la file (chargement d'un fichier de clé USB). */

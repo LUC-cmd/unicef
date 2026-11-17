@@ -78,6 +78,15 @@ export default function App() {
     document.querySelectorAll('.menu-deroulant[open]').forEach((d) => d.removeAttribute('open'))
   }, [lieu.pathname])
 
+  // Un seul menu déroulant ouvert à la fois ; un clic ailleurs le referme.
+  useEffect(() => {
+    const fermer = (e) => document.querySelectorAll('.menu-deroulant[open]').forEach((d) => { if (!d.contains(e.target)) d.removeAttribute('open') })
+    const unSeul = (e) => { if (e.target.open) document.querySelectorAll('.menu-deroulant[open]').forEach((d) => { if (d !== e.target) d.removeAttribute('open') }) }
+    document.addEventListener('click', fermer)
+    document.addEventListener('toggle', unSeul, true)
+    return () => { document.removeEventListener('click', fermer); document.removeEventListener('toggle', unSeul, true) }
+  }, [])
+
   // Hauteur de l'en-tête collant : les barres d'ancres des pages se calent juste dessous.
   useEffect(() => {
     const bloc = document.querySelector('.entete-bloc')
@@ -100,29 +109,38 @@ export default function App() {
               <IconeMenu /> Menu
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
-              <NavLink to="/projet">Le projet</NavLink>
-              <NavLink to="/visite">Essayer</NavLink>
-              <NavLink to="/hors-reseau">Hors réseau</NavLink>
-              <details className="menu-deroulant">
-                <summary>Ressources</summary>
-                <div className="menu-liste">
-                  <Link to="/fonctionnement">Fonctionnement et preuve de naissance</Link>
-                  <Link to="/acte">Obtenir un acte de naissance</Link>
-                  <Link to="/annuaire">Annuaire des structures</Link>
-                  <Link to="/ecoute">Point d'écoute</Link>
-                  <Link to="/telephone">Simulateur de téléphone</Link>
-                  <Link to="/adolescents">Adolescents</Link>
-                  <Link to="/signalement">Une situation inquiétante ?</Link>
-                </div>
-              </details>
-              <NavLink to="/assistant">Assistant</NavLink>
-              <NavLink to="/jeux">Jeux</NavLink>
-              {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
-              </span>}
-              {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
-              {session && <Link className="bouton-entete" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
-              {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
+              <div className="nav-liens">
+                <NavLink to="/projet">Le projet</NavLink>
+                <details className="menu-deroulant">
+                  <summary>Essayer</summary>
+                  <div className="menu-liste">
+                    <Link to="/visite"><b>Visite guidée</b><small>Parcourir la plateforme en 3 minutes</small></Link>
+                    <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
+                    <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
+                    <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
+                  </div>
+                </details>
+                <details className="menu-deroulant">
+                  <summary>Ressources</summary>
+                  <div className="menu-liste">
+                    <Link to="/fonctionnement"><b>Fonctionnement</b><small>Comment circulent les informations</small></Link>
+                    <Link to="/acte"><b>Acte de naissance</b><small>Les étapes, les délais, la gratuité</small></Link>
+                    <Link to="/annuaire"><b>Annuaire des structures</b><small>Centres de santé, crèches, état civil</small></Link>
+                    <Link to="/ecoute"><b>Point d'écoute</b><small>Pour les familles sans téléphone</small></Link>
+                    <Link to="/adolescents"><b>Adolescents</b><small>Informations et orientation</small></Link>
+                    <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
+                  </div>
+                </details>
+                <NavLink to="/hors-reseau">Logiciel hors réseau</NavLink>
+              </div>
+              <div className="nav-actions">
+                {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
+                  <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+                </span>}
+                {!session && <Link className="bouton-entete" to="/connexion">Se connecter</Link>}
+                {session && <Link className="bouton-entete" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
+                {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
+              </div>
             </nav>
           </div>
         </header>
@@ -182,7 +200,7 @@ export default function App() {
             </nav>
           </div>
           <p className="pied-legal">
-            Aucun nom, aucune photo, aucune adresse · Loi n° 2019-014 du 29 octobre 2019 · Fil d'Or informe et oriente, il ne pose aucun
+            Aucune photo, aucune adresse, aucun nom sans accord · Loi n° 2019-014 du 29 octobre 2019 · Fil d'Or informe et oriente, il ne pose aucun
             diagnostic · Version de démonstration, données fictives · Projet candidat au concours Hack4Children Togo 2026, pas un service
             officiel de l'UNICEF · © 2026 Fil d'Or
           </p>

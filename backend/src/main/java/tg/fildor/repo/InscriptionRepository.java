@@ -72,6 +72,32 @@ public class InscriptionRepository {
                 .query(Long.class).single();
     }
 
+    /** Ne garde que ce que la personne a accepté de donner : sans accord, le nom, la pièce et la nationalité restent vides. */
+    public void enregistrerParents(long enfantId, tg.fildor.service.InscriptionService.Parents p, long userId) {
+        String mere = p.accordMere() ? vide(p.mereNom()) : null;
+        String conjoint = p.accordConjoint() ? vide(p.conjointNom()) : null;
+        String piece = p.accordMere() ? vide(p.pieceType()) : null;
+        String numero = p.accordMere() && piece != null && !"AUCUNE".equals(piece) ? vide(p.pieceNumero()) : null;
+        String natMere = p.accordMere() ? vide(p.nationaliteMere()) : null;
+        String natConjoint = p.accordConjoint() ? vide(p.nationaliteConjoint()) : null;
+        if (mere == null && conjoint == null && piece == null && natMere == null && natConjoint == null) {
+            return;
+        }
+        jdbc.sql("""
+                INSERT INTO identite_parents (enfant_id, mere_nom, conjoint_nom, piece_type, piece_numero,
+                                              nationalite_mere, nationalite_conjoint, accord_mere, accord_conjoint, saisi_par)
+                VALUES (:e, :m, :c, :pt, :pn, :nm, :nc, :am, :ac, :u)
+                ON CONFLICT (enfant_id) DO NOTHING""")
+                .param("e", enfantId).param("m", mere).param("c", conjoint).param("pt", piece).param("pn", numero)
+                .param("nm", natMere).param("nc", natConjoint).param("am", p.accordMere())
+                .param("ac", p.accordConjoint()).param("u", userId)
+                .update();
+    }
+
+    private static String vide(String v) {
+        return v == null || v.isBlank() ? null : v.strip();
+    }
+
     public void creerRendezVous(long enfantId, Prevu p) {
         jdbc.sql("""
                 INSERT INTO rendez_vous (enfant_id, type, libelle, date_prevue, statut, date_realisation)

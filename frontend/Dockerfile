@@ -10,13 +10,9 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 # nginx remplace ${PORT}, ${BACKEND_URL} et ${ASSISTANT_URL} dans ce modèle au démarrage
-ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 ENV PORT=80 BACKEND_URL=http://backend:8080 ASSISTANT_URL=http://assistant:8090
 COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY 40-fildor-config.sh /docker-entrypoint.d/40-fildor-config.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-fildor-config.sh && chmod +x /docker-entrypoint.d/40-fildor-config.sh
 COPY --from=build /app/dist /usr/share/nginx/html
-# Logiciel Windows : GitHub refuse les fichiers de plus de 100 Mo, il est donc rangé en deux morceaux et recollé ici.
-COPY installeur /tmp/installeur
-RUN mkdir -p /usr/share/nginx/html/telechargements \
- && cat /tmp/installeur/Fil-dOr-Windows.zip.part* > /usr/share/nginx/html/telechargements/Fil-dOr-Windows.zip \
- && rm -rf /tmp/installeur
 EXPOSE 80

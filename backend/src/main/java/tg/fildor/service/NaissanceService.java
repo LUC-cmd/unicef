@@ -34,14 +34,39 @@ public class NaissanceService {
     public record Resultat(boolean creee, DeclarationDto declaration) {
     }
 
+    /**
+     * Ce que la famille accepte de communiquer à l'état civil. Un nom n'est gardé que si la personne concernée a donné
+     * son accord ; sans accord, rien n'est conservé.
+     */
+    public record Identite(String mereNom, String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere) {
+        private static String net(String s, boolean accord) {
+            if (!accord || s == null) {
+                return null;
+            }
+            String t = s.strip();
+            if (t.isEmpty()) {
+                return null;
+            }
+            return t.length() > 120 ? t.substring(0, 120) : t;
+        }
+
+        public Identite nettoyee() {
+            return new Identite(net(mereNom, accordMere), net(pereNom, accordPere),
+                    net(enfantPrenom, accordMere || accordPere), accordMere, accordPere);
+        }
+    }
+
     private final DeclarationRepository declarations;
     private final SuiviService suivi;
     private final AccesService acces;
     private final MessageRepository messages;
+    private final tg.fildor.repo.NationaliteRepository nationalite;
     private final String secretPreuve;
 
     public NaissanceService(DeclarationRepository declarations, SuiviService suivi, AccesService acces,
-                            MessageRepository messages, FilDorProperties props) {
+                            MessageRepository messages, tg.fildor.repo.NationaliteRepository nationalite,
+                            FilDorProperties props) {
+        this.nationalite = nationalite;
         this.declarations = declarations;
         this.suivi = suivi;
         this.acces = acces;
@@ -131,6 +156,61 @@ public class NaissanceService {
         return new Resultat(creee, d);
     }
 
+    /** Déclaration avec sa provenance et, si la famille l'a choisi, les informations pour l'acte. */
+    public Resultat declarer(AppUser u, String codeEnfant, String lieu, boolean certificat, Identite identite,
+                             String source, LocalDate aujourdhui) {
+        Resultat r = declarer(u, codeEnfant, lieu, certificat, aujourdhui);
+        if (r.creee()) {
+            String src = source == null || source.isBlank() ? "AGENT" : source;
+            declarations.definirSource(r.declaration().id(), src);
+            if (identite != null) {
+                Identite p = identite.nettoyee();
+                declarations.enregistrerIdentite(r.declaration().id(), p.mereNom(), p.pereNom(), p.enfantPrenom(),
+                        p.accordMere(), p.accordPere(), src, u.id());
+            }
+        }
+        return r;
+    }
+
+    /** Le nom de l'enfant se donne à partir du 8e jour ; il complète la déclaration déjà envoyée à l'état civil. */
+    public java.util.Map<String, Object> donnerPrenom(AppUser u, String codeEnfant, String prenom, LocalDate aujourdhui) {
+        EnfantRef e = suivi.enfantAutorise(u, codeEnfant);
+        if (!"ENFANT".equals(e.statut()) || e.dateNaissance() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cet enfant n'est pas encore né");
+        }
+        if (declarations.parEnfant(e.id()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lancez d'abord la déclaration de naissance");
+        }
+        LocalDate attendu = e.dateNaissance().plusDays(8);
+        if (aujourdhui.isBefore(attendu)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Le nom se donne à partir du 8e jour, le " + attendu.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        }
+        String net = prenom == null ? "" : prenom.strip();
+        if (net.length() < 2 || net.length() > 60) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indiquez le prénom de l'enfant (2 à 60 lettres)");
+        }
+        declarations.definirPrenom(e.id(), net);
+        acces.tracer(u, "DONNER_PRENOM", codeEnfant);
+        return java.util.Map.of("prenom", net, "message", "Le nom de l'enfant est envoyé à l'état civil");
+    }
+
+    /** Pour la synchronisation : un nom déjà enregistré n'est pas remplacé, rejouer un envoi ne change rien. */
+    @Transactional
+    public boolean donnerPrenomUneFois(AppUser u, String codeEnfant, String prenom, LocalDate aujourdhui) {
+        EnfantRef e = suivi.enfantAutorise(u, codeEnfant);
+        if (declarations.prenom(e.id()).isPresent()) {
+            return false;
+        }
+        donnerPrenom(u, codeEnfant, prenom, aujourdhui);
+        return true;
+    }
+
+    public java.util.List<DeclarationRepository.DossierMairie> dossiers(AppUser u, String statut) {
+        acces.tracer(u, "LISTER_DECLARATIONS", statut == null ? "toutes" : statut);
+        return declarations.dossiers(statut);
+    }
+
     public java.util.List<DeclarationDto> lister(AppUser u, String statut) {
         acces.tracer(u, "LISTER_DECLARATIONS", statut == null ? "toutes" : statut);
         return declarations.lister(statut);
@@ -141,8 +221,32 @@ public class NaissanceService {
         if (!declarations.traiter(id, "VALIDEE", u.id(), null)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Déclaration introuvable ou déjà traitée");
         }
+        nationalite.ouvrir(id);
         acces.tracer(u, "VALIDER_DECLARATION", String.valueOf(id));
         return prevenir(id, true, null);
+    }
+
+    public java.util.List<tg.fildor.repo.NationaliteRepository.Dossier> dossiersNationalite(AppUser u) {
+        acces.tracer(u, "LISTER_NATIONALITE", "tous");
+        return nationalite.lister();
+    }
+
+    private static final java.util.Set<String> VOIES = java.util.Set.of("FILIATION", "SANS_PAPIERS", "PARENTS_ETRANGERS", "A_PRECISER");
+
+    @Transactional
+    public void avancerNationalite(AppUser u, long declarationId, int etape, String piecesOk, String voie, String note) {
+        if (etape < 1 || etape > 4) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Étape inconnue");
+        }
+        if (voie != null && !VOIES.contains(voie)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Voie inconnue");
+        }
+        String pieces = piecesOk == null ? "" : piecesOk.replaceAll("[^A-Z_,]", "");
+        String n = note == null || note.isBlank() ? null : (note.strip().length() > 300 ? note.strip().substring(0, 300) : note.strip());
+        if (!nationalite.avancer(declarationId, etape, pieces, voie, n, u.id())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dossier introuvable");
+        }
+        acces.tracer(u, "AVANCER_NATIONALITE", declarationId + ":" + etape);
     }
 
     @Transactional

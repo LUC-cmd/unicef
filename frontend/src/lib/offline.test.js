@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
-  ajouterAccouchement, ajouterDeclaration, ajouterInscription, ajouterVisite, lireFile, nombreEnAttente, vider,
+  ajouterAccouchement, ajouterDeclaration, ajouterInscription, ajouterPrenom, ajouterVisite, lireFile, nombreEnAttente, vider,
 } from './offline.js'
 
 class StockageMemoire {
@@ -13,6 +13,13 @@ class StockageMemoire {
 beforeEach(() => { globalThis.localStorage = new StockageMemoire() })
 
 describe('file hors ligne', () => {
+  it('garde le nom de l’enfant, une seule fois par enfant', () => {
+    ajouterPrenom({ codeEnfant: 'T001A', prenom: 'Ama' })
+    ajouterPrenom({ codeEnfant: 'T001A', prenom: 'Autre' })
+    expect(lireFile().prenoms).toEqual([{ codeEnfant: 'T001A', prenom: 'Ama' }])
+    expect(nombreEnAttente()).toBe(1)
+  })
+
   it('commence vide', () => {
     expect(nombreEnAttente()).toBe(0)
   })
@@ -41,7 +48,7 @@ describe('file hors ligne', () => {
 
   it('survit à un stockage corrompu', () => {
     localStorage.setItem('fildor.file', '{pas du json')
-    expect(lireFile()).toEqual({ visites: [], declarations: [], inscriptions: [], accouchements: [] })
+    expect(lireFile()).toEqual({ visites: [], declarations: [], inscriptions: [], accouchements: [], prenoms: [] })
   })
 
   it('garde une inscription hors ligne avec son identifiant, sans doublon', () => {

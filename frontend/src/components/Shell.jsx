@@ -46,7 +46,10 @@ export default function Shell({ titre, groupes, children }) {
   return (
     <div className="shell">
       <aside className={`shell-menu${ouvert ? ' ouvert' : ''}`} aria-label={`Menu ${titre}`}>
-        <p className="shell-role">{titre}</p>
+        <div className="shell-entete">
+          <span className="shell-avatar" aria-hidden="true">{titre.slice(0, 1)}</span>
+          <div><p className="shell-role">{titre}</p><p className="shell-sous">Espace professionnel</p></div>
+        </div>
         {groupes.map((g) => (
           <div key={g.titre} className="shell-groupe">
             <p className="shell-groupe-titre">{g.titre}</p>
@@ -61,15 +64,17 @@ export default function Shell({ titre, groupes, children }) {
             </ul>
           </div>
         ))}
+        <div className="shell-pied">
+          <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
+          <p className="shell-qui">{session?.nomComplet}</p>
+          <button className="lien" type="button" onClick={deconnexion}>Se déconnecter</button>
+        </div>
       </aside>
 
       <div className="shell-corps">
         <div className="shell-barre">
           <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
           <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
-          <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
-          <span className="shell-qui">{session?.nomComplet}</span>
-          <button className="bouton secondaire petit-bouton" type="button" onClick={deconnexion}>Se déconnecter</button>
         </div>
         <ContexteShell.Provider value={true}>
           <div className="shell-contenu">{children}</div>

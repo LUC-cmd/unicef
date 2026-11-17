@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 /** Utilisateur connecté, avec sa zone (null = toutes les zones, réservé à l'administrateur) et sa structure (rôle STRUCTURE). */
 public record AppUser(long id, String username, String passwordHash, String nomComplet, String role, Long zoneId,
-                      Long structureId, boolean actif) implements UserDetails {
+                      Long structureId, boolean actif, String region) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

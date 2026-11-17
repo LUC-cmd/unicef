@@ -5,9 +5,10 @@ import { useAuth, useReseau } from '../lib/contexte.jsx'
 import {
   LIBELLE_PORTE, MESSAGE_PB, ageEnMois, ageLisible, aujourdhuiIso, classerPB, formaterDate,
 } from '../lib/format.js'
-import { ajouterDeclaration, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
+import { ajouterDeclaration, ajouterPrenom, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
 import { Anneau } from '../components/Graphiques.jsx'
 import { Squelette } from '../components/Chargement.jsx'
+import FamillesEnregistrees from '../components/FamillesEnregistrees.jsx'
 import CleUsb from '../components/CleUsb.jsx'
 import Accouchement from '../components/Accouchement.jsx'
 import NouveauNe from '../components/NouveauNe.jsx'
@@ -75,7 +76,7 @@ export default function Agent({ vue = 'visites' }) {
       const r = await api.post('/api/agent/sync', file)
       vider()
       rafraichirAttente()
-      noterEnvoi({ le: new Date().toISOString(), resume: `${r.visitesCreees} visite(s), ${r.declarationsCreees} déclaration(s), ${r.inscriptionsCreees} inscription(s), ${r.accouchementsCrees} naissance(s) enregistrée(s) dans la base` })
+      noterEnvoi({ le: new Date().toISOString(), resume: `${r.visitesCreees} visite(s), ${r.declarationsCreees} déclaration(s), ${r.inscriptionsCreees} inscription(s), ${r.accouchementsCrees} naissance(s), ${r.prenomsEnregistres ?? 0} nom(s) enregistrée(s) dans la base` })
       setEnvoisVersion((v) => v + 1)
       setMessage({
         ok: true,
@@ -191,6 +192,19 @@ export default function Agent({ vue = 'visites' }) {
           </div>
         </section>
         </>)}
+      </main>
+    )
+  }
+
+  if (vue === 'familles') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Agent de santé" titre="Familles enregistrées"
+                 actions={<Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>}>
+          Les familles de votre zone, les plus urgentes en premier.
+        </Bandeau>
+        {erreur && <p className="erreur" role="alert">{erreur}</p>}
+        {chargement ? <Squelette /> : <FamillesEnregistrees liste={liste} />}
       </main>
     )
   }
@@ -330,10 +344,55 @@ function Fiche({ code, enLigne, onChange }) {
   )
 }
 
+const SOURCES = [['AGENT', 'Agent de santé (moi)'], ['CENTRE_SANTE', 'Centre de santé'], ['HOPITAL', 'Hôpital ou maternité']]
+
+/** Le nom de l'enfant se donne à partir du 8e jour : il complète le dossier déjà reçu par l'état civil. */
+function PrenomEnfant({ fiche, onChange }) {
+  const { enLigne } = useReseau()
+  const [prenom, setPrenom] = useState('')
+  const [fait, setFait] = useState(false)
+  const [erreur, setErreur] = useState('')
+  const attendu = new Date(fiche.dateNaissance); attendu.setDate(attendu.getDate() + 8)
+  const reste = Math.ceil((attendu - new Date()) / 86400000)
+  const quand = attendu.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+  async function envoyer() {
+    setErreur('')
+    if (!enLigne) { ajouterPrenom({ codeEnfant: fiche.codeEnfant, prenom: prenom.trim() }); setFait('attente'); onChange(); return }
+    try { await api.post(`/api/agent/naissances/${fiche.codeEnfant}/prenom`, { prenom: prenom.trim() }); setFait(true); onChange() }
+    catch (e) { setErreur(e.message) }
+  }
+  if (fait) return <p className="succes">{fait === 'attente' ? 'Nom gardé sur cet appareil : il partira à l’état civil dès que le réseau ou une clé USB le permettra.' : 'Nom envoyé à l’état civil.'}</p>
+  return (
+    <div className="prenom-enfant">
+      <div className="prenom-jours" aria-hidden="true"><b>{reste > 0 ? `J-${reste}` : 'Jour 8'}</b></div>
+      <div>
+        <b>Nom de l'enfant</b>
+        {reste > 0 ? <p className="petit">À donner à partir du {quand}. L'état civil attend ce nom pour finir l'acte.</p> : (
+          <>
+            <p className="petit">Le huitième jour est passé : saisissez le nom donné par la famille.</p>
+            <div className="formulaire-ligne">
+              <input value={prenom} onChange={(e) => setPrenom(e.target.value)} maxLength={60} autoComplete="off" aria-label="Prénom de l'enfant" />
+              <button className="bouton" disabled={prenom.trim().length < 2} onClick={envoyer}>{enLigne ? 'Envoyer à l’état civil' : 'Enregistrer le nom'}</button>
+            </div>
+            {erreur && <p className="erreur" role="alert">{erreur}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function Naissance({ fiche, onChange }) {
   const d = fiche.declaration
   const [lieu, setLieu] = useState('CENTRE_SANTE')
   const [certificat, setCertificat] = useState(true)
+  const [source, setSource] = useState('AGENT')
+  const [choix, setChoix] = useState('RIEN') // RIEN · MERE · DEUX
+  const [mere, setMere] = useState('')
+  const [pere, setPere] = useState('')
+  const [prenom, setPrenom] = useState('')
+  const [accord, setAccord] = useState(false)
+  const [erreur, setErreur] = useState('')
   const [fait, setFait] = useState(false)
 
   if (d && d.statut !== 'REJETEE') {
@@ -342,6 +401,7 @@ function Naissance({ fiche, onChange }) {
       <>
         <h3>Déclaration de naissance</h3>
         <p>Déclaration {libelle}. Reçu <b>{d.numeroRecu}</b>{d.dansDelaiGratuit ? ' (dans le délai gratuit)' : ' (hors délai gratuit : jugement supplétif à 6 000 FCFA)'}.</p>
+        <PrenomEnfant fiche={fiche} onChange={onChange} />
       </>
     )
   }
@@ -354,8 +414,26 @@ function Naissance({ fiche, onChange }) {
     )
   }
   if (fait) {
-    return <><h3>Déclaration de naissance</h3><p className="succes">Déclaration enregistrée sur ce téléphone. Elle partira à la mairie dès que le réseau sera là.</p></>
+    return <><h3>Déclaration de naissance</h3><p className="succes">Déclaration enregistrée sur ce téléphone. Elle partira à l'état civil dès que le réseau sera là.</p></>
   }
+
+  function lancer() {
+    setErreur('')
+    const veutMere = choix === 'MERE' || choix === 'DEUX'
+    const veutPere = choix === 'DEUX'
+    if (veutMere && mere.trim().length < 2) return setErreur('Indiquez le nom et les prénoms de la mère, ou choisissez « rien pour l’instant ».')
+    if (veutPere && pere.trim().length < 2) return setErreur('Indiquez le nom du père, ou choisissez « nom de la mère seulement ».')
+    if ((veutMere || veutPere) && !accord) return setErreur('Les noms ne partent à l’état civil qu’avec l’accord de la famille : cochez la case une fois l’accord reçu.')
+    ajouterDeclaration({
+      codeEnfant: fiche.codeEnfant, lieuNaissance: lieu, certificatAccouchement: certificat, source,
+      ...(veutMere ? { mereNom: mere.trim(), accordMere: true } : {}),
+      ...(veutPere ? { pereNom: pere.trim(), accordPere: true } : {}),
+      ...(veutMere && prenom.trim() ? { enfantPrenom: prenom.trim() } : {}),
+    })
+    setFait(true)
+    onChange()
+  }
+
   return (
     <>
       <h3>Déclaration de naissance</h3>
@@ -367,12 +445,46 @@ function Naissance({ fiche, onChange }) {
             <option value="DOMICILE">À domicile</option>
           </select>
         </label>
+        <label>Qui envoie le dossier ?
+          <select value={source} onChange={(e) => setSource(e.target.value)}>
+            {SOURCES.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </label>
         <label className="case"><input type="checkbox" checked={certificat} onChange={(e) => setCertificat(e.target.checked)} /> Certificat d'accouchement vu</label>
       </div>
-      <button className="bouton secondaire"
-              onClick={() => { ajouterDeclaration({ codeEnfant: fiche.codeEnfant, lieuNaissance: lieu, certificatAccouchement: certificat }); setFait(true); onChange() }}>
-        Lancer la déclaration
-      </button>
+
+      <fieldset className="identite-acte">
+        <legend>Noms à transmettre à l'état civil <em>(facultatif)</em></legend>
+        <p className="petit">Fil d'Or ne garde aucun nom par défaut. La famille choisit ce qu'elle souhaite communiquer ; rien n'est envoyé sans son accord.</p>
+        {[
+          ['RIEN', 'Rien pour l’instant', 'Le dossier part avec le code de l’enfant seulement. La famille pourra donner les noms à l’état civil.'],
+          ['MERE', 'Nom de la mère seulement', 'Le père n’est pas nommé (inconnu, absent ou non souhaité).'],
+          ['DEUX', 'Nom de la mère et du père', 'Les deux parents sont nommés sur le dossier.'],
+        ].map(([k, titre, aide]) => (
+          <label key={k} className={`choix-identite ${choix === k ? 'choisi' : ''}`}>
+            <input type="radio" name="identite" checked={choix === k} onChange={() => setChoix(k)} />
+            <span><b>{titre}</b><small>{aide}</small></span>
+          </label>
+        ))}
+        {choix !== 'RIEN' && (
+          <div className="champs">
+            <label className="champ"><span className="champ-titre">Nom et prénoms de la mère</span>
+              <input value={mere} onChange={(e) => setMere(e.target.value)} autoComplete="off" maxLength={120} /></label>
+            {choix === 'DEUX' && (
+              <label className="champ"><span className="champ-titre">Nom et prénoms du père</span>
+                <input value={pere} onChange={(e) => setPere(e.target.value)} autoComplete="off" maxLength={120} /></label>
+            )}
+            <label className="champ"><span className="champ-titre">Prénom de l'enfant <em>facultatif</em></span>
+              <input value={prenom} onChange={(e) => setPrenom(e.target.value)} autoComplete="off" maxLength={60} /></label>
+          </div>
+        )}
+        {choix !== 'RIEN' && (
+          <label className="case accord-identite"><input type="checkbox" checked={accord} onChange={(e) => setAccord(e.target.checked)} />
+            La famille a donné son accord pour transmettre {choix === 'DEUX' ? 'ces noms' : 'ce nom'} à l'état civil, et sait qu'elle peut le retirer.</label>
+        )}
+      </fieldset>
+      {erreur && <p className="erreur" role="alert">{erreur}</p>}
+      <button className="bouton secondaire" onClick={lancer}>Envoyer la déclaration à l'état civil</button>
     </>
   )
 }

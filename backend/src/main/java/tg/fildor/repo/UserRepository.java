@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 public class UserRepository {
 
     public record Utilisateur(long id, String username, String passwordHash, String nomComplet, String role,
-                              Long zoneId, Long structureId, boolean actif) {
+                              Long zoneId, Long structureId, boolean actif, String region) {
     }
 
     private final JdbcClient jdbc;
@@ -19,13 +19,13 @@ public class UserRepository {
 
     public Optional<Utilisateur> parUsername(String username) {
         return jdbc.sql("""
-                SELECT id, username, password_hash, nom_complet, role, zone_id, structure_id, actif
+                SELECT id, username, password_hash, nom_complet, role, zone_id, structure_id, actif, region
                 FROM app_user WHERE username = :u""")
                 .param("u", username)
                 .query((rs, n) -> new Utilisateur(rs.getLong("id"), rs.getString("username"),
                         rs.getString("password_hash"), rs.getString("nom_complet"), rs.getString("role"),
                         rs.getObject("zone_id", Long.class), rs.getObject("structure_id", Long.class),
-                        rs.getBoolean("actif")))
+                        rs.getBoolean("actif"), rs.getString("region")))
                 .optional();
     }
 

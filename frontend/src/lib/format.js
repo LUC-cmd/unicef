@@ -98,6 +98,7 @@ export const LIBELLE_REPONSE = {
 export const ZONES = [
   ['GOLFE', 'Golfe (Lomé)'], ['AGOE', 'Agoè-Nyivé'], ['ZIO', 'Zio (Tsévié)'],
   ['VO', 'Vo (Vogan)'], ['YOTO', 'Yoto (Tabligbo)'], ['LACS', 'Lacs (Aného)'],
+  ['AVE', 'Avé (Kévé)'], ['BASMONO', 'Bas-Mono (Afagnan)'],
 ]
 
 const NOMS_JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']

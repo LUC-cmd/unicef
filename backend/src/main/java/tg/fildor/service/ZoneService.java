@@ -28,7 +28,10 @@ public class ZoneService {
 
     public List<StatsZone> carte(AppUser u, LocalDate aujourdhui) {
         acces.tracer(u, "CONSULTER_CARTE", null);
-        return zones.comptages(aujourdhui).stream().map(z -> calculer(z, props.seuilAnonymat())).toList();
+        String region = "DECIDEUR".equals(u.role()) ? u.region() : null;
+        return zones.comptages(aujourdhui).stream()
+                .filter(z -> region == null || region.equals(z.region()))
+                .map(z -> calculer(z, props.seuilAnonymat())).toList();
     }
 
     static StatsZone calculer(ZoneBrute z, int seuilAnonymat) {

@@ -30,8 +30,7 @@ export default function Ecoute() {
   return (
     <>
     <Bandeau surtitre="Porte 4" titre="Point d'écoute">
-      Centre de santé, radio communautaire, causerie au marché. On lit les mêmes messages qu'au téléphone,
-      à voix haute, pour toutes les familles. Personne n'est nommé.
+      Les mêmes messages qu'au téléphone, lus à voix haute pour tous. Personne n'est nommé.
     </Bandeau>
     <main className="page">
 

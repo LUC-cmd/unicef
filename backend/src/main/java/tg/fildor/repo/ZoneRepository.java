@@ -20,8 +20,24 @@ public class ZoneRepository {
 
     /** Noms de zones seulement : le point d'écoute ne reçoit aucun chiffre sur les familles. */
     public List<ZonePublique> publiques() {
-        return jdbc.sql("SELECT code, nom FROM zone ORDER BY nom")
+        return jdbc.sql("SELECT code, nom FROM zone WHERE pilote ORDER BY nom")
                 .query((rs, n) -> new ZonePublique(rs.getString("code"), rs.getString("nom")))
+                .list();
+    }
+
+    public record Prefecture(String code, String nom, String region, String chefLieu, double latitude,
+                             double longitude, boolean pilote) {
+    }
+
+    /** Les 39 préfectures du Togo, avec leur région et l'indication « dans le pilote ». Aucune donnée de famille. */
+    public List<Prefecture> geographie() {
+        return jdbc.sql("""
+                SELECT code, nom, region, chef_lieu, latitude, longitude, pilote FROM zone
+                ORDER BY CASE region WHEN 'Maritime' THEN 1 WHEN 'Plateaux' THEN 2 WHEN 'Centrale' THEN 3
+                                     WHEN 'Kara' THEN 4 ELSE 5 END, nom""")
+                .query((rs, n) -> new Prefecture(rs.getString("code"), rs.getString("nom"), rs.getString("region"),
+                        rs.getString("chef_lieu"), rs.getDouble("latitude"), rs.getDouble("longitude"),
+                        rs.getBoolean("pilote")))
                 .list();
     }
 

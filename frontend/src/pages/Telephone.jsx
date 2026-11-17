@@ -97,9 +97,7 @@ export default function Telephone() {
   return (
     <>
     <Bandeau surtitre="Porte 1" titre="Simulateur de téléphone">
-      Cette porte marche avec un téléphone basique, sans application ni data. Ici, un faux téléphone remplace
-      l'opérateur. Familles : <b>90000001</b> à <b>90000045</b>. Proches : <b>91000001</b> (père de F-0001),
-      <b> 91000002</b> (grand-parent), <b>91000046</b> (relais d'une famille sans téléphone).
+      Un téléphone basique suffit, sans data. Familles : <b>90000001</b> à <b>90000045</b>. Proches : <b>91000001</b>, <b>91000002</b>, <b>91000046</b>.
     </Bandeau>
     <main className="page">
 

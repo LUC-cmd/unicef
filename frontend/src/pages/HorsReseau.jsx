@@ -25,8 +25,7 @@ export default function HorsReseau() {
   return (
     <>
       <Bandeau surtitre="Zones sans réseau" titre="Fil d'Or hors réseau">
-        Le village n'a pas de réseau : le suivi continue. Fil d'Or s'installe comme un logiciel, garde les saisies sur l'appareil
-        et les envoie dans la base dès qu'il y a du réseau, directement ou par une clé USB.
+        Sans réseau, le suivi continue. Les saisies partent au retour du réseau, ou par clé USB.
       </Bandeau>
       <main className="page">
         {!dansLeLogiciel && (

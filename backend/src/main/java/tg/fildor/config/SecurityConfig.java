@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     UserDetailsService userDetailsService(UserRepository users) {
         return username -> users.parUsername(username)
-                .map(u -> new AppUser(u.id(), u.username(), u.passwordHash(), u.nomComplet(), u.role(), u.zoneId(), u.structureId(), u.actif()))
+                .map(u -> new AppUser(u.id(), u.username(), u.passwordHash(), u.nomComplet(), u.role(), u.zoneId(), u.structureId(), u.actif(), u.region()))
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur inconnu"));
     }
 

@@ -30,7 +30,7 @@ export default function Connexion() {
     setEnCours(id)
     try {
       await connexion(id, motDePasse)
-      navigate('/preparation', { replace: true, state: { cible: lieu.state?.depuis || cible } })
+      navigate('/preparation', { replace: true, state: { cible: lieu.state?.depuis && cible && lieu.state.depuis.startsWith(cible) ? lieu.state.depuis : cible } })
     } catch (err) {
       setErreur(err.statut === 401 ? 'Identifiant ou mot de passe incorrect.' : err.message)
     } finally {
@@ -47,7 +47,7 @@ export default function Connexion() {
   return (
     <>
     <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
-      Choisissez un rôle : la connexion est immédiate. Chaque rôle voit une partie différente du système. Toutes les données sont fictives.
+      Choisissez un rôle. Données fictives.
     </Bandeau>
     <main className="page connexion-page">
 

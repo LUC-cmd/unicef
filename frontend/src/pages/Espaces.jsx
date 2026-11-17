@@ -17,13 +17,14 @@ export function EspaceAgent() {
     { titre: 'Mon travail', liens: [
       { to: '/agent', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/agent/visites', nom: 'Mes visites', icone: 'liste' },
+      { to: '/agent/familles', nom: 'Familles enregistrées', icone: 'carnet' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
-      { to: '/agent/acte', nom: 'Obtenir un acte de naissance', icone: 'livre' },
+      { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
     ] },
-    { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Synchronisation et clé USB', icone: 'cle' }] },
+    { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
     { titre: 'Ressources', liens: [
-      { to: '/agent/annuaire', nom: 'Annuaire des structures', icone: 'batiment' },
-      { to: '/agent/aide', nom: 'Comprendre cet espace', icone: 'aide' },
+      { to: '/agent/annuaire', nom: 'Annuaire', icone: 'batiment' },
+      { to: '/agent/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
   return (
@@ -31,6 +32,7 @@ export function EspaceAgent() {
       <Routes>
         <Route index element={<Agent vue="tableau" />} />
         <Route path="visites" element={<Agent vue="visites" />} />
+        <Route path="familles" element={<Agent vue="familles" />} />
         <Route path="inscription" element={<Inscription />} />
         <Route path="synchronisation" element={<Agent vue="synchronisation" />} />
         <Route path="annuaire" element={<Annuaire />} />
@@ -46,14 +48,15 @@ export function EspaceMairie() {
   const groupes = [
     { titre: 'État civil', liens: [
       { to: '/mairie', nom: 'Tableau de bord', icone: 'accueil', fin: true },
-      { to: '/mairie/declarations', nom: 'Déclarations de naissance', icone: 'liste' },
+      { to: '/mairie/declarations', nom: 'Déclarations', icone: 'liste' },
       { to: '/mairie/actes', nom: 'Actes à retirer', icone: 'livre' },
+      { to: '/mairie/nationalite', nom: 'Nationalité', icone: 'bouclier' },
       { to: '/mairie/preuve', nom: 'Vérifier une preuve', icone: 'bouclier' },
-      { to: '/mairie/acte', nom: 'Naissance non déclarée ?', icone: 'aide' },
+      { to: '/mairie/acte', nom: 'Sans acte de naissance', icone: 'aide' },
     ] },
     { titre: 'Ressources', liens: [
-      { to: '/mairie/annuaire', nom: 'Annuaire des structures', icone: 'batiment' },
-      { to: '/mairie/aide', nom: 'Comprendre cet espace', icone: 'aide' },
+      { to: '/mairie/annuaire', nom: 'Annuaire', icone: 'batiment' },
+      { to: '/mairie/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
   return (
@@ -62,6 +65,7 @@ export function EspaceMairie() {
         <Route index element={<Mairie vue="tableau" />} />
         <Route path="declarations" element={<Mairie vue="declarations" />} />
         <Route path="actes" element={<Mairie vue="actes" />} />
+        <Route path="nationalite" element={<Mairie vue="nationalite" />} />
         <Route path="preuve" element={<Mairie vue="preuve" />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />
@@ -81,7 +85,7 @@ export function EspaceStructure() {
     ] },
     { titre: 'Ressources', liens: [
       { to: '/structure/annuaire', nom: "Voir l'annuaire", icone: 'carte' },
-      { to: '/structure/aide', nom: 'Comprendre cet espace', icone: 'aide' },
+      { to: '/structure/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
   return (
@@ -106,7 +110,7 @@ export function EspaceDecideur() {
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
-    { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Comprendre cet espace', icone: 'aide' }] },
+    { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Aide', icone: 'aide' }] },
   ]
   return (
     <Shell titre="Responsable régional" groupes={groupes}>
@@ -125,10 +129,11 @@ export function EspaceDecideur() {
 export function EspaceAdmin() {
   const groupes = [
     { titre: 'Administration', liens: [
-      { to: '/admin', nom: 'Coulisses', icone: 'accueil', fin: true },
+      { to: '/admin', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/admin/cles', nom: 'Recevoir les clés USB', icone: 'cle' },
-      { to: '/admin/horloge', nom: 'Horloge de démonstration', icone: 'horloge' },
-      { to: '/admin/acces', nom: 'Espaces et comptes', icone: 'bouclier' },
+      { to: '/admin/horloge', nom: 'Horloge', icone: 'horloge' },
+      { to: '/admin/acces', nom: 'Comptes', icone: 'bouclier' },
+      { to: '/admin/langues', nom: 'Messages et langues', icone: 'livre' },
     ] },
     { titre: 'Voir comme…', liens: [
       { to: '/agent', nom: 'Agent de santé', icone: 'liste' },
@@ -143,6 +148,7 @@ export function EspaceAdmin() {
         <Route path="cles" element={<Admin vue="cles" />} />
         <Route path="horloge" element={<Admin vue="horloge" />} />
         <Route path="acces" element={<Admin vue="acces" />} />
+        <Route path="langues" element={<Admin vue="langues" />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Shell>
