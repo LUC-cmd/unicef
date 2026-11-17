@@ -25,6 +25,7 @@ public class ComptesDemo implements ApplicationRunner {
             new Compte("decideur", "Responsable régional", "DECIDEUR", null, null),
             new Compte("structure.golfe", "Centre de santé du Golfe", "STRUCTURE", null, "CS-GOLFE"),
             new Compte("structure.vo", "Centre de santé de Vo", "STRUCTURE", null, "CS-VO"),
+            new Compte("creche.golfe", "Crèche communautaire du Golfe", "STRUCTURE", null, "CR-GOLFE"),
             new Compte("admin", "Administrateur", "ADMIN", null, null));
 
     private final UserRepository users;

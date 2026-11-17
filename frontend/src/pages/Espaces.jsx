@@ -6,6 +6,10 @@ import Inscription from './Inscription.jsx'
 import Annuaire from './Annuaire.jsx'
 import Mairie from './Mairie.jsx'
 import Structure from './Structure.jsx'
+import CrecheGestion from './CrecheGestion.jsx'
+import CrecheTableau from './CrecheTableau.jsx'
+import { useEffect, useState } from 'react'
+import { api } from '../lib/api.js'
 import Carte from './Carte.jsx'
 import Admin from './Admin.jsx'
 import Aide from './Aide.jsx'
@@ -82,11 +86,20 @@ export function EspaceMairie() {
   )
 }
 
+/** Un compte de crèche voit le tableau de bord de la crèche ; les autres structures gardent le leur. */
+function AccueilStructure() {
+  const [creche, setCreche] = useState(null)
+  useEffect(() => { api.get('/api/structure/creche').then(() => setCreche(true)).catch(() => setCreche(false)) }, [])
+  if (creche === null) return null
+  return creche ? <CrecheTableau /> : <Structure vue="tableau" />
+}
+
 export function EspaceStructure() {
   const groupes = [
     { titre: 'Ma structure', liens: [
       { to: '/structure', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/structure/demandes', nom: 'Demandes des familles', icone: 'boite' },
+      { to: '/structure/creche', nom: 'Réservations et conditions', icone: 'boite' },
       { to: '/structure/fiche', nom: 'Mes informations', icone: 'batiment' },
     ] },
     { titre: 'Ressources', liens: [
@@ -97,8 +110,9 @@ export function EspaceStructure() {
   return (
     <Shell titre="Structure d'accueil" groupes={groupes}>
       <Routes>
-        <Route index element={<Structure vue="tableau" />} />
+        <Route index element={<AccueilStructure />} />
         <Route path="demandes" element={<Structure vue="demandes" />} />
+        <Route path="creche" element={<CrecheGestion />} />
         <Route path="fiche" element={<Structure vue="fiche" />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="aide" element={<Aide role="STRUCTURE" />} />

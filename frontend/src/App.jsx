@@ -18,6 +18,8 @@ const Visite = lazy(() => import('./pages/Visite.jsx'))
 const IntroRegion = lazy(() => import('./components/IntroRegion.jsx'))
 const Parcours = lazy(() => import('./pages/Parcours.jsx'))
 const EtapeParcours = lazy(() => import('./pages/EtapeParcours.jsx'))
+const Famille = lazy(() => import('./pages/Famille.jsx'))
+const FamilleCreche = lazy(() => import('./pages/FamilleCreche.jsx'))
 const Creches = lazy(() => import('./pages/Creches.jsx'))
 const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
 const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
@@ -146,6 +148,7 @@ export default function App() {
                   <summary>Essayer</summary>
                   <div className="menu-liste">
                     <Link to="/visite"><b>Visite guidée</b><small>Parcourir la plateforme en 3 minutes</small></Link>
+                    <Link to="/famille"><b>Espace famille</b><small>Rappels, notifications, dossier de naissance</small></Link>
                     <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
                     <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
                     <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
@@ -204,6 +207,8 @@ export default function App() {
           <Route path="/telecharger" element={<Telecharger />} />
           <Route path="/parcours" element={<Parcours />} />
           <Route path="/parcours/:etape" element={<EtapeParcours />} />
+          <Route path="/famille" element={<Famille />} />
+          <Route path="/famille/creche" element={<FamilleCreche />} />
           <Route path="/creches" element={<Creches />} />
           <Route path="/adolescents" element={<Adolescents />} />
           <Route path="/signalement" element={<Signalement />} />

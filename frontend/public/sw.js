@@ -1,6 +1,6 @@
 // Fil d'Or hors réseau : l'application s'ouvre même sans connexion. Les données, elles, passent par la file
 // d'attente de l'appareil (localStorage) ; l'API n'est jamais mise en cache ici.
-const VERSION = 'fildor-v2'
+const VERSION = 'fildor-v3'
 const COQUE = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (e) => {
@@ -33,4 +33,16 @@ self.addEventListener('fetch', (e) => {
     }).catch(() => trouve)
     return trouve || reseau
   }))
+})
+
+// Notifications : prêt pour un envoi depuis le serveur (Web Push) ; l'application les affiche aussi elle-même quand elle est ouverte.
+self.addEventListener('push', (e) => {
+  let d = {}
+  try { d = e.data ? e.data.json() : {} } catch { d = { body: e.data && e.data.text() } }
+  e.waitUntil(self.registration.showNotification(d.title || "Fil d'Or", { body: d.body || 'Vous avez un nouveau message.', icon: '/icone-192.png', badge: '/icone-192.png', tag: 'fildor', data: { url: d.url || '/famille' } }))
+})
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  const url = (e.notification.data && e.notification.data.url) || '/famille'
+  e.waitUntil(self.clients.matchAll({ type: 'window' }).then((l) => { for (const c of l) { if ('focus' in c) { c.navigate(url); return c.focus() } } return self.clients.openWindow(url) }))
 })
