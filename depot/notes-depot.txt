@@ -1,0 +1,11 @@
+Fil d'Or suit chaque enfant de la grossesse à 5 ans, avec ou sans téléphone, avec ou sans réseau. Un seul carnet. Quand une famille ne répond plus, elle remonte dans la liste de l'agent.
+
+Quatre portes : voix et SMS (téléphone basique, USSD *789#), agent de santé hors ligne, carnet illustré, point d'écoute. Cinq piliers : santé, nutrition, protection, services sociaux, éveil.
+
+La démonstration est en ligne : https://frontend-production-5667500e.up.railway.app/
+Identifiant déjà rempli selon le rôle. Mot de passe de démonstration : FilDor2026!demo
+Comptes : admin, agent.vo, agent.golfe, mairie, structure.golfe, decideur.
+
+Parcours jury : téléphone 90000031 (Vaccins, puis Signes de danger) ; admin, avancer le temps ; agent.vo, périmètre brachial 112 mm et déclaration ; mairie, valider ; decideur, carte anonyme.
+
+Données fictives uniquement. Aucun nom, aucune photo d'enfant, aucun point GPS précis. Fil d'Or informe et oriente : il ne diagnostique pas et ne prescrit pas. Les contenus de santé restent à valider par des professionnels. Aucun SMS réel, aucun paiement. SHA indicatif : f440b63.

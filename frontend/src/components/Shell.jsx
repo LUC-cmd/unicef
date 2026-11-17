@@ -36,7 +36,7 @@ export function IconeShell({ nom }) {
  * Cadre commun des espaces professionnels : menu vertical à gauche, barre horizontale en haut.
  * groupes : [{ titre, liens: [{ to, nom, icone, fin?, badge? }] }]
  */
-export default function Shell({ titre, groupes, children }) {
+export default function Shell({ titre, groupes, onglets = [], children }) {
   const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
@@ -90,6 +90,13 @@ export default function Shell({ titre, groupes, children }) {
             </div>
           </div>
         </div>
+        {onglets.length > 0 && (
+          <nav className="shell-onglets" aria-label="Ce que vous ouvrez">
+            {onglets.map((o) => (
+              <NavLink key={o.to} to={o.to} end={o.fin}>{o.nom}</NavLink>
+            ))}
+          </nav>
+        )}
         <ContexteShell.Provider value={true}>
           <div className="shell-contenu">{children}</div>
         </ContexteShell.Provider>

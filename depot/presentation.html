@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Fil d'Or — présentation du prototype</title>
+<style>
+  @page { size: A4; margin: 16mm 16mm 18mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", sans-serif; color: #1c2830; font-size: 11.5pt; line-height: 1.45; }
+  h1 { font-size: 26pt; line-height: 1.1; margin: 0 0 8px; color: #17475f; }
+  h2 { font-size: 14pt; margin: 18px 0 6px; color: #17475f; border-bottom: 3px solid #ffc20e; display: inline-block; }
+  p { margin: 0 0 8px; }
+  .kicker { color: #0b86b8; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 10pt; }
+  .bande { background: #1cabe2; color: #fff; padding: 18px 20px; border-radius: 10px; margin: 12px 0 16px; }
+  .bande strong { color: #fff; }
+  ul { margin: 6px 0 10px; padding-left: 18px; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 10.5pt; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #d5e3ea; vertical-align: top; }
+  th { color: #17475f; }
+  img { width: 100%; border: 1px solid #d5e3ea; border-radius: 8px; margin: 6px 0 4px; }
+  .legende { font-size: 9.5pt; color: #5c6b73; margin: 0 0 12px; }
+  .page { break-before: page; }
+  .note { font-size: 10pt; background: #fff8e6; border-left: 4px solid #ffc20e; padding: 8px 10px; }
+</style>
+</head>
+<body>
+  <p class="kicker">Hack4Children Togo 2026 · UNICEF · prototype</p>
+  <h1>Fil d'Or</h1>
+  <p>Ne perdons le fil d'aucun enfant. De la grossesse à 5 ans, avec ou sans téléphone, avec ou sans réseau.</p>
+  <div class="bande">
+    <p><strong>Adresse de la démonstration.</strong> https://frontend-production-5667500e.up.railway.app/</p>
+    <p>L'identifiant est déjà saisi selon le rôle. Mot de passe : FilDor2026!demo. Comptes : admin, agent.vo, mairie, structure.golfe, decideur.</p>
+  </div>
+  <h2>Ce que le prototype fait</h2>
+  <p>Un seul carnet suit l'enfant. Quand une famille ne répond plus à un rappel, elle remonte dans la liste de l'agent de santé. Le système va chercher l'enfant, au lieu d'attendre qu'il revienne.</p>
+  <ul>
+    <li>Voix, SMS et USSD *789# sur un téléphone basique.</li>
+    <li>Agent de santé : saisie au village, même sans réseau, puis synchronisation sans doublon.</li>
+    <li>Carnet illustré à la maison, lisible sans savoir lire.</li>
+    <li>Point d'écoute pour les familles sans téléphone.</li>
+    <li>Déclaration de naissance pré-remplie, validation à l'état civil, carte anonyme des zones.</li>
+  </ul>
+  <p class="note">Données fictives. Aucun nom, aucune photo d'enfant, aucun point GPS précis. Fil d'Or informe et oriente. Il ne diagnostique pas et ne prescrit pas.</p>
+
+  <h2 class="page">Les rôles</h2>
+  <table>
+    <tr><th>Compte</th><th>Ce que l'on montre</th></tr>
+    <tr><td>agent.vo</td><td>Visites triées, urgence, saisie hors ligne, déclaration de naissance.</td></tr>
+    <tr><td>mairie</td><td>Dossiers déjà remplis, validation ou rejet avec motif.</td></tr>
+    <tr><td>structure.golfe</td><td>Demandes des familles, réponse par code, sans afficher le numéro.</td></tr>
+    <tr><td>decideur</td><td>Carte des zones oubliées. Jamais un enfant.</td></tr>
+    <tr><td>admin</td><td>Vue d'ensemble, comptes, horloge de démonstration.</td></tr>
+  </table>
+  <h2>Cinq minutes</h2>
+  <ol>
+    <li>Téléphone 90000031 : Vaccins, puis Signes de danger.</li>
+    <li>Compte admin : avancer de 5 jours. Des rendez-vous deviennent manqués.</li>
+    <li>Compte agent.vo : périmètre brachial 112 mm, déclaration de naissance, mode hors réseau.</li>
+    <li>Retour du réseau : la synchronisation part, sans doublon.</li>
+    <li>Mairie pour valider, puis decideur pour la carte.</li>
+  </ol>
+
+  <h2 class="page">Captures</h2>
+  <img src="01-accueil.jpg" alt="Accueil" />
+  <p class="legende">Accueil. Le fil, de la grossesse à 5 ans, et l'exemple de SMS sans nom d'enfant.</p>
+  <img src="02-telephone.jpg" alt="Téléphone" />
+  <p class="legende">Simulateur. Un téléphone basique suffit : sujets, SMS, USSD, jeu du jour.</p>
+
+  <h2 class="page">Tableaux de bord</h2>
+  <img src="03-connexion.jpg" alt="Connexion" />
+  <p class="legende">Entrée. L'identifiant et le mot de passe du rôle choisi sont déjà saisis.</p>
+  <img src="05-agent.jpg" alt="Agent" />
+  <p class="legende">Agent de santé. 22 situations urgentes en tête, avec la raison affichée. Codes uniquement.</p>
+  <img src="04-admin.jpg" alt="Administration" />
+  <p class="legende">Administrateur. Familles suivies, déclarations, rendez-vous réalisés, services en marche.</p>
+</body>
+</html>

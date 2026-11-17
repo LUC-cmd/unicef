@@ -25,13 +25,13 @@ const LIBELLE_MESSAGE = {
   NAISSANCE: 'Avis de la mairie',
 }
 
-const ONGLETS_FAMILLE = [['appel', 'Appeler'], ['ussd', 'USSD'], ['sms', 'Messages'], ['jeu', 'Jeu du jour'], ['structures', 'Structures'], ['manque', 'Appel manqué']]
+const ONGLETS_FAMILLE = [['sms', 'Ses rappels'], ['appel', 'Conseils'], ['ussd', 'USSD'], ['jeu', 'Jeu du jour'], ['structures', 'Où aller'], ['manque', 'Appel manqué']]
 const ONGLETS_PROCHE = [['sms', 'Messages'], ['appel', 'Appeler']]
 
 export default function Telephone() {
   const [numero, setNumero] = useState('90000001')
   const [profil, setProfil] = useState(null)
-  const [onglet, setOnglet] = useState('appel')
+  const [onglet, setOnglet] = useState('sms')
   const [langue, setLangue] = useState('')
   const [message, setMessage] = useState(null)
   const [sms, setSms] = useState([])
@@ -156,7 +156,8 @@ export default function Telephone() {
 
             {onglet === 'sms' && (
               <>
-                {sms.length === 0 && !erreur && <p className="petit">Aucun message pour ce numéro.</p>}
+                <p className="petit">C'est ce que la femme reçoit sur son téléphone : vaccin, pesée, rendez-vous. Elle répond OK. Sans réponse, l'agent passe.</p>
+                {sms.length === 0 && !erreur && <p className="petit">Aucun rappel pour ce numéro.</p>}
                 <ul className="sms">
                   {sms.map((s) => (
                     <li key={`${s.type}-${s.id}`}>
