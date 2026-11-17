@@ -38,7 +38,7 @@ function Enfant({ e }) {
           <h4>Suivi</h4>
           <p><b>{faits}</b> rendez-vous faits sur {e.rendezVous.length}.{e.declaration ? ` ${DECL[e.declaration] ?? ''}.` : ''}</p>
           <ul className="liste-rdv">
-            {aVenir.map((r) => <li key={r.id}><span className={`pastille ${RDV[r.statut]?.[1] ?? 'info'}`} /> {r.libelle} <span className="petit">{formaterDate(r.datePrevue)} · {RDV[r.statut]?.[0] ?? r.statut}</span></li>)}
+            {aVenir.map((r) => <li key={r.id}><span className={`point ${RDV[r.statut]?.[1] ?? 'info'}`} /> {r.libelle} <span className="petit">{formaterDate(r.datePrevue)} · {RDV[r.statut]?.[0] ?? r.statut}</span></li>)}
           </ul>
         </div>
         <div>

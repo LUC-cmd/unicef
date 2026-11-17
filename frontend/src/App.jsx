@@ -13,6 +13,8 @@ import { IconeMenu } from './components/Icones.jsx'
 
 const Territoire = lazy(() => import('./pages/Territoire.jsx'))
 const Visite = lazy(() => import('./pages/Visite.jsx'))
+const Parcours = lazy(() => import('./pages/Parcours.jsx'))
+const Creches = lazy(() => import('./pages/Creches.jsx'))
 const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
 const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
 const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
@@ -75,6 +77,7 @@ export default function App() {
   const { enLigne } = useReseau()
   const lieu = useLocation()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const dansEspace = Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
   useEffect(() => {
@@ -106,7 +109,7 @@ export default function App() {
     <div className="coque">
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
       <BandeauAndroid />
-      <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}`}>
+      <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}${dansEspace ? ' espace' : ''}`}>
         <header className="entete">
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
@@ -116,7 +119,9 @@ export default function App() {
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <div className="nav-liens">
+                <NavLink to="/" end className="lien-site">Site public</NavLink>
                 <NavLink to="/territoire">Carte du Togo</NavLink>
+                <NavLink to="/parcours">Un enfant, un parcours</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
                 <details className="menu-deroulant">
                   <summary>Essayer</summary>
@@ -134,6 +139,7 @@ export default function App() {
                     <Link to="/acte"><b>Acte de naissance</b><small>Les étapes, les délais, la gratuité</small></Link>
                     <Link to="/annuaire"><b>Annuaire des structures</b><small>Centres de santé, crèches, état civil</small></Link>
                     <Link to="/ecoute"><b>Point d'écoute</b><small>Pour les familles sans téléphone</small></Link>
+                    <Link to="/creches"><b>Crèches solidaires</b><small>Formation des femmes leaders</small></Link>
                     <Link to="/adolescents"><b>Adolescents</b><small>Informations et orientation</small></Link>
                     <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
                   </div>
@@ -179,6 +185,8 @@ export default function App() {
           <Route path="/visite" element={<Visite />} />
           <Route path="/hors-reseau" element={<HorsReseau />} />
           <Route path="/telecharger" element={<Telecharger />} />
+          <Route path="/parcours" element={<Parcours />} />
+          <Route path="/creches" element={<Creches />} />
           <Route path="/adolescents" element={<Adolescents />} />
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
@@ -194,12 +202,13 @@ export default function App() {
         </Suspense>
       </div>
 
-      <footer className="pied no-print">
+      <footer className={`pied no-print${dansEspace ? ' compact' : ''}`}>
         <div className="pied-interieur">
           <div className="pied-ligne">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
             <span className="pied-unicef"><img src="/partenaires/unicef-logo.png" alt="UNICEF" height="44" /><small>Concours Hack4Children Togo 2026</small></span>
             <nav className="pied-liens" aria-label="Liens du site">
+              <Link to="/parcours">Un enfant, un parcours</Link>
               <Link to="/projet">Le projet</Link>
               <Link to="/fonctionnement">Fonctionnement</Link>
               <Link to="/visite">Essayer</Link>

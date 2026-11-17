@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 
 const LIEN_WINDOWS = '/telechargements/Fil-dOr-Windows.zip'
-const LIEN_ANDROID = globalThis.FILDOR_CONFIG?.apkUrl || ''
 
 export default function HorsReseau() {
   const dansLeLogiciel = Boolean(globalThis.FILDOR_CONFIG?.logiciel)
@@ -30,29 +29,20 @@ export default function HorsReseau() {
       </Bandeau>
       <main className="page">
         {!dansLeLogiciel && (
-          <section className="carte telechargement">
-            <h2>Logiciel Windows : Fil d'Or hors réseau</h2>
-            <p>Un seul dossier à copier : il fonctionne sans réseau, sans installation et sans droits d'administrateur. Il suffit de le décompresser et d'ouvrir <b>FilDor.exe</b>.</p>
-            <p><a className="bouton" href={LIEN_WINDOWS}>Télécharger pour Windows (environ 105 Mo)</a></p>
-            <ol className="pas-a-pas">
-              <li>Faites un clic droit sur le fichier téléchargé, puis « Extraire tout ».</li>
-              <li>Ouvrez le dossier et double-cliquez sur <b>FilDor.exe</b>. Si Windows affiche « Windows a protégé votre ordinateur » : « Informations complémentaires », puis « Exécuter quand même » (le logiciel n'est pas encore signé).</li>
-              <li>Sur l'écran de connexion, « Entrer sans réseau » : choisissez votre zone et saisissez.</li>
-              <li>Avant de partir : <b>Synchronisation et clé USB</b>, « Copier sur une clé ». Un poste avec réseau envoie ensuite le fichier dans la base.</li>
-            </ol>
-          </section>
-        )}
-        {!dansLeLogiciel && (
-          <section className="carte telechargement android">
-            <h2>Android : Fil d'Or sur le téléphone</h2>
-            <p>L'application garde les saisies sur le téléphone, même sans réseau, et les envoie au retour du réseau.</p>
-            <div className="actions">
-              {LIEN_ANDROID && <a className="bouton" href={LIEN_ANDROID}>Télécharger l'application Android (APK)</a>}
-              <button type="button" className={`bouton ${LIEN_ANDROID ? 'secondaire' : ''}`} onClick={installer} disabled={!invite || installe}>{installe ? 'Déjà installée' : 'Ajouter à l\u2019écran d\u2019accueil'}</button>
+          <section className="carte telechargement installer-bloc">
+            <div>
+              <h2>Installer Fil d'Or</h2>
+              <p>Sur ordinateur Windows ou sur téléphone Android. Les deux marchent sans réseau et envoient les saisies au retour du réseau.</p>
+              <p className="heros-actions">
+                <a className="bouton" href={LIEN_WINDOWS}>Windows (environ 105 Mo)</a>
+                <Link className="bouton secondaire" to="/telecharger">Android, code QR et lien</Link>
+              </p>
+              <ol className="pas-a-pas">
+                <li>Windows : clic droit sur le fichier, « Extraire tout », puis double-clic sur <b>FilDor.exe</b>. Si Windows prévient, « Informations complémentaires », puis « Exécuter quand même ».</li>
+                <li>Sur l'écran de connexion, « Entrer sans réseau » : choisissez votre zone et saisissez.</li>
+                <li>Avant de partir : <b>Clé USB et envoi</b>, « Copier sur une clé ». Un poste avec réseau envoie ensuite le fichier.</li>
+              </ol>
             </div>
-            {!invite && !installe && <p className="petit">Si le bouton est grisé : ouvrez ce site dans Chrome, menu ⋮, « Ajouter à l'écran d'accueil ».</p>}
-            <p><Link to="/telecharger">Code QR et lien d'installation à partager</Link></p>
-            {LIEN_ANDROID && <p className="petit">Pour installer l'APK : ouvrez le fichier, puis autorisez « les sources inconnues » si Android le demande.</p>}
           </section>
         )}
         <div className="grille">

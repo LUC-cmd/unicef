@@ -12,6 +12,7 @@ import FamillesEnregistrees from '../components/FamillesEnregistrees.jsx'
 import CleUsb from '../components/CleUsb.jsx'
 import Accouchement from '../components/Accouchement.jsx'
 import NouveauNe from '../components/NouveauNe.jsx'
+import ParcoursEnfant from '../components/ParcoursEnfant.jsx'
 import Developpement from '../components/Developpement.jsx'
 import Eveil from '../components/Eveil.jsx'
 import Orienter from '../components/Orienter.jsx'
@@ -338,6 +339,7 @@ function Fiche({ code, enLigne, onChange }) {
         <Accouchement fiche={fiche} enLigne={enLigne} onChange={() => { onChange(); rafraichir() }} />
       )}
       {fiche.statut === 'ENFANT' && <Naissance fiche={fiche} onChange={onChange} />}
+      <ParcoursEnfant code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} />
       {fiche.statut === 'ENFANT' && <NouveauNe code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} ageMois={ageEnMois(fiche.dateNaissance)} />}
       {fiche.statut === 'ENFANT' && <Developpement code={fiche.codeEnfant} ageMois={ageEnMois(fiche.dateNaissance)} />}
       {fiche.statut === 'ENFANT' && <Eveil eveil={fiche.eveil} aujourdhui={aujourdhuiIso()} />}

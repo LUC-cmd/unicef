@@ -6,6 +6,7 @@ import { Barres } from '../components/Graphiques.jsx'
 import { COULEURS, TuileChiffre } from '../components/Courbes.jsx'
 import CarteTogo from '../components/CarteTogo.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
+import RupturesParcours from '../components/RupturesParcours.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import { Link } from 'react-router-dom'
 
@@ -169,6 +170,7 @@ export default function Carte({ vue = 'carte' }) {
           {barresJsx}
           <ActesSuivi role="DECIDEUR" />
         </div>
+        <RupturesParcours />
       </main>
     )
   }
@@ -199,6 +201,17 @@ export default function Carte({ vue = 'carte' }) {
             ))}
           </tbody>
         </table></div></div>
+      </main>
+    )
+  }
+
+  if (vue === 'ruptures') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Responsable régional" titre="Où l'enfant se perd">
+          Les passages entre deux services où des enfants sont perdus de vue, et les progrès par trimestre.
+        </Bandeau>
+        <RupturesParcours />
       </main>
     )
   }

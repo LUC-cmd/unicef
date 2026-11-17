@@ -93,7 +93,7 @@ export default function Territoire() {
               {courante.prefectures.map((p) => (
                 <li key={p.code}>
                   <button type="button" onClick={() => aller(region, p.code)}>
-                    <span className={`pastille ${p.pilote ? 'ok' : ''}`} /> <b>{p.nom.replace(/ \(.*\)/, '')}</b>
+                    <span className={`point ${p.pilote ? 'ok' : ''}`} /> <b>{p.nom.replace(/ \(.*\)/, '')}</b>
                     <span className="petit">{p.familles ? `${fr(p.familles)} familles` : p.pilote ? 'en démarrage' : ''}</span>
                   </button>
                 </li>

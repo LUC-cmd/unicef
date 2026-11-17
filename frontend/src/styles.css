@@ -88,7 +88,7 @@ code { background: var(--ciel); color: var(--nuit); padding: 0.05rem 0.35rem; bo
 .session .qui { text-align: right; line-height: 1.2; }
 .session .qui b { display: block; font-size: 0.9rem; color: var(--nuit); }
 .session .qui span { font-size: 0.78rem; color: var(--texte-doux); }
-@media (max-width: 980px) {
+@media (max-width: 1380px) {
   .menu-bouton { display: inline-flex; align-items: center; gap: 0.5rem; }
   .entete .interieur { flex-wrap: wrap; padding-top: 0.6rem; padding-bottom: 0.6rem; gap: 0.5rem; min-height: 0; }
   .nav-principale { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0.2rem; padding: 0.4rem 0 0.4rem; justify-content: flex-start; }
@@ -1078,8 +1078,8 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .entete-dossier > div { display: grid; } .entete-dossier b { font-size: 1.15rem; }
 .dossier-enfant { margin-top: 1rem; } .dossier-enfant h4 { margin: 0 0 .4rem; }
 .liste-rdv { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; gap: .4rem; }
-.pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #1CABE2; margin-right: .4rem; }
-.pastille.ok { background: #00833d; } .pastille.alerte { background: #d33a2c; }
+.point { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #1CABE2; margin-right: .4rem; }
+.point.ok { background: #00833d; } .point.alerte { background: #d33a2c; }
 .mini-courbe { margin: 0 0 .6rem; } .mini-courbe svg { width: 100%; max-width: 360px; height: auto; background: #f6fafc; border-radius: 10px; }
 .badge.ok { background: #e9f6ef; color: #0b5a2c; } .badge.alerte { background: #fde8e6; color: #9a1f14; }
 
@@ -1133,9 +1133,9 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
   .nav-principale a.lien-logiciel { margin-left: 0; }
 }
 
-.liste-prefectures .pastille { flex: none; }
+.liste-prefectures .point { flex: none; }
 .territoire-panneau .retour { background: none; box-shadow: none; text-decoration: none; padding: 0 0 .6rem; }
-.liste-prefectures .pastille { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; }
+.liste-prefectures .point { width: 10px; height: 10px; min-width: 10px; border-radius: 50%; }
 
 /* ===== Bouton Retour ===== */
 :root { --haut-retour: 46px; }
@@ -1192,12 +1192,59 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .marque-unicef img { display: block; height: 38px; width: auto; }
 .marque-unicef:hover { color: #1a4d73; }
 @media (max-width: 1100px) { .marque-unicef span { display: none; } .marque-unicef { padding: .2rem; } }
-@media (max-width: 860px) { .entete .interieur { flex-wrap: nowrap; } .marque-unicef { margin-left: auto; margin-right: .5rem; } .marque-unicef img { height: 32px; } }
+@media (max-width: 1380px) { .entete .interieur { flex-wrap: nowrap; } .marque-unicef { margin-left: auto; margin-right: .5rem; } .marque-unicef img { height: 32px; } }
 .pied-unicef { display: flex; align-items: center; gap: .6rem; background: #fff; border-radius: 12px; padding: .35rem .7rem; } .pied-unicef small { color: #1a4d73; font-weight: 600; max-width: 12ch; line-height: 1.2; }
-.partenaires .interieur { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; } .partenaires-photo { height: 110px; width: auto; border-radius: 12px; object-fit: cover; }
 .qr { background: #fff; border: 1px solid #d7e4ee; border-radius: 14px; padding: .4rem; max-width: 100%; } .qr svg { width: 100%; height: 100%; display: block; }
 .telecharger-haut { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.6rem; align-items: start; } .telecharger-qr { display: grid; gap: .5rem; justify-items: center; max-width: 240px; text-align: center; }
 @media (max-width: 700px) { .telecharger-haut { grid-template-columns: minmax(0, 1fr); } .telecharger-qr { max-width: none; } }
 .bouton.gros { padding: .9rem 1.4rem; font-size: 1.05rem; }
 .bandeau-android { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: .7rem; padding: .5rem .8rem; background: #fff; border-bottom: 2px solid #1CABE2; box-shadow: 0 2px 8px rgba(0,0,0,.12); } .bandeau-android img { border-radius: 9px; } .bandeau-android span { flex: 1; min-width: 0; display: grid; line-height: 1.2; } .bandeau-android small { color: #52606d; } .bandeau-android .fermer { background: none; border: 0; font-size: 1.6rem; line-height: 1; padding: .2rem .5rem; cursor: pointer; color: #52606d; }
-@media (max-width: 860px) { .entete .logo small { display: none; } .entete .logo { font-size: 1.2rem; } .marque-unicef { margin-left: auto; } .menu-bouton { margin-left: 0; flex: none; } }
+@media (max-width: 1380px) { .entete .logo small { display: none; } .entete .logo { font-size: 1.2rem; } .marque-unicef { margin-left: auto; } .menu-bouton { margin-left: 0; flex: none; } }
+
+.parcours-enfant h4 { margin: 1rem 0 .2rem; } .parcours-pas { background: #eef7fc; border-left: 4px solid #1CABE2; padding: .6rem .8rem; border-radius: 8px; }
+.parcours-frise { list-style: none; margin: .8rem 0; padding: 0; display: grid; gap: .1rem; position: relative; }
+.etape-p { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: .7rem; padding: .5rem 0; position: relative; }
+.etape-p:not(:last-child)::before { content: ''; position: absolute; left: .95rem; top: 2.2rem; bottom: -.3rem; width: 2px; background: #d7e4ee; }
+.etape-p p { margin: .15rem 0 .35rem; color: #3d4b59; }
+.pastille-p { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: #d7e4ee; color: #16325c; z-index: 1; }
+.etape-p.ok .pastille-p { background: #00833d; color: #fff; } .etape-p.cours .pastille-p { background: #1CABE2; color: #fff; } .etape-p.afaire .pastille-p { background: #ffc20e; color: #333; } .etape-p.rupture .pastille-p { background: #e2231a; color: #fff; }
+.etat-p { font-size: .75rem; font-weight: 700; padding: .1rem .5rem; border-radius: 999px; background: #eef2f6; margin-left: .3rem; } .etat-p.ok { background: #dff3e7; color: #00642e; } .etat-p.rupture { background: #fde4e2; color: #b3160f; } .etat-p.afaire { background: #fff2c4; color: #6b5200; } .etat-p.cours { background: #dff2fb; color: #0b5f85; }
+.besoins { display: grid; gap: .4rem; } .besoins small { display: block; color: #52606d; font-weight: 400; }
+.ruptures { list-style: none; padding: 0; margin: .8rem 0; display: grid; gap: .8rem; } .rupture-tete { display: flex; justify-content: space-between; gap: 1rem; } .rupture-tete span { font-weight: 800; color: #b3160f; font-size: 1.2rem; }
+.rupture-barre { height: 8px; background: #eef2f6; border-radius: 6px; overflow: hidden; margin: .25rem 0; } .rupture-barre i { display: block; height: 100%; background: #e2231a; border-radius: 6px; } .ruptures small { color: #52606d; }
+.courbes-progres svg { width: 100%; max-width: 440px; height: auto; } .legende-p { display: flex; flex-wrap: wrap; gap: .4rem 1rem; font-size: .9rem; } .legende-p i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .25rem; }
+.jours-p { display: flex; gap: 1rem; margin: .4rem 0; } .jours-p > div { display: grid; justify-items: center; gap: .15rem; } .jour-p { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: #eef2f6; font-weight: 700; } .jour-p.ok { background: #00833d; color: #fff; } .jour-p.manque { background: #e2231a; color: #fff; }
+
+.etapes-onglets { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .4rem; margin: .8rem 0; }
+.etapes-onglets button { text-align: left; padding: .6rem; border: 2px solid #d7e4ee; border-radius: 12px; background: #fff; cursor: pointer; display: grid; gap: .1rem; font: inherit; }
+.etapes-onglets button span { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: #d7e4ee; display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.etapes-onglets button.actif { border-color: #1CABE2; background: #eef7fc; } .etapes-onglets button.actif span { background: #1CABE2; color: #fff; } .etapes-onglets small { color: #52606d; font-size: .72rem; line-height: 1.2; }
+@media (max-width: 900px) { .etapes-onglets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.matrice { list-style: none; padding: 0; margin: .5rem 0; display: grid; gap: .4rem; } .matrice li { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: .8rem; align-items: center; padding: .6rem .8rem; border-radius: 10px; background: #f6fafd; }
+@media (max-width: 700px) { .matrice li { grid-template-columns: minmax(0, 1fr); gap: .2rem; } }
+.innovations { display: grid; gap: .6rem; padding-left: 1.2rem; } .innovations p { margin: .1rem 0 0; color: #3d4b59; }
+.accordeon { background: none; border: 0; font: inherit; font-weight: 700; padding: 0; cursor: pointer; text-align: left; color: inherit; } .accordeon::before { content: '+ '; color: #1CABE2; } .accordeon[aria-expanded='true']::before { content: '− '; }
+@media (max-width: 1500px) { .marque-unicef span { display: none; } .marque-unicef { padding: .2rem .3rem; } .entete .logo small { display: none; } }
+
+/* ===== Finitions : espaces professionnels, partenaires, courbes ===== */
+.entete-bloc .lien-site { display: none; }
+.entete-bloc.espace .nav-liens > *:not(.lien-site) { display: none; }
+.entete-bloc.espace .lien-site { display: inline-flex; }
+.entete-bloc.espace .nav-liens { margin-right: auto; }
+.entete-bloc.espace .nav-principale { justify-content: flex-end; }
+.pied.compact .pied-liens, .pied.compact .pied-legal { display: none; }
+.pied.compact .pied-interieur { padding-top: .8rem; padding-bottom: .8rem; }
+.pied.compact .pied-ligne { align-items: center; }
+.liste-visites .ligne { display: flex; align-items: center; justify-content: space-between; gap: .7rem; } .liste-visites .ligne-texte { min-width: 0; flex: 1; } .liste-visites .pastille { flex: none; align-self: center; }
+.installer-bloc { max-width: 52rem; }
+
+.entete-bloc.espace .lien-site { color: #fff; font-weight: 600; text-decoration: none; padding: .45rem .9rem; border-radius: 999px; background: rgba(255,255,255,.16); } .entete-bloc.espace .lien-site:hover { background: rgba(255,255,255,.28); }
+
+
+.partenaires .partenaires-grille { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 2.4rem; align-items: center; }
+.partenaires .partenaires-photo { width: 100%; height: 260px; object-fit: cover; border-radius: 18px; }
+.partenaires .partenaires-texte { display: grid; gap: .7rem; justify-items: start; }
+.partenaires .partenaires-texte h2 { margin: 0; font-size: 1.55rem; line-height: 1.2; }
+.partenaires .partenaires-texte p { max-width: 46ch; color: #3d4b59; }
+.partenaires .partenaires-logo { height: 76px; width: auto; }
+@media (max-width: 760px) { .partenaires .partenaires-grille { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; } .partenaires .partenaires-photo { height: 190px; } }

@@ -22,6 +22,17 @@ export default function Adolescents() {
         </div>
 
         <section className="carte">
+          <h2>Choisir quand avoir un enfant</h2>
+          <p>Au Togo, 17 % des décès de mères touchent des adolescentes de 12 à 19 ans, et 60,9 % des 15-19 ans sexuellement actives n'ont pas de contraception adaptée à leurs besoins (UNICEF Togo, briefing Hack4Children 2026).</p>
+          <ul className="liste-coches">
+            <li>Il existe plusieurs méthodes de planification familiale. Un professionnel de santé aide à choisir, sans jugement et dans la confidentialité.</li>
+            <li>Le préservatif protège aussi des infections. Le centre de santé donne les informations et oriente.</li>
+            <li>Après une naissance, attendre avant une nouvelle grossesse protège la mère et le bébé : en parler au centre de santé.</li>
+            <li>Personne n'a à subir une pression ou une violence. En cas de doute : <Link to="/signalement">qui prévenir</Link>.</li>
+          </ul>
+        </section>
+
+        <section className="carte">
           <h2>Quand une adolescente attend un enfant</h2>
           <ul className="liste-coches">
             <li>L'agent la signale comme grossesse à suivre de près : consultations prénatales rapprochées.</li>

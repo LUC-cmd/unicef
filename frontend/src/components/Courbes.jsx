@@ -12,6 +12,9 @@ function arrondi(max) {
   return (n <= 2 ? 2 : n <= 5 ? 5 : 10) * p
 }
 
+/** Moyenne mobile centrée : la courbe montre la tendance, l'infobulle garde la valeur exacte du jour. */
+export const lisser = (v, k = 1) => v.map((_, i) => { const a = v.slice(Math.max(0, i - k), i + k + 1); return a.reduce((s, x) => s + x, 0) / a.length })
+
 const L = 680, H = 240, M = { g: 40, d: 14, h: 14, b: 28 }
 
 /** Courbes sur plusieurs jours, avec repère et infobulle au survol. series : { nom, valeurs, couleur }. */
@@ -22,7 +25,7 @@ export function Courbe({ titre, jours, series }) {
   const n = jours.length
   const x = (i) => M.g + (i / Math.max(1, n - 1)) * (L - M.g - M.d)
   const y = (v) => M.h + (1 - v / haut) * (H - M.h - M.b)
-  const trait = (vals) => vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ')
+  const trait = (vals) => lisser(vals).map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ')
   const aire = (vals) => `${trait(vals)} L${x(n - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`
   const graduations = [0, 0.5, 1].map((f) => Math.round(haut * f))
   const reperes = jours.map((j, i) => [j, i]).filter(([, i]) => (n - 1 - i) % 7 === 0)
@@ -83,7 +86,8 @@ export function Courbe({ titre, jours, series }) {
 }
 
 /** Petite courbe sans axes pour une tuile de chiffre. */
-export function Mini({ valeurs, couleur = COULEURS.cyan }) {
+export function Mini({ valeurs: brutes, couleur = COULEURS.cyan }) {
+  const valeurs = lisser(brutes, 2)
   const max = Math.max(1, ...valeurs)
   const w = 120, h = 36
   const pts = valeurs.map((v, i) => [(i / Math.max(1, valeurs.length - 1)) * (w - 6) + 3, h - 4 - (v / max) * (h - 10)])

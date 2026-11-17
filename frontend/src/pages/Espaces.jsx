@@ -10,6 +10,7 @@ import Carte from './Carte.jsx'
 import Admin from './Admin.jsx'
 import Aide from './Aide.jsx'
 import ActeNaissance from './ActeNaissance.jsx'
+import Fragiles from './Fragiles.jsx'
 
 /** Chaque rôle a son espace : un menu vertical, une barre en haut, et des vues qui marchent. */
 
@@ -21,6 +22,7 @@ export function EspaceAgent() {
       { to: '/agent/familles', nom: 'Familles enregistrées', icone: 'carnet' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
       { to: '/agent/carte', nom: 'Carte de famille', icone: 'carnet' },
+      { to: '/agent/fragiles', nom: 'Nouveau-nés fragiles', icone: 'bouclier' },
       { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
     ] },
     { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
@@ -40,6 +42,7 @@ export function EspaceAgent() {
         <Route path="synchronisation" element={<Agent vue="synchronisation" />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />
+        <Route path="fragiles" element={<Fragiles />} />
         <Route path="aide" element={<Aide role="AGENT" />} />
         <Route path="*" element={<Navigate to="/agent" replace />} />
       </Routes>
@@ -111,6 +114,7 @@ export function EspaceDecideur() {
       { to: '/carte', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/carte/carte', nom: 'Carte des zones', icone: 'carte' },
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
+      { to: '/carte/ruptures', nom: 'Où l\u2019enfant se perd', icone: 'graphe' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
     { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Aide', icone: 'aide' }] },
@@ -122,6 +126,7 @@ export function EspaceDecideur() {
         <Route path="carte" element={<Carte vue="carte" />} />
         <Route path="zones" element={<Carte vue="zones" />} />
         <Route path="actes" element={<Carte vue="actes" />} />
+        <Route path="ruptures" element={<Carte vue="ruptures" />} />
         <Route path="aide" element={<Aide role="DECIDEUR" />} />
         <Route path="*" element={<Navigate to="/carte" replace />} />
       </Routes>
