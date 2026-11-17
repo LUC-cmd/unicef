@@ -173,4 +173,4 @@ export default function CarteImmersive({ prefectures = [], regionChoisie, onRegi
   )
 }
 
-export { REGIONS, NOM_REGION_ID }
+export { REGIONS, NOM_REGION_ID, BBOX_TOGO, CENTRE_TOGO, cadre, facile }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/contexte.jsx'
+import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
 
 const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 import { MereEtEnfant } from '../components/Illustrations.jsx'
@@ -13,12 +14,12 @@ const ETAPES = [
 ]
 
 const PARCOURS_ENFANT = [
-  ['Grossesse', 'Consultations prénatales, signes de danger, préparation de la naissance.', '/fonctionnement', 'Voir le suivi'],
-  ['Naissance', "Déclaration à l'état civil, preuve de naissance par SMS, acte retiré par la famille.", '/fonctionnement', 'Voir le parcours'],
-  ['0 à 2 ans', 'Vaccins, pesées, allaitement, repères de développement. Une visite si la famille ne répond plus.', '/telephone', 'Essayer le téléphone'],
-  ['3 à 5 ans', 'Nutrition, jeux d’éveil, passage à la maternelle, crèche ou jardin d’enfants proche.', '/jeux', 'Jouer'],
-  ['6 à 11 ans', "L'école prend le relais : le carnet et l'acte de naissance suivent l'enfant.", '/annuaire', 'Trouver une école ou un centre'],
-  ['12 à 17 ans', 'Rester à l’école, santé des adolescentes, protection contre les violences.', '/adolescents', 'Voir les repères'],
+  ['Avant la grossesse', 'Les adolescentes : santé, planification familiale, rester à l\u2019école, jeunes mères suivies de près.', '/adolescents', 'Voir les repères'],
+  ['Grossesse', 'Consultations prénatales, signes de danger, préparation de la naissance.', '/parcours', 'Voir le parcours'],
+  ['Naissance', "Déclaration à l'état civil, preuve de naissance par SMS, acte retiré par la famille.", '/acte', 'Voir les étapes'],
+  ['Petite enfance, 0 à 2 ans', 'Vaccins, pesées, allaitement, repères de développement. Une visite si la famille ne répond plus.', '/telephone', 'Essayer le téléphone'],
+  ['Éveil précoce', 'Un jeu par jour avec les objets de la maison, histoires et chansons en langue locale.', '/jeux', 'Jouer'],
+  ['Préscolaire, 3 à 5 ans', 'Nutrition, passage à la maternelle, crèche solidaire ou jardin d\u2019enfants proche.', '/annuaire', 'Trouver un jardin d\u2019enfants'],
 ]
 
 export default function Accueil() {
@@ -29,7 +30,7 @@ export default function Accueil() {
         <div className="interieur">
           <div className="heros-grille">
             <div>
-              <span className="mention-concours">Hack4Children Togo 2026</span>
+              <span className="mention-concours">Hack4Children Togo 2026</span> <span className="mention-concours region">{LIBELLE_REGION[regionDeploiement()]}</span>
               <h1 id="titre-accueil">Ne perdons le fil d'aucun enfant.</h1>
               <p className="chapeau-heros">
                 Fil d'Or suit chaque enfant du premier rendez-vous de grossesse jusqu'à 5 ans, avec ou sans téléphone,
@@ -70,7 +71,7 @@ export default function Accueil() {
       <section className="section parcours-enfant" aria-labelledby="titre-parcours">
         <div className="interieur">
           <h2 id="titre-parcours" className="titre-section">Un enfant, un parcours</h2>
-          <p className="chapeau">De la grossesse à l'adolescence, un enfant passe d'un service à un autre. Fil d'Or garde le lien à chaque passage, en profondeur jusqu'à 5 ans.</p>
+          <p className="chapeau">De la conception à l'entrée à l'école, un enfant passe d'un service à un autre. Fil d'Or garde le lien à chaque passage.</p>
           <ol className="parcours-grille">
             {PARCOURS_ENFANT.map(([titre, texte, lien, action], i) => (
               <li className="etape-parcours" key={titre}>

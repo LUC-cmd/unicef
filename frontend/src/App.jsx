@@ -1,4 +1,5 @@
 import BandeauAndroid from './components/BandeauAndroid.jsx'
+import MenuProfil from './components/MenuProfil.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from './lib/contexte.jsx'
@@ -13,6 +14,7 @@ import { IconeMenu } from './components/Icones.jsx'
 
 const Territoire = lazy(() => import('./pages/Territoire.jsx'))
 const Visite = lazy(() => import('./pages/Visite.jsx'))
+const IntroRegion = lazy(() => import('./components/IntroRegion.jsx'))
 const Parcours = lazy(() => import('./pages/Parcours.jsx'))
 const Creches = lazy(() => import('./pages/Creches.jsx'))
 const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
@@ -73,10 +75,17 @@ function Protegee({ page, children }) {
 }
 
 export default function App() {
-  const { session, deconnexion } = useAuth()
+  const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
   const [menuOuvert, setMenuOuvert] = useState(false)
+  const [intro, setIntro] = useState(() => {
+    try {
+      const reduit = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      return lieu.pathname === '/' && !sessionStorage.getItem('fildor.intro') && !reduit && !globalThis.FILDOR_CONFIG?.logiciel
+    } catch { return false }
+  })
+  const finIntro = () => { try { sessionStorage.setItem('fildor.intro', '1') } catch { /* sans stockage */ } setIntro(false) }
   const dansEspace = Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
@@ -107,6 +116,7 @@ export default function App() {
 
   return (
     <div className="coque">
+      {intro && <Suspense fallback={null}><IntroRegion onFin={finIntro} /></Suspense>}
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
       <BandeauAndroid />
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}${dansEspace ? ' espace' : ''}`}>
@@ -117,14 +127,15 @@ export default function App() {
             <div className="entete-action">
               {!session && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
-              {session && dansEspace && <Link className="bouton-entete principal" to="/">Site public</Link>}
+              {session && dansEspace && <Link className="bouton-entete principal" to="/">Accueil</Link>}
+              {session && <MenuProfil />}
             </div>
             <button className="menu-bouton" aria-label="Menu" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
               <IconeMenu /> <span className="txt-menu">Menu</span>
             </button>
             <nav id="navigation" className="nav-principale" aria-label="Navigation principale">
               <div className="nav-liens">
-                <NavLink to="/territoire">Carte du Togo</NavLink>
+                <NavLink to="/" end className="lien-accueil">Accueil</NavLink>
                 <NavLink to="/parcours">Un enfant, un parcours</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
                 <details className="menu-deroulant">
@@ -154,7 +165,6 @@ export default function App() {
                 {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
                   <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
                 </span>}
-                {session && <button type="button" className="bouton-entete sortie" onClick={deconnexion}>Se déconnecter</button>}
               </div>
             </nav>
           </div>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
+import Avatar from './Avatar.jsx'
 
 export const ContexteShell = createContext(false)
 export const useDansShell = () => useContext(ContexteShell)
@@ -35,7 +36,7 @@ export function IconeShell({ nom }) {
  * groupes : [{ titre, liens: [{ to, nom, icone, fin?, badge? }] }]
  */
 export default function Shell({ titre, groupes, children }) {
-  const { session, deconnexion } = useAuth()
+  const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
   const [ouvert, setOuvert] = useState(false)
@@ -47,8 +48,8 @@ export default function Shell({ titre, groupes, children }) {
     <div className="shell">
       <aside className={`shell-menu${ouvert ? ' ouvert' : ''}`} aria-label={`Menu ${titre}`}>
         <div className="shell-entete">
-          <span className="shell-avatar" aria-hidden="true">{titre.slice(0, 1)}</span>
-          <div><p className="shell-role">{titre}</p><p className="shell-sous">Espace professionnel</p></div>
+          <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={40} />
+          <div><p className="shell-role">{session?.nomComplet || titre}</p><p className="shell-sous">{titre}</p></div>
         </div>
         {groupes.map((g) => (
           <div key={g.titre} className="shell-groupe">
@@ -67,7 +68,7 @@ export default function Shell({ titre, groupes, children }) {
         <div className="shell-pied">
           <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
           <p className="shell-qui">{session?.nomComplet}</p>
-          <button className="lien" type="button" onClick={deconnexion}>Se déconnecter</button>
+          <p className="petit">Photo et déconnexion : menu de votre compte, en haut à droite.</p>
         </div>
       </aside>
 

@@ -1,3 +1,4 @@
+import SelecteurRegion from './SelecteurRegion.jsx'
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import Bandeau from './Bandeau.jsx'
@@ -75,6 +76,12 @@ export default function TableauAdmin() {
       <Bandeau surtitre="Administration" titre="Tableau de bord">
         {fr(t.familles)} familles suivies · {enService} service{enService > 1 ? 's' : ''} sur 4 en marche.
       </Bandeau>
+
+      <section className="carte region-deploiement">
+        <h2>Région de ce déploiement</h2>
+        <p className="petit">Elle donne son nom à l'ouverture animée du site (Afrique, Togo, puis la région). Pour tous les appareils, réglez la variable REGION_DEPLOIEMENT sur Railway.</p>
+        <SelecteurRegion />
+      </section>
 
       <div className="grille-tuiles">
         <TuileChiffre libelle="Familles suivies" valeur={fr(t.familles)} serie={col('inscriptions')} couleur={COULEURS.cyan} aide={`${col('inscriptions').reduce((a, b) => a + b, 0)} inscrites sur 30 jours`} />

@@ -11,8 +11,8 @@ const SUJETS = [
 export default function Adolescents() {
   return (
     <>
-      <Bandeau surtitre="12 à 17 ans" titre="Adolescentes et adolescents">
-        Le fil continue après 5 ans, pour les jeunes mères et les adolescents.
+      <Bandeau surtitre="Avant la grossesse" titre="Les adolescentes et les jeunes mères">
+        Le parcours de l'enfant commence avant sa naissance : la santé et l'avenir de sa mère comptent déjà.
       </Bandeau>
       <main className="page">
         <div className="grille">

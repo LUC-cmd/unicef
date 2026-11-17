@@ -4,4 +4,5 @@
 MDP="${VITE_MDP_DEMO:-${FILDOR_MDP_DEMO:-FilDor2026!demo}}"
 ECHAPPE=$(printf '%s' "$MDP" | sed 's/\\/\\\\/g; s/"/\\"/g')
 APK=$(printf '%s' "${APK_URL:-}" | sed 's/\\/\\\\/g; s/"/\\"/g')
-printf 'window.FILDOR_CONFIG = Object.assign(window.FILDOR_CONFIG || {}, { mdpDemo: "%s", apkUrl: "%s" })\n' "$ECHAPPE" "$APK" > /usr/share/nginx/html/fildor-config.js
+REG=$(printf '%s' "${REGION_DEPLOIEMENT:-Maritime}" | sed 's/[^A-Za-zéèêîô -]//g')
+printf 'window.FILDOR_CONFIG = Object.assign(window.FILDOR_CONFIG || {}, { mdpDemo: "%s", apkUrl: "%s", region: "%s" })\n' "$ECHAPPE" "$APK" "$REG" > /usr/share/nginx/html/fildor-config.js
