@@ -417,6 +417,21 @@ function Naissance({ fiche, onChange }) {
   const [accord, setAccord] = useState(false)
   const [erreur, setErreur] = useState('')
   const [fait, setFait] = useState(false)
+  const [prenatale, setPrenatale] = useState(null)
+
+  // Les noms pris à la CPN pré-remplissent le formulaire : la famille ne raconte pas deux fois.
+  useEffect(() => {
+    if (d) return
+    api.get(`/api/agent/enfants/${encodeURIComponent(fiche.codeEnfant)}/identite-prenatale`)
+      .then((i) => {
+        if (!i?.prisEnGrossesse) return
+        setPrenatale(i)
+        if (i.mereNom && i.accordMere) setMere(i.mereNom)
+        if (i.pereNom && i.accordPere) setPere(i.pereNom)
+        if (i.mereNom && i.accordMere) setChoix(i.pereNom && i.accordPere ? 'DEUX' : 'MERE')
+      })
+      .catch(() => { /* sans info prénatale : saisie normale */ })
+  }, [d, fiche.codeEnfant])
 
   if (d && d.statut !== 'REJETEE') {
     const libelle = { ENVOYEE: 'envoyée à la mairie', VALIDEE: 'validée par la mairie', BROUILLON: 'brouillon' }[d.statut]
@@ -479,6 +494,14 @@ function Naissance({ fiche, onChange }) {
       <fieldset className="identite-acte">
         <legend>Noms à transmettre à l'état civil <em>(facultatif)</em></legend>
         <p className="petit">Fil d'Or ne garde aucun nom par défaut. La famille choisit ce qu'elle souhaite communiquer ; rien n'est envoyé sans son accord.</p>
+        {prenatale && (
+          <p className="carte attention sans-marge petit">
+            📋 {prenatale.accordMere || prenatale.accordPere
+              ? 'Des noms ont été pris pendant la grossesse (CPN) et sont repris ci-dessous : confirmez-les avec la famille.'
+              : 'Une fiche prénatale existe mais sans accord pour les noms : rien n\'est pré-rempli, demandez à la famille.'}
+            {prenatale.pieceDisponible && ` Pièce d'identité enregistrée : ${prenatale.pieceType.toLowerCase().replace('_', ' ')}.`}
+          </p>
+        )}
         {[
           ['RIEN', 'Rien pour l’instant', 'Le dossier part avec le code de l’enfant seulement. La famille pourra donner les noms à l’état civil.'],
           ['MERE', 'Nom de la mère seulement', 'Le père n’est pas nommé (inconnu, absent ou non souhaité).'],
@@ -505,6 +528,12 @@ function Naissance({ fiche, onChange }) {
           <label className="case accord-identite"><input type="checkbox" checked={accord} onChange={(e) => setAccord(e.target.checked)} />
             La famille a donné son accord pour transmettre {choix === 'DEUX' ? 'ces noms' : 'ce nom'} à l'état civil, et sait qu'elle peut le retirer.</label>
         )}
+        <p className="petit source">
+          Protection des données (loi togolaise n° 2019-014 du 29 octobre 2019) : noms transmis <strong>uniquement pour l'acte
+          de naissance</strong>, avec un accord libre et une information claire ; la famille garde son droit d'accès, de
+          rectification et de retrait à tout moment. Avant tout usage réel : déclaration à l'IPDCP et autorisation pour les
+          données de santé.
+        </p>
       </fieldset>
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
       <button className="bouton secondaire" onClick={lancer}>Envoyer la déclaration à l'état civil</button>

@@ -131,8 +131,29 @@ public class DeclarationRepository {
         }).list();
     }
 
-    public void definirPrenom(long enfantId, String prenom) {
-        jdbc.sql("UPDATE declaration_naissance SET prenom_enfant = :p, prenom_donne_le = now() WHERE enfant_id = :e")
+    /** Identité prise pendant les consultations prénatales, pour pré-remplir la déclaration à la naissance.
+     *  Un nom n'est renvoyé que si la personne concernée a donné son accord. */
+    public record IdentitePrenatale(String mereNom, String conjointNom, boolean accordMere, boolean accordConjoint,
+                                    String pieceType, String pieceNumero, String nationaliteMere,
+                                    String nationaliteConjoint, boolean pieceDisponible) {
+    }
+
+    public Optional<IdentitePrenatale> identitePrenatale(long enfantId) {
+        return jdbc.sql("""
+                SELECT mere_nom, conjoint_nom, accord_mere, accord_conjoint, piece_type, piece_numero,
+                       nationalite_mere, nationalite_conjoint,
+                       (piece_type IS NOT NULL AND piece_type <> 'AUCUNE' AND piece_numero IS NOT NULL) AS piece_disponible
+                FROM identite_parents WHERE enfant_id = :e""")
+                .param("e", enfantId)
+                .query((rs, n) -> new IdentitePrenatale(rs.getString("mere_nom"), rs.getString("conjoint_nom"),
+                        rs.getBoolean("accord_mere"), rs.getBoolean("accord_conjoint"),
+                        rs.getString("piece_type"), rs.getString("piece_numero"),
+                        rs.getString("nationalite_mere"), rs.getString("nationalite_conjoint"),
+                        rs.getBoolean("piece_disponible")))
+                .optional();
+    }
+
+    public void definirPrenom(long enfantId, String prenom) {        jdbc.sql("UPDATE declaration_naissance SET prenom_enfant = :p, prenom_donne_le = now() WHERE enfant_id = :e")
                 .param("p", prenom).param("e", enfantId).update();
     }
 

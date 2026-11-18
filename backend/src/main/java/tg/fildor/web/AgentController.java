@@ -119,6 +119,24 @@ public class AgentController {
         return java.util.Map.of("jeton", carnetQr.jeton(carnet, LocalDate.now(clock)), "codeFamille", carnet.codeFamille());
     }
 
+    /** Identité prise à la CPN, pour pré-remplir la déclaration de naissance : la famille ne raconte pas deux fois. */
+    @GetMapping("/enfants/{code}/identite-prenatale")
+    java.util.Map<String, Object> identitePrenatale(@AuthenticationPrincipal AppUser u, @PathVariable String code) {
+        return naissances.identitePrenatale(u, code)
+                .<java.util.Map<String, Object>>map(i -> java.util.Map.of(
+                        "prisEnGrossesse", true,
+                        "mereNom", i.mereNom() == null ? "" : i.mereNom(),
+                        "pereNom", i.conjointNom() == null ? "" : i.conjointNom(),
+                        "accordMere", i.accordMere(),
+                        "accordPere", i.accordConjoint(),
+                        "pieceType", i.pieceType() == null ? "" : i.pieceType(),
+                        "pieceNumero", i.pieceNumero() == null ? "" : i.pieceNumero(),
+                        "nationaliteMere", i.nationaliteMere() == null ? "" : i.nationaliteMere(),
+                        "nationaliteConjoint", i.nationaliteConjoint() == null ? "" : i.nationaliteConjoint(),
+                        "pieceDisponible", i.pieceDisponible()))
+                .orElse(java.util.Map.of("prisEnGrossesse", false));
+    }
+
     /** Synchronisation de ce qui a été saisi hors ligne (idempotente). */
     @PostMapping("/sync")
     SyncResultat synchroniser(@AuthenticationPrincipal AppUser u, @Valid @RequestBody SyncRequest req) {

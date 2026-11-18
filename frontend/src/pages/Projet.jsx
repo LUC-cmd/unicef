@@ -75,6 +75,8 @@ const DROITS_DONNEES = [
   'Cadre : loi n° 2019-014 du 29 octobre 2019 sur les données à caractère personnel, contrôlée par l’IPDCP. Les données de santé sont sensibles (art. 21 et 24).',
   'Avant tout test réel : déclaration à l’IPDCP (art. 6) et, pour la santé, demande d’autorisation (art. 8). Accord écrit des familles, aucun appel enregistré.',
   'Minimum de données : code famille plutôt que nom, accès par rôle, journal des accès, chiffrement, sauvegardes, durée de conservation limitée.',
+  'Les noms pour l’état civil ne circulent qu’avec l’accord de chaque parent (mère et père séparément), uniquement pour la finalité « acte de naissance », et seulement du centre de santé vers la mairie : jamais dans le carnet, le QR signé ou les SMS.',
+  'La famille reste maîtresse de ses données : droit d’accès, de rectification et de retrait du consentement à tout moment (le retrait est possible dès la fiche de l’agent).',
   'Hébergement : transfert hors du Togo seulement avec information préalable de l’IPDCP et pays offrant une protection suffisante (art. 28).',
   'Partenaires officiels : ministère de la Santé, mairies, action sociale. Sans eux, aucun vrai dossier de protection ni d’état civil n’est traité.',
 ]

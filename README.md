@@ -107,6 +107,7 @@ Si `uvicorn` ne démarre pas, `python serveur.py` dans `assistant/` sert les mê
 - **Hors ligne** : chaque saisie porte un identifiant créé sur le téléphone ; le serveur ignore ce qu'il a déjà reçu (`ON CONFLICT DO NOTHING`).
 - **Cycle des rappels** (`RappelService`) : chaque jour à 6 h, ou à la demande via `/api/admin/cycle`.
 - **Inscription** : validations avant écriture, transaction unique, idempotente par `client_uuid`. Codes `F-0001` (famille) et `T001A` (enfant).
+- **Naissance sans déplacement** : les noms sont pris à la CPN (`identite_parents`, accord de chaque parent), la déclaration part du village, la mairie valide à distance, la famille reçoit un SMS à la validation (reçu + code) puis un SMS « acte prêt ». Le formulaire de déclaration est pré-rempli avec l'identité prénatale.
 - **Jeu du jour** (`ChoixJeu`) : choix déterministe par âge et semaine (lundi), identique au téléphone, sur la fiche et dans le carnet.
 - **SMS simulés** : écrits en base. L'envoi réel dépend d'un accord avec un opérateur togolais.
 

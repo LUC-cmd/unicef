@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.http.HttpStatus;
@@ -197,8 +198,7 @@ public class NaissanceService {
 
     /** Pour la synchronisation : un nom déjà enregistré n'est pas remplacé, rejouer un envoi ne change rien. */
     @Transactional
-    public boolean donnerPrenomUneFois(AppUser u, String codeEnfant, String prenom, LocalDate aujourdhui) {
-        EnfantRef e = suivi.enfantAutorise(u, codeEnfant);
+    public boolean donnerPrenomUneFois(AppUser u, String codeEnfant, String prenom, LocalDate aujourdhui) {        EnfantRef e = suivi.enfantAutorise(u, codeEnfant);
         if (declarations.prenom(e.id()).isPresent()) {
             return false;
         }
@@ -214,6 +214,14 @@ public class NaissanceService {
     public java.util.List<DeclarationDto> lister(AppUser u, String statut) {
         acces.tracer(u, "LISTER_DECLARATIONS", statut == null ? "toutes" : statut);
         return declarations.lister(statut);
+    }
+
+    /** Identité récoltée pendant la grossesse (CPN) pour pré-remplir la déclaration : plus rien à retaper au 8e jour.
+     *  Chaque consultation est tracée dans le journal des accès. */
+    public Optional<DeclarationRepository.IdentitePrenatale> identitePrenatale(AppUser u, String codeEnfant) {
+        EnfantRef e = suivi.enfantAutorise(u, codeEnfant);
+        acces.tracer(u, "CONSULTER_IDENTITE_PRENATALE", codeEnfant);
+        return declarations.identitePrenatale(e.id());
     }
 
     @Transactional
