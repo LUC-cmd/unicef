@@ -48,6 +48,9 @@ public class PublicController {
                                    @NotBlank String motif) {
     }
 
+    public record DemandeUrgence(@NotBlank String telephone, String motif) {
+    }
+
     private final VoixService voix;
     private final AnnuaireService annuaire;
     private final EcouteService ecoute;
@@ -151,5 +154,12 @@ public class PublicController {
     Map<String, String> appelManque(@Valid @RequestBody Appel a) {
         voix.appelManque(a.telephone());
         return Map.of("message", "Nous vous rappelons. Cet appel ne vous coûte rien.");
+    }
+
+    /** Mode urgence : prévient l'agent de la zone. Fonctionne même pour un numéro inconnu. */
+    @PostMapping("/urgence")
+    Map<String, String> urgence(@Valid @RequestBody DemandeUrgence d) {
+        voix.urgence(d.telephone(), d.motif());
+        return Map.of("message", "Alerte envoyée à l'agent de votre zone. Si c'est grave, rendez-vous au centre de santé sans attendre.");
     }
 }

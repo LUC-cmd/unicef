@@ -4,7 +4,7 @@ import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, formaterDate, nomDuJour } from '../lib/format.js'
 import QrCode from '../components/QrCode.jsx'
 
-const PICTO = { VACCIN: '💉', CONSULTATION_PRENATALE: '🤰', PESEE: '⚖️', NUTRITION: '🥣' }
+const PICTO = { VACCIN: 'Vaccin', CONSULTATION_PRENATALE: 'Consultation prénatale', PESEE: 'Pesée', NUTRITION: 'Nutrition' }
 
 /** Carnet illustré à imprimer : pictogrammes et cases à cocher, sans nom, lisible sans savoir lire.
  *  Chaque feuille porte un QR signé : l'état du suivi voyage avec le papier. */
@@ -37,7 +37,7 @@ export default function Carnet() {
             <p className="code-famille">Code famille<br /><b>{carnet.codeFamille}</b>{carnet.codeCarte && <><br />Code de la carte<br /><b>{carnet.codeCarte}</b></>}</p>
           </header>
           <p>
-            Enfant <b>{e.codeEnfant}</b> · {e.statut === 'GROSSESSE' ? `🤰 terme prévu le ${formaterDate(e.dateTermePrevue)}` : `🎂 ${formaterDate(e.dateNaissance)}`}
+            Enfant <b>{e.codeEnfant}</b> · {e.statut === 'GROSSESSE' ? `Grossesse — terme prévu le ${formaterDate(e.dateTermePrevue)}` : `Né(e) le ${formaterDate(e.dateNaissance)}`}
             {' · '}Langue : {LIBELLE_LANGUE[carnet.langue]}
           </p>
 
@@ -48,9 +48,9 @@ export default function Carnet() {
             <tbody>
               {e.rendezVous.map((r) => (
                 <tr key={r.id}>
-                  <td className="gros">📅 {formaterDate(r.datePrevue)}</td>
-                  <td className="gros">{PICTO[r.type] || '📌'} {r.libelle}</td>
-                  <td className="case-papier">{r.statut === 'REALISE' ? '✔' : ''}</td>
+                  <td className="gros">{formaterDate(r.datePrevue)}</td>
+                  <td className="gros"><span className="type-rdv">{PICTO[r.type] || 'Rendez-vous'}</span> {r.libelle}</td>
+                  <td className="case-papier">{r.statut === 'REALISE' ? '✓' : ''}</td>
                 </tr>
               ))}
             </tbody>
@@ -58,9 +58,9 @@ export default function Carnet() {
 
           <h2>Ruban de mesure (bras)</h2>
           <div className="ruban">
-            <span className="vert">🟢 vert : tout va bien</span>
-            <span className="jaune">🟡 jaune : conseils et revoir l'agent</span>
-            <span className="rouge">🔴 rouge : aller au centre de santé</span>
+            <span className="vert"><i className="pastille vert" />Tout va bien</span>
+            <span className="jaune"><i className="pastille jaune" />Conseils et revoir l'agent</span>
+            <span className="rouge"><i className="pastille rouge" />Aller au centre de santé</span>
           </div>
 
           <h2>Un jeu par jour</h2>
@@ -71,7 +71,7 @@ export default function Carnet() {
                 {e.jeuxDeLaSemaine.map((j, i) => (
                   <tr key={`${j.id}-${i}`}>
                     <td className="gros">{nomDuJour(i)}</td>
-                    <td><b>🎲 {j.titre}</b><br /><span className="petit">{j.consigne} Matériel : {j.materiel}.</span></td>
+                    <td><b>{j.titre}</b><br /><span className="petit">{j.consigne} Matériel : {j.materiel}.</span></td>
                     <td className="case-papier" />
                   </tr>
                 ))}
@@ -80,10 +80,17 @@ export default function Carnet() {
           ) : (
             <p className="petit">{e.statut === 'GROSSESSE' ? 'Pendant la grossesse : parlez et chantez à votre bébé, il vous entend.' : 'Pas de jeu proposé pour cet âge.'}</p>
           )}
-          <p className="petit">🎵 Chanter · 🗣️ Raconter · 🌰 Compter · 🍋 Empiler. Surveillez toujours votre enfant avec les petits objets.</p>
+          <p className="petit">Chanter · Raconter · Compter · Empiler. Surveillez toujours votre enfant avec les petits objets.</p>
+
+          {e.statut === 'GROSSESSE' && (
+            <div className="jeune-mere-papier">
+              <h2>Si vous êtes jeune</h2>
+              <p>Vous avez le droit de continuer vos études et d'être accompagnée sans jugement. Parlez-en à l'agent de santé ou au centre social : ils connaissent les structures qui vous aident.</p>
+            </div>
+          )}
 
           <p className="danger-papier">
-            🚑 Allez tout de suite au centre de santé si l'enfant ne boit plus, est très faible, respire difficilement ou a des convulsions.
+            Allez tout de suite au centre de santé si l'enfant ne boit plus, est très faible, respire difficilement ou a des convulsions.
           </p>
 
           {jetonQr && (

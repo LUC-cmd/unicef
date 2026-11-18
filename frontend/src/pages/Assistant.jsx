@@ -8,6 +8,15 @@ const EXEMPLES = [
   'Mon enfant a des convulsions',
 ]
 
+function lire(texte) {
+  // Lecture vocale du navigateur : ne remplace pas de vraies voix enregistrées avec des locuteurs natifs.
+  if (!('speechSynthesis' in window)) return
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(texte)
+  u.lang = 'fr-FR'
+  window.speechSynthesis.speak(u)
+}
+
 /** Questions au service assistant. Il ne consulte aucun dossier d'enfant. */
 export default function Assistant() {
   const [question, setQuestion] = useState('')
@@ -72,6 +81,7 @@ export default function Assistant() {
                 <article className={`msg assistant ${reponse.niveau === 'URGENCE' ? 'urgence' : reponse.niveau === 'INFO' ? 'info' : ''}`}>
                   <span className="niveau">{reponse.niveau === 'URGENCE' ? 'Orientation immédiate' : reponse.niveau === 'INFO' ? 'Contenu approuvé' : 'Hors des contenus'}</span>
                   <p>{reponse.reponse}</p>
+                  <button type="button" className="lien" onClick={() => lire(reponse.reponse)}>🔊 Écouter la réponse</button>
                   {(reponse.sources?.length > 0 || reponse.limite) && (
                     <p className="msg-source">
                       {reponse.sources?.length > 0 && <>Source : {reponse.sources.map((s) => s.titre).join(', ')}. </>}

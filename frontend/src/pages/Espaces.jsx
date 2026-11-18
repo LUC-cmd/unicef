@@ -24,18 +24,17 @@ export function EspaceAgent() {
     { titre: 'Mon travail', liens: [
       { to: '/agent', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/agent/visites', nom: 'Mes visites', icone: 'liste' },
-      { to: '/agent/familles', nom: 'Familles enregistrées', icone: 'carnet' },
+      { to: '/agent/familles', nom: 'Familles', icone: 'carnet' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
-      { to: '/agent/carte', nom: 'Carte de famille', icone: 'carnet' },
+      { to: '/agent/carte', nom: 'Carnet de famille', icone: 'carnet' },
       { to: '/agent/fragiles', nom: 'Nouveau-nés fragiles', icone: 'bouclier' },
       { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
-      { to: '/agent/verifier-qr', nom: 'Vérifier un QR du carnet', icone: 'bouclier' },
     ] },
-    { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
-    { titre: 'Ressources', liens: [
+    { titre: 'Outils', liens: [
+      { to: '/agent/verifier-qr', nom: 'Vérifier un QR', icone: 'bouclier' },
       { to: '/agent/annuaire', nom: 'Annuaire', icone: 'batiment' },
-      { to: '/agent/aide', nom: 'Aide', icone: 'aide' },
     ] },
+    { titre: 'Hors réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
   ]
   return (
     <Shell titre="Agent de santé" teinte="vert" groupes={groupes}>
@@ -50,7 +49,6 @@ export function EspaceAgent() {
         <Route path="acte" element={<ActeNaissance />} />
         <Route path="fragiles" element={<Fragiles />} />
         <Route path="verifier-qr" element={<VerifierQr />} />
-        <Route path="aide" element={<Aide role="AGENT" />} />
         <Route path="*" element={<Navigate to="/agent" replace />} />
       </Routes>
     </Shell>
@@ -65,11 +63,10 @@ export function EspaceMairie() {
       { to: '/mairie/actes', nom: 'Actes à retirer', icone: 'livre' },
       { to: '/mairie/nationalite', nom: 'Nationalité', icone: 'bouclier' },
       { to: '/mairie/preuve', nom: 'Vérifier une preuve', icone: 'bouclier' },
-      { to: '/mairie/acte', nom: 'Sans acte de naissance', icone: 'aide' },
     ] },
     { titre: 'Ressources', liens: [
+      { to: '/mairie/acte', nom: 'Sans acte de naissance', icone: 'aide' },
       { to: '/mairie/annuaire', nom: 'Annuaire', icone: 'batiment' },
-      { to: '/mairie/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
   return (
@@ -82,7 +79,6 @@ export function EspaceMairie() {
         <Route path="preuve" element={<Mairie vue="preuve" />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />
-        <Route path="aide" element={<Aide role="MAIRIE" />} />
         <Route path="*" element={<Navigate to="/mairie" replace />} />
       </Routes>
     </Shell>
@@ -102,13 +98,12 @@ export function EspaceStructure() {
     { titre: 'Ma structure', liens: [
       { to: '/structure', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/structure/demandes', nom: 'Demandes des familles', icone: 'boite' },
-      { to: '/structure/creche', nom: 'Réservations et conditions', icone: 'boite' },
+      { to: '/structure/creche', nom: 'Réservations', icone: 'boite' },
       { to: '/structure/fiche', nom: 'Mes informations', icone: 'batiment' },
-      { to: '/structure/verifier-qr', nom: 'Vérifier un QR du carnet', icone: 'bouclier' },
     ] },
-    { titre: 'Ressources', liens: [
+    { titre: 'Outils', liens: [
+      { to: '/structure/verifier-qr', nom: 'Vérifier un QR', icone: 'bouclier' },
       { to: '/structure/annuaire', nom: "Voir l'annuaire", icone: 'carte' },
-      { to: '/structure/aide', nom: 'Aide', icone: 'aide' },
     ] },
   ]
   return (
@@ -120,7 +115,6 @@ export function EspaceStructure() {
         <Route path="fiche" element={<Structure vue="fiche" />} />
         <Route path="verifier-qr" element={<VerifierQr />} />
         <Route path="annuaire" element={<Annuaire />} />
-        <Route path="aide" element={<Aide role="STRUCTURE" />} />
         <Route path="*" element={<Navigate to="/structure" replace />} />
       </Routes>
     </Shell>
@@ -133,10 +127,9 @@ export function EspaceDecideur() {
       { to: '/carte', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/carte/carte', nom: 'Carte des zones', icone: 'carte' },
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
-      { to: '/carte/ruptures', nom: 'Où l\u2019enfant se perd', icone: 'graphe' },
+      { to: '/carte/ruptures', nom: 'Ruptures de parcours', icone: 'graphe' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
-    { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Aide', icone: 'aide' }] },
   ]
   return (
     <Shell titre="Responsable régional" teinte="cyan" groupes={groupes}>
@@ -146,7 +139,6 @@ export function EspaceDecideur() {
         <Route path="zones" element={<Carte vue="zones" />} />
         <Route path="actes" element={<Carte vue="actes" />} />
         <Route path="ruptures" element={<Carte vue="ruptures" />} />
-        <Route path="aide" element={<Aide role="DECIDEUR" />} />
         <Route path="*" element={<Navigate to="/carte" replace />} />
       </Routes>
     </Shell>
@@ -157,7 +149,7 @@ export function EspaceAdmin() {
   const groupes = [
     { titre: 'Administration', liens: [
       { to: '/admin', nom: 'Tableau de bord', icone: 'accueil', fin: true },
-      { to: '/admin/cles', nom: 'Recevoir les clés USB', icone: 'cle' },
+      { to: '/admin/cles', nom: 'Clés USB', icone: 'cle' },
       { to: '/admin/horloge', nom: 'Horloge', icone: 'horloge' },
       { to: '/admin/acces', nom: 'Comptes', icone: 'bouclier' },
       { to: '/admin/langues', nom: 'Messages et langues', icone: 'livre' },

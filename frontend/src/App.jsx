@@ -31,6 +31,7 @@ const Grossesse = lazy(() => import('./pages/Grossesse.jsx'))
 const Fonctionnement = lazy(() => import('./pages/Fonctionnement.jsx'))
 const Telephone = lazy(() => import('./pages/Telephone.jsx'))
 const Assistant = lazy(() => import('./pages/Assistant.jsx'))
+const WhatsApp = lazy(() => import('./pages/WhatsApp.jsx'))
 const Ecoute = lazy(() => import('./pages/Ecoute.jsx'))
 const ActeNaissance = lazy(() => import('./pages/ActeNaissance.jsx'))
 const Annuaire = lazy(() => import('./pages/Annuaire.jsx'))
@@ -153,6 +154,7 @@ export default function App() {
                     <Link to="/visite"><b>Visite guidée</b><small>Parcourir la plateforme en 3 minutes</small></Link>
                     <Link to="/famille"><b>Espace famille</b><small>Rappels, notifications, dossier de naissance</small></Link>
                     <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
+                    <Link to="/whatsapp"><b>Assistant WhatsApp</b><small>La même conversation, version chat</small></Link>
                     <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
                     <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
                     <Link to="/grossesse"><b>Ma grossesse, mois par mois</b><small>CPN, exercices, signes d'alerte, kit d'accouchement</small></Link>
@@ -203,6 +205,7 @@ export default function App() {
           <Route path="/telephone" element={<Telephone />} />
           <Route path="/ecoute" element={<Ecoute />} />
           <Route path="/assistant" element={<Assistant />} />
+          <Route path="/whatsapp" element={<WhatsApp />} />
           <Route path="/annuaire" element={<Annuaire />} />
           <Route path="/acte" element={<ActeNaissance />} />
           <Route path="/fonctionnement" element={<Fonctionnement />} />

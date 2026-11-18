@@ -40,6 +40,8 @@ export default function Telephone() {
   const [info, setInfo] = useState('')
   const [erreur, setErreur] = useState('')
   const [attente, setAttente] = useState(false)
+  const [urgenceMotif, setUrgenceMotif] = useState('Convulsion ou fièvre forte')
+  const [urgenceEnvoyee, setUrgenceEnvoyee] = useState(false)
 
   const chiffres = numero.replace(/\D/g, '')
   const proche = profil?.profil === 'PROCHE'
@@ -93,6 +95,11 @@ export default function Telephone() {
   })
   const demander = (codeStructure, motif) => executer(async () =>
     setInfo((await api.post('/api/public/demandes', { telephone: numero, codeStructure, motif })).message))
+  const urgence = () => executer(async () => {
+    const r = await api.post('/api/public/urgence', { telephone: numero, motif: urgenceMotif })
+    setInfo(r.message)
+    setUrgenceEnvoyee(true)
+  })
 
   return (
     <>
@@ -141,6 +148,22 @@ export default function Telephone() {
                       <b>{i + 1}</b> {LIBELLE_SUJET[s]}
                     </button>
                   ))}
+                </div>
+                <div className="urgence-bloc">
+                  <p className="petit"><b>Mode urgence</b> — prévient l'agent de votre zone, même sans crédit ni data. En cas de danger grave, allez au centre de santé sans attendre.</p>
+                  <div className="formulaire-ligne">
+                    <label>Que se passe-t-il ?
+                      <select value={urgenceMotif} onChange={(e) => setUrgenceMotif(e.target.value)}>
+                        <option>Convulsion ou fièvre forte</option>
+                        <option>Blessure ou saignement</option>
+                        <option>L'enfant ne respire pas bien</option>
+                        <option>Autre urgence</option>
+                      </select>
+                    </label>
+                    <button className="bouton urgence-bouton" disabled={attente || urgenceEnvoyee} onClick={urgence}>
+                      {urgenceEnvoyee ? 'Alerte envoyée ✓' : 'Envoyer l\'alerte'}
+                    </button>
+                  </div>
                 </div>
                 {message && (
                   <div className="message-vocal" aria-live="polite">

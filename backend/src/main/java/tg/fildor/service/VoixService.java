@@ -12,6 +12,7 @@ import tg.fildor.domain.Dtos.MessageContenu;
 import tg.fildor.domain.Dtos.MessagesRecus;
 import tg.fildor.domain.Dtos.Profil;
 import tg.fildor.domain.Dtos.StructureDto;
+import tg.fildor.repo.AlerteRepository;
 import tg.fildor.repo.ContenuRepository;
 import tg.fildor.repo.RappelRepository;
 import tg.fildor.repo.RappelRepository.Identite;
@@ -33,15 +34,17 @@ public class VoixService {
     private final ContenuRepository contenus;
     private final EveilService eveil;
     private final AnnuaireService annuaire;
+    private final AlerteRepository alertes;
     private final Clock clock;
 
     public VoixService(TelephoneHasher hasher, RappelRepository rappels, ContenuRepository contenus,
-                       EveilService eveil, AnnuaireService annuaire, Clock clock) {
+                       EveilService eveil, AnnuaireService annuaire, AlerteRepository alertes, Clock clock) {
         this.hasher = hasher;
         this.rappels = rappels;
         this.contenus = contenus;
         this.eveil = eveil;
         this.annuaire = annuaire;
+        this.alertes = alertes;
         this.clock = clock;
     }
 
@@ -90,6 +93,19 @@ public class VoixService {
     public void appelManque(String telephone) {
         identite(telephone);
         rappels.enregistrerAppelManque(hasher.hash(telephone));
+    }
+
+    /**
+     * Mode urgence (*789*3# ou bouton « urgence ») : prévient l'agent de la zone, même si le numéro
+     * n'est pas (encore) connu de Fil d'Or — l'alerte est alors visible par l'administrateur.
+     * Aucun appel n'est passé, aucun diagnostic n'est posé : l'agent décide sur place.
+     */
+    public void urgence(String telephone, String motif) {
+        String hash = hasher.hash(telephone);
+        String m = motif == null || motif.isBlank() ? "URGENCE" : motif.trim();
+        if (m.length() > 200) m = m.substring(0, 200);
+        var identite = rappels.identiteParTelephone(hash);
+        alertes.creer(identite.map(Identite::familleId).orElse(null), hash, m);
     }
 
     // ------------------------------------------------------------------ éveil (famille seulement)

@@ -53,6 +53,35 @@ export default function Carte({ vue = 'carte' }) {
   const suiviMoyen = (() => { const l = detaillees.filter((z) => z.tauxSuiviPct != null); const f = l.reduce((n, z) => n + z.familles, 0); return f ? Math.round(l.reduce((n, z) => n + z.tauxSuiviPct * z.familles, 0) / f) : null })()
 
   const action = (z) => z.masquee ? 'Trop peu de familles : suivi par l\'agent' : (z.indiceOubli ?? 0) >= 60 ? 'Envoyer une équipe mobile cette semaine' : (z.indiceOubli ?? 0) >= 35 ? 'Renforcer les rappels et les visites' : 'Maintenir le suivi'
+
+  // Instantanés hebdomadaires des indices, gardés sur l'appareil : la tendance se voit sans serveur.
+  const [tendances, setTendances] = useState({})
+  useEffect(() => {
+    if (!zones.length) return
+    const d = new Date()
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+    t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7) + 3)
+    const p = new Date(Date.UTC(t.getUTCFullYear(), 0, 4))
+    const semaine = `${t.getUTCFullYear()}-S${String(1 + Math.round((t - p) / 6048e5)).padStart(2, '0')}`
+    const courant = Object.fromEntries(zones.filter((z) => z.indiceOubli != null).map((z) => [z.code, z.indiceOubli]))
+    try {
+      const snaps = JSON.parse(localStorage.getItem('fildor.carte.snapshots') || '[]')
+      const precedent = snaps.filter((s) => s.semaine !== semaine).pop()
+      if (precedent) {
+        const t2 = {}
+        zones.forEach((z) => { if (precedent.indices[z.code] != null && z.indiceOubli != null) t2[z.code] = z.indiceOubli - precedent.indices[z.code] })
+        setTendances(t2)
+      }
+      localStorage.setItem('fildor.carte.snapshots', JSON.stringify([...snaps.filter((s) => s.semaine !== semaine), { semaine, indices: courant }].slice(-4)))
+    } catch { /* stockage indisponible */ }
+  }, [zones])
+  const tendanceTexte = (code) => {
+    const d = tendances[code]
+    if (d === undefined) return null
+    if (d === 0) return 'Stable'
+    return `${d > 0 ? '↑' : '↓'} ${Math.abs(d)} pt(s) vs la semaine dernière${d > 0 ? ' (se dégrade)' : ' (s’améliore)'}`
+  }
+
   const attente = toutes.length === 0 && !erreur
   const gauche = (
     <>
@@ -72,6 +101,7 @@ export default function Carte({ vue = 'carte' }) {
               ) : (
                 <dl className="stats">
                   <dt>Indice d'oubli</dt><dd>{detail.indiceOubli} / 100</dd>
+                  {tendanceTexte(detail.code) && <><dt>Tendance</dt><dd>{tendanceTexte(detail.code)}</dd></>}
                   <dt>Rendez-vous réalisés</dt><dd>{pct(detail.tauxSuiviPct)}</dd>
                   <dt>Naissances déclarées (enfants de plus de 45 jours)</dt><dd>{pct(detail.tauxNaissancesDeclareesPct)}</dd>
                   <dt>Familles qui ont fait un jeu d'éveil cette semaine</dt><dd>{pct(detail.tauxEveilPct)}</dd>

@@ -1,6 +1,8 @@
-import { createContext, useContext, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { api } from '../lib/api.js'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
+import { lireFile, nombreEnAttente } from '../lib/offline.js'
 import Avatar from './Avatar.jsx'
 
 export const ContexteShell = createContext(false)
@@ -28,6 +30,94 @@ export function IconeShell({ nom }) {
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
       <path d={TRACES[nom] ?? TRACES.accueil} />
     </svg>
+  )
+}
+
+function IconeCloche() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10.3 21a2 2 0 0 0 3.4 0" />
+    </svg>
+  )
+}
+
+/** Ce qui demande l'attention du rôle connecté : données réelles, rien d'inventé. */
+async function chargerNotifications(role) {
+  try {
+    if (role === 'AGENT' || role === 'ADMIN') {
+      const items = []
+      const n = nombreEnAttente(lireFile())
+      if (n > 0) items.push({ texte: `${n} saisie(s) en attente d'envoi vers la base`, to: role === 'AGENT' ? '/agent/synchronisation' : '/admin/cles' })
+      try {
+        const alertes = await api.get('/api/agent/alertes')
+        const actives = (alertes ?? []).filter((a) => a.statut !== 'CLOTUREE')
+        if (actives.length > 0) items.push({ texte: `${actives.length} alerte(s) urgence à traiter`, to: '/agent' })
+      } catch { /* pas d'accès ou hors ligne */ }
+      return items
+    }
+    if (role === 'MAIRIE') {
+      const liste = await api.get('/api/mairie/declarations?statut=ENVOYEE')
+      return liste.length
+        ? [{ texte: `${liste.length} déclaration(s) de naissance à traiter`, to: '/mairie/declarations' }]
+        : []
+    }
+    if (role === 'STRUCTURE') {
+      const liste = await api.get('/api/structure/demandes?statut=NOUVELLE')
+      return liste.length
+        ? [{ texte: `${liste.length} demande(s) de familles sans réponse`, to: '/structure/demandes' }]
+        : []
+    }
+    if (role === 'DECIDEUR') {
+      const zones = await api.get('/api/decideur/zones')
+      const urgentes = zones.filter((z) => !z.masquee && (z.indiceOubli ?? 0) >= 60)
+      return urgentes.length
+        ? [{ texte: `${urgentes.length} zone(s) à indice d'oubli élevé : une équipe en priorité`, to: '/carte/carte' }]
+        : []
+    }
+  } catch { /* hors ligne ou service indisponible : pas de notification */ }
+  return []
+}
+
+function Notifications({ role }) {
+  const [ouvert, setOuvert] = useState(false)
+  const [items, setItems] = useState([])
+  const bloc = useRef(null)
+  const lieu = useLocation()
+
+  useEffect(() => {
+    let annule = false
+    chargerNotifications(role).then((n) => { if (!annule) setItems(n) })
+    return () => { annule = true }
+  }, [role, lieu.pathname])
+
+  useEffect(() => {
+    if (!ouvert) return undefined
+    const fermer = (e) => { if (bloc.current && !bloc.current.contains(e.target)) setOuvert(false) }
+    const echap = (e) => { if (e.key === 'Escape') setOuvert(false) }
+    document.addEventListener('click', fermer)
+    document.addEventListener('keydown', echap)
+    return () => { document.removeEventListener('click', fermer); document.removeEventListener('keydown', echap) }
+  }, [ouvert])
+
+  const total = items.length
+  return (
+    <div className="notifications" ref={bloc}>
+      <button type="button" className="cloche" aria-label={total ? `${total} notification(s)` : 'Notifications'} aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>
+        <IconeCloche />
+        {total > 0 && <b className="cloche-badge">{total}</b>}
+      </button>
+      {ouvert && (
+        <div className="cloche-panneau" role="menu">
+          <p className="cloche-titre">Notifications</p>
+          {items.length === 0 && <p className="petit">Aucune notification pour le moment.</p>}
+          <ul>
+            {items.map((n, i) => (
+              <li key={i}><Link to={n.to} onClick={() => setOuvert(false)}>{n.texte}</Link></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -77,6 +167,14 @@ export default function Shell({ titre, teinte = 'cyan', groupes, children }) {
         <div className="shell-barre">
           <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
           <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
+          <div className="shell-barre-droite">
+            <Notifications role={session?.role} />
+            <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
+            <span className="shell-user">
+              <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={30} />
+              <span className="shell-user-texte"><b>{session?.nomComplet}</b><small>{titre}</small></span>
+            </span>
+          </div>
         </div>
         <ContexteShell.Provider value={true}>
           <div className="shell-contenu">{children}</div>

@@ -63,12 +63,13 @@ public class AgentController {
     private final AnnuaireService annuaire;
     private final tg.fildor.service.CarteService cartes;
     private final tg.fildor.service.CarnetQrService carnetQr;
+    private final tg.fildor.repo.AlerteRepository alertes;
     private final Clock clock;
 
     public AgentController(SuiviService suivi, SyncService sync, NaissanceService naissances,
                            InscriptionService inscriptions, ProchesService proches, AnnuaireService annuaire,
                            tg.fildor.service.CarteService cartes, tg.fildor.service.CarnetQrService carnetQr,
-                           Clock clock) {
+                           tg.fildor.repo.AlerteRepository alertes, Clock clock) {
         this.cartes = cartes;
         this.suivi = suivi;
         this.sync = sync;
@@ -77,6 +78,7 @@ public class AgentController {
         this.proches = proches;
         this.annuaire = annuaire;
         this.carnetQr = carnetQr;
+        this.alertes = alertes;
         this.clock = clock;
     }
 
@@ -206,6 +208,27 @@ public class AgentController {
                                         @PathVariable long id) {
         proches.supprimer(u, code, id);
         return Map.of("message", "Proche supprimé.");
+    }
+
+    // ------------------------------------------------------------------ alertes urgence
+
+    /** Alertes « mode urgence » de la zone de l'agent (toutes pour l'administrateur). */
+    @GetMapping("/alertes")
+    List<tg.fildor.repo.AlerteRepository.Alerte> alertes(@AuthenticationPrincipal AppUser u) {
+        return alertes.lister(u.zoneId(), 50);
+    }
+
+    public record StatutAlerte(@NotBlank @Pattern(regexp = "NOUVELLE|EN_COURS|CLOTUREE") String statut) {
+    }
+
+    @PostMapping("/alertes/{id}/statut")
+    Map<String, String> statutAlerte(@AuthenticationPrincipal AppUser u, @PathVariable long id,
+                                    @Valid @RequestBody StatutAlerte r) {
+        if (!alertes.changerStatut(id, r.statut(), u.zoneId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Alerte introuvable ou déjà clôturée");
+        }
+        return Map.of("message", "Alerte mise à jour.");
     }
 
     // ------------------------------------------------------------------ annuaire

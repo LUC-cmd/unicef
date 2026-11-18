@@ -20,68 +20,76 @@ export default function Connexion() {
   const [zoneLocale, setZoneLocale] = useState(ZONES[0][0])
   const navigate = useNavigate()
   const lieu = useLocation()
-  const [enCours, setEnCours] = useState(null)
+  const [enCours, setEnCours] = useState(false)
   const [erreur, setErreur] = useState('')
-  const [username, setUsername] = useState('')
-  const [mdp, setMdp] = useState('')
+  const [choisi, setChoisi] = useState(COMPTES[0].id)
+  const compte = COMPTES.find((c) => c.id === choisi) ?? COMPTES[0]
+  const [username, setUsername] = useState(compte.id)
+  const [mdp, setMdp] = useState(MDP_DEMO)
 
-  async function entrer(id, motDePasse, cible) {
+  function choisir(c) {
+    setChoisi(c.id)
+    setUsername(c.id)
+    setMdp(MDP_DEMO)
     setErreur('')
-    setEnCours(id)
+  }
+
+  async function envoyerFormulaire(e) {
+    e.preventDefault()
+    const id = username.trim()
+    const cible = COMPTES.find((c) => c.id === id)?.cible
+    setErreur('')
+    setEnCours(true)
     try {
-      await connexion(id, motDePasse)
-      navigate('/preparation', { replace: true, state: { cible: lieu.state?.depuis && cible && lieu.state.depuis.startsWith(cible) ? lieu.state.depuis : cible } })
+      await connexion(id, mdp)
+      navigate('/preparation', {
+        replace: true,
+        state: { cible: lieu.state?.depuis && cible && lieu.state.depuis.startsWith(cible) ? lieu.state.depuis : cible },
+      })
     } catch (err) {
       setErreur(err.statut === 401 ? 'Identifiant ou mot de passe incorrect.' : err.message)
     } finally {
-      setEnCours(null)
+      setEnCours(false)
     }
-  }
-
-  function envoyerFormulaire(e) {
-    e.preventDefault()
-    const id = username.trim()
-    entrer(id, mdp, COMPTES.find((c) => c.id === id)?.cible)
   }
 
   return (
     <>
-    <Bandeau surtitre="Démonstration" titre="Entrer dans Fil d'Or">
-      Aucun mot de passe à saisir : cliquez sur « Entrer » à côté d'un rôle pour ouvrir son tableau de bord de démonstration. Toutes les données sont fictives.
+    <Bandeau surtitre="Démonstration" titre="Connexion à Fil d'Or">
+      Choisissez votre espace : le formulaire est déjà rempli pour ce rôle, il ne reste qu'à cliquer sur « Se connecter ».
+      Toutes les données sont fictives.
     </Bandeau>
     <main className="page connexion-page">
 
-      {erreur && <p className="erreur" role="alert">{erreur}</p>}
-
-      <div className="comptes-grille">
-        {COMPTES.map(({ id, role, lieu: zone, detail, cible, Icone }) => (
-          <button key={id} type="button" className="compte-carte" disabled={enCours !== null} onClick={() => entrer(id, MDP_DEMO, cible)}>
-            <span className="icone"><Icone /></span>
-            <span className="texte">
-              <b>{role}</b>
-              <em>{zone}</em>
-              <span>{detail}</span>
-            </span>
-            <span className="entrer">{enCours === id ? 'Connexion…' : 'Entrer'}</span>
-          </button>
-        ))}
-      </div>
-
-      <details className="autre-compte">
-        <summary>J'ai un identifiant et un mot de passe</summary>
-        <form className="carte" onSubmit={envoyerFormulaire}>
-          <p className="petit">Réservé aux comptes personnels, par exemple un autre agent de santé. Pour essayer, l'identifiant <b>agent.golfe</b> marche avec le mot de passe de démonstration : <button type="button" className="lien-bouton" onClick={() => { setUsername('agent.golfe'); setMdp(MDP_DEMO) }}>remplir pour moi</button>.</p>
-          <div className="formulaire-ligne">
-            <label>Identifiant
-              <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
-            </label>
-            <label>Mot de passe
-              <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
-            </label>
-          </div>
-          <button className="bouton" disabled={enCours !== null}>Se connecter</button>
+      <div className="grille-deux connexion-grille">
+        <form className="carte connexion-form" onSubmit={envoyerFormulaire}>
+          <h2>Se connecter</h2>
+          <p className="petit">Espace choisi : <b>{compte.role}</b> — {compte.lieu}. Les champs sont pré-remplis pour la démonstration ; vous pouvez les modifier (par exemple <code>agent.golfe</code> avec le même mot de passe).</p>
+          {erreur && <p className="erreur" role="alert">{erreur}</p>}
+          <label>Identifiant
+            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
+          </label>
+          <label>Mot de passe
+            <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
+          </label>
+          <button className="bouton" disabled={enCours}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
         </form>
-      </details>
+
+        <section>
+          <h2 className="choix-espace-titre">Choisir un espace</h2>
+          <div className="comptes">
+            {COMPTES.map((c) => (
+              <button key={c.id} type="button" className={`compte ${choisi === c.id ? 'choisi' : ''}`} onClick={() => choisir(c)}>
+                <span className="compte-icone"><c.Icone /></span>
+                <span>
+                  <b>{c.role}</b>
+                  <span>{c.lieu} — {c.detail}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
 
       <section className="carte entree-locale">
         <h2>Pas de réseau ici ?</h2>

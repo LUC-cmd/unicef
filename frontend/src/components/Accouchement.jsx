@@ -23,8 +23,8 @@ export default function Accouchement({ fiche, enLigne, onChange }) {
         mettreEnFile: () => ajouterAccouchement({ codeEnfant: fiche.codeEnfant, ...corps }),
       })
       setEtat({ ok: true, texte: r.envoye
-        ? 'Naissance enregistrée : le plan de vaccination est créé.'
-        : 'Naissance enregistrée sur ce téléphone. Elle partira au retour du réseau.' })
+        ? 'Naissance enregistrée : le plan de vaccination est créé. Prochaine étape : la déclaration de naissance ci-dessous — les noms de la mère et du père sont déjà pré-remplis depuis la grossesse.'
+        : 'Naissance enregistrée sur ce téléphone. Elle partira au retour du réseau. Prochaine étape : la déclaration de naissance — les noms sont déjà pré-remplis depuis la grossesse.' })
       onChange?.()
     } catch (err) { setEtat({ ok: false, texte: err.message }) }
   }

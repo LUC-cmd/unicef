@@ -5,7 +5,7 @@ import { useAuth, useReseau } from '../lib/contexte.jsx'
 import {
   LIBELLE_PORTE, MESSAGE_PB, ageEnMois, ageLisible, aujourdhuiIso, classerPB, formaterDate,
 } from '../lib/format.js'
-import { ajouterDeclaration, ajouterPrenom, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, vider } from '../lib/offline.js'
+import { ajouterDeclaration, ajouterPrenom, ajouterVisite, lireFile, noterEnvoi, nombreEnAttente, nouvelUuid, vider } from '../lib/offline.js'
 import { Anneau } from '../components/Graphiques.jsx'
 import { Squelette } from '../components/Chargement.jsx'
 import FamillesEnregistrees from '../components/FamillesEnregistrees.jsx'
@@ -49,6 +49,7 @@ export default function Agent({ vue = 'visites' }) {
   const [envoisVersion, setEnvoisVersion] = useState(0)
   const [message, setMessage] = useState(null)
   const [erreur, setErreur] = useState('')
+  const [alertes, setAlertes] = useState([])
 
   const rafraichirAttente = useCallback(() => setAttente(nombreEnAttente(lireFile())), [])
 
@@ -60,6 +61,7 @@ export default function Agent({ vue = 'visites' }) {
       ecrireCache(CLE_LISTE, l)
       setHorsLigne(false)
       setErreur('')
+      api.get('/api/agent/alertes').then(setAlertes).catch(() => {})
     } catch (e) {
       setErreur(e.message)
       setHorsLigne(e.statut === 0)
@@ -108,6 +110,14 @@ export default function Agent({ vue = 'visites' }) {
     [liste, filtre],
   )
   const urgents = liste.filter((l) => l.priorite.niveau === 'URGENT').length
+  const alertesActives = alertes.filter((a) => a.statut !== 'CLOTUREE')
+
+  async function traiterAlerte(id, statut) {
+    try {
+      await api.post(`/api/agent/alertes/${id}/statut`, { statut })
+      setAlertes((await api.get('/api/agent/alertes')) ?? [])
+    } catch (e) { setErreur(e.message) }
+  }
 
   const prioritaires = liste.filter((l) => l.priorite.niveau === 'PRIORITAIRE').length
   const normaux = liste.length - urgents - prioritaires
@@ -136,13 +146,43 @@ export default function Agent({ vue = 'visites' }) {
   )
 
   if (vue === 'tableau') {
+    const prenom = (session?.nomComplet || 'Bonjour').split(' ')[0]
+    const jour = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
     return (
       <main className="page">
-        <Bandeau surtitre="Agent de santé" titre="Tableau de bord">
-          Votre journée en un coup d'œil : qui visiter en premier, ce qui attend d'être envoyé.
-        </Bandeau>
+        <header className="dash-tete">
+          <div>
+            <span className="bandeau-sur">Agent de santé</span>
+            <h1>Bonjour {prenom}</h1>
+            <p>{jour} — voici qui visiter en premier et ce qui attend d'être envoyé.</p>
+          </div>
+          <div className="actions">
+            <Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>
+            <Link className="bouton secondaire" to="/agent/visites">Mes visites</Link>
+          </div>
+        </header>
         {etatReseau}
         {retours}
+        {alertesActives.length > 0 && (
+          <section className="carte alerte-urgence">
+            <h2>⚠ {alertesActives.length} alerte(s) urgence</h2>
+            <p className="petit">Envoyée(s) par le code *789*3# ou le bouton « urgence » du téléphone. Vérifiez l'enfant sur place, puis changez le statut.</p>
+            <ul className="liste-visites">
+              {alertesActives.map((a) => (
+                <li key={a.id}>
+                  <span className="ligne-texte">
+                    <strong>{a.codeFamille ?? 'Numéro non reconnu'}</strong>{' '}
+                    <span className="petit">{a.motif} · {new Date(a.creeLe).toLocaleString('fr-FR')}</span>
+                  </span>
+                  <span className="actions">
+                    {a.statut === 'NOUVELLE' && <button className="bouton petit-bouton" onClick={() => traiterAlerte(a.id, 'EN_COURS')}>Prise en charge</button>}
+                    <button className="bouton secondaire petit-bouton" onClick={() => traiterAlerte(a.id, 'CLOTUREE')}>Clôturer</button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {chargement ? <Squelette /> : (<>
         <div className="tableau-kpi">
           <div className="tuile"><b>{liste.length}</b><span>enfants et grossesses suivis</span></div>
@@ -150,48 +190,83 @@ export default function Agent({ vue = 'visites' }) {
           <div className="tuile"><b>{prioritaires}</b><span>prioritaires</span></div>
           <div className="tuile"><b>{attente}</b><span>saisie(s) en attente d'envoi</span></div>
         </div>
-        <div className="raccourcis">
-          <Link className="bouton" to="/agent/visites">Voir mes visites</Link>
-          <Link className="bouton secondaire" to="/agent/inscription">Inscrire une famille</Link>
-          <Link className="bouton secondaire" to="/agent/synchronisation">Synchronisation et clé USB</Link>
-        </div>
-        <div className="grille-deux">
-          <section className="carte">
-            <Anneau titre="Priorité des familles suivies" centre={liste.length}
-                    parts={[{ nom: 'Urgent', valeur: urgents, couleur: '#e2231a' }, { nom: 'Prioritaire', valeur: prioritaires, couleur: '#f26a21' }, { nom: 'Normal', valeur: normaux, couleur: '#00833d' }]} />
-          </section>
-          <section className="carte">
-            <h2>À visiter en premier</h2>
-            <ul className="liste-visites">
-              {aVisiter.map((l) => (
-                <li key={l.codeEnfant}>
-                  <Link className="ligne" to={`/agent/visites?enfant=${l.codeEnfant}`}>
-                    <span className="ligne-texte">
-                      <strong>{l.codeEnfant}</strong> <span className="petit">{l.codeFamille} · {l.zone}</span>
-                      {l.priorite.raisons.length > 0 && <span className="raisons">{l.priorite.raisons[0]}</span>}
-                    </span>
-                    <Pastille niveau={l.priorite.niveau} score={l.priorite.score} />
-                  </Link>
-                </li>
-              ))}
-              {aVisiter.length === 0 && <li className="petit">Aucune famille pour le moment.</li>}
-            </ul>
-          </section>
-        </div>
-        <section className="carte">
-          <h2>Prochains rendez-vous</h2>
-          <div className="tableau-conteneur">
-            <table>
-              <thead><tr><th>Date</th><th>Enfant</th><th>Famille</th><th>Zone</th></tr></thead>
-              <tbody>
-                {prochains.map((l) => (
-                  <tr key={l.codeEnfant}><td>{formaterDate(l.prochainRdv)}</td><td><Link to={`/agent/visites?enfant=${l.codeEnfant}`}>{l.codeEnfant}</Link></td><td>{l.codeFamille}</td><td>{l.zone}</td></tr>
+        <div className="dash-grille">
+          <div className="dash-col">
+            <section className="carte">
+              <div className="barre-titre">
+                <h2>À visiter en premier</h2>
+                <Link to="/agent/visites">Toute la liste</Link>
+              </div>
+              <ul className="liste-visites">
+                {aVisiter.map((l) => (
+                  <li key={l.codeEnfant}>
+                    <Link className="ligne" to={`/agent/visites?enfant=${l.codeEnfant}`}>
+                      <span className="ligne-texte">
+                        <strong>{l.codeEnfant}</strong> <span className="petit">{l.codeFamille} · {l.zone}</span>
+                        {l.priorite.raisons.length > 0 && <span className="raisons">{l.priorite.raisons[0]}</span>}
+                      </span>
+                      <Pastille niveau={l.priorite.niveau} score={l.priorite.score} />
+                    </Link>
+                  </li>
                 ))}
-                {prochains.length === 0 && <tr><td colSpan="4" className="petit">Aucun rendez-vous prévu.</td></tr>}
-              </tbody>
-            </table>
+                {aVisiter.length === 0 && <li className="petit">Aucune famille pour le moment.</li>}
+              </ul>
+            </section>
+            <section className="carte">
+              <h2>Prochains rendez-vous</h2>
+              <div className="tableau-conteneur">
+                <table>
+                  <thead><tr><th>Date</th><th>Enfant</th><th>Famille</th><th>Zone</th></tr></thead>
+                  <tbody>
+                    {prochains.map((l) => (
+                      <tr key={l.codeEnfant}><td>{formaterDate(l.prochainRdv)}</td><td><Link to={`/agent/visites?enfant=${l.codeEnfant}`}>{l.codeEnfant}</Link></td><td>{l.codeFamille}</td><td>{l.zone}</td></tr>
+                    ))}
+                    {prochains.length === 0 && <tr><td colSpan="4" className="petit">Aucun rendez-vous prévu.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
-        </section>
+          <aside className="dash-col dash-side">
+            <section className="carte">
+              <h2>Tournée suggérée</h2>
+              <p className="petit">L'ordre proposé par le score de priorité : périmètre bas, rappels sans réponse, rendez-vous manqués.</p>
+              <ol className="tournee">
+                {aVisiter.slice(0, 5).map((l, i) => (
+                  <li key={l.codeEnfant}>
+                    <b>{i + 1}.</b>{' '}
+                    <Link to={`/agent/visites?enfant=${l.codeEnfant}`}>{l.codeEnfant}</Link>{' '}
+                    <span className="petit">{l.zone}{l.priorite.raisons[0] ? ` — ${l.priorite.raisons[0]}` : ''}</span>
+                  </li>
+                ))}
+                {aVisiter.length === 0 && <li className="petit">Aucune visite à planifier.</li>}
+              </ol>
+            </section>
+            <section className="carte">
+              <Anneau titre="Priorité des familles suivies" centre={liste.length}
+                      parts={[{ nom: 'Urgent', valeur: urgents, couleur: '#e2231a' }, { nom: 'Prioritaire', valeur: prioritaires, couleur: '#f26a21' }, { nom: 'Normal', valeur: normaux, couleur: '#00833d' }]} />
+            </section>
+            <section className="carte village">
+              <h2>Village sans réseau</h2>
+              <p>La famille n'a pas de compte. Sur un téléphone simple elle compose <b>*789#</b>.</p>
+              <ol>
+                <li>Elle écoute un conseil, ou elle signale un problème.</li>
+                <li>C'est vous qui l'inscrivez, chez elle, avec un code.</li>
+                <li>Votre téléphone garde la fiche. Au centre, elle part toute seule.</li>
+              </ol>
+              <Link className="bouton clair" to="/telephone?porte=ussd">Ouvrir la simulation *789#</Link>
+            </section>
+            <section className="carte">
+              <h2>Accès rapide</h2>
+              <div className="raccourcis vertical">
+                <Link className="bouton secondaire" to="/agent/inscription">Inscrire une famille</Link>
+                <Link className="bouton secondaire" to="/agent/synchronisation">Synchronisation et clé USB</Link>
+                <Link className="bouton secondaire" to="/agent/annuaire">Annuaire</Link>
+                <Link className="bouton secondaire" to="/agent/aide">Aide</Link>
+              </div>
+            </section>
+          </aside>
+        </div>
         </>)}
       </main>
     )
@@ -302,6 +377,8 @@ function Fiche({ code, enLigne, onChange }) {
           : `né(e) le ${formaterDate(fiche.dateNaissance)} (${ageLisible(fiche.dateNaissance)})`}
       </p>
       {depuisCache && <p className="avertissement">Fiche enregistrée avant le départ : elle peut avoir changé depuis.</p>}
+
+      <ParcoursFiche fiche={fiche} />
 
       <Pastille niveau={fiche.priorite.niveau} score={fiche.priorite.score} />
       {fiche.mereAdolescente && (
@@ -439,6 +516,8 @@ function Naissance({ fiche, onChange }) {
       <>
         <h3>Déclaration de naissance</h3>
         <p>Déclaration {libelle}. Reçu <b>{d.numeroRecu}</b>{d.dansDelaiGratuit ? ' (dans le délai gratuit)' : ' (hors délai gratuit : jugement supplétif à 6 000 FCFA)'}.</p>
+        {d.statut === 'ENVOYEE' && <p className="petit">En attente de validation par la mairie. Prochaine étape : la mairie valide, puis la famille retire l'acte.</p>}
+        {d.statut === 'VALIDEE' && <p className="succes">Acte validé par la mairie : la famille peut le retirer. Prochaine étape : remettre le carnet de santé et continuer le suivi.</p>}
         <PrenomEnfant fiche={fiche} onChange={onChange} />
       </>
     )
@@ -541,6 +620,33 @@ function Naissance({ fiche, onChange }) {
   )
 }
 
+/** Où en est ce dossier : grossesse → naissance → déclaration → carnet. Chaque étape est visible. */
+function ParcoursFiche({ fiche }) {
+  const d = fiche.declaration
+  const decl = !d ? 'a-faire'
+    : { BROUILLON: 'en-cours', ENVOYEE: 'en-cours', VALIDEE: 'fait', REJETEE: 'probleme' }[d.statut] ?? 'a-faire'
+  const etapes = fiche.statut === 'GROSSESSE' ? [
+    { nom: 'Grossesse suivie', etat: 'fait' },
+    { nom: 'Naissance à enregistrer', etat: 'a-faire' },
+    { nom: 'Déclaration à l’état civil', etat: 'a-faire' },
+    { nom: 'Carnet de santé', etat: 'a-faire' },
+  ] : [
+    { nom: 'Naissance enregistrée', etat: 'fait' },
+    { nom: 'Déclaration à l’état civil', etat: decl },
+    { nom: 'Carnet de santé', etat: 'fait' },
+  ]
+  return (
+    <ol className="parcours-steps" aria-label="Étapes du dossier">
+      {etapes.map((e, i) => (
+        <li key={e.nom} className={`etape ${e.etat}`}>
+          <span className="etape-point" aria-hidden="true">{e.etat === 'fait' ? '✓' : e.etat === 'probleme' ? '!' : i + 1}</span>
+          <span className="etape-nom">{e.nom}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 function Saisie({ fiche, onChange }) {
   const [date, setDate] = useState(aujourdhuiIso())
   const [pb, setPb] = useState('')
@@ -548,6 +654,32 @@ function Saisie({ fiche, onChange }) {
   const [danger, setDanger] = useState(false)
   const [realises, setRealises] = useState([])
   const [enregistre, setEnregistre] = useState(false)
+  const [photo, setPhoto] = useState(null)
+  const [estimation, setEstimation] = useState(null)
+
+  // La photo est réduite puis gardée sur l'appareil comme preuve : elle ne part jamais sans accord.
+  function prendrePhoto(fichier) {
+    if (!fichier) return
+    const img = new Image()
+    img.onload = () => {
+      const cote = Math.min(img.width, img.height)
+      const c = document.createElement('canvas')
+      c.width = 640; c.height = 640
+      c.getContext('2d').drawImage(img, (img.width - cote) / 2, (img.height - cote) / 2, cote, cote, 0, 0, 640, 640)
+      setPhoto(c.toDataURL('image/jpeg', 0.7))
+      setEstimation(null)
+    }
+    img.src = URL.createObjectURL(fichier)
+  }
+
+  // Prototype : estimation déterministe à partir de la photo, en attendant le vrai modèle.
+  function estimer() {
+    if (!photo) return
+    const graine = [...photo].reduce((n, c) => (n * 31 + c.charCodeAt(0)) >>> 0, 7)
+    const ecart = (graine % 21) - 10
+    const base = pb !== '' ? Number(pb) : 120
+    setEstimation(Math.max(60, Math.min(220, base + ecart)))
+  }
 
   const classe = classerPB(pb)
   const aFaire = fiche.rendezVous.filter((r) => r.statut !== 'REALISE' && r.datePrevue <= aujourdhuiIso())
@@ -556,16 +688,22 @@ function Saisie({ fiche, onChange }) {
 
   function enregistrer(e) {
     e.preventDefault()
-    ajouterVisite({
+    const visite = {
       codeEnfant: fiche.codeEnfant,
       dateVisite: date,
       muacMm: pb === '' ? null : Number(pb),
       poidsG: poids === '' ? null : Number(poids),
       signesDanger: danger,
       rendezVousRealises: realises,
-    })
+    }
+    if (photo) {
+      const photoId = nouvelUuid()
+      try { localStorage.setItem(`fildor.photo.pb.${photoId}`, photo) } catch { /* stockage plein */ }
+      visite.photoId = photoId
+    }
+    ajouterVisite(visite)
     setEnregistre(true)
-    setPb(''); setPoids(''); setDanger(false); setRealises([])
+    setPb(''); setPoids(''); setDanger(false); setRealises([]); setPhoto(null); setEstimation(null)
     onChange()
   }
 
@@ -582,6 +720,19 @@ function Saisie({ fiche, onChange }) {
         </label>
       </div>
       {classe !== 'NON_MESURE' && <p className={`pb ${classe.toLowerCase()}`} role="status">{MESSAGE_PB[classe]}</p>}
+      <div className="photo-pb">
+        <label className="case"><input type="file" accept="image/*" capture="environment" onChange={(e) => prendrePhoto(e.target.files?.[0])} /> Photo du périmètre brachial (preuve, gardée sur cet appareil)</label>
+        {photo && (
+          <div className="photo-pb-apercu">
+            {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+            <img src={photo} alt="Photo du périmètre brachial" />
+            <div>
+              <button type="button" className="lien" onClick={estimer}>Estimer avec la photo (prototype)</button>
+              {estimation !== null && <p className="estimation">Estimation simulée : <b>{estimation} mm</b> — le vrai modèle arrive avec le pilote ; la mesure manuelle reste la référence.</p>}
+            </div>
+          </div>
+        )}
+      </div>
       <label className="case"><input type="checkbox" checked={danger} onChange={(e) => setDanger(e.target.checked)} /> Signe de danger observé (orienter vers le centre de santé)</label>
 
       {aFaire.length > 0 && (
