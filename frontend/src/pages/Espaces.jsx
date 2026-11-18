@@ -38,7 +38,7 @@ export function EspaceAgent() {
     ] },
   ]
   return (
-    <Shell titre="Agent de santé" groupes={groupes}>
+    <Shell titre="Agent de santé" teinte="vert" groupes={groupes}>
       <Routes>
         <Route index element={<Agent vue="tableau" />} />
         <Route path="visites" element={<Agent vue="visites" />} />
@@ -73,7 +73,7 @@ export function EspaceMairie() {
     ] },
   ]
   return (
-    <Shell titre="État civil" groupes={groupes}>
+    <Shell titre="État civil" teinte="bleu" groupes={groupes}>
       <Routes>
         <Route index element={<Mairie vue="tableau" />} />
         <Route path="declarations" element={<Mairie vue="declarations" />} />
@@ -112,7 +112,7 @@ export function EspaceStructure() {
     ] },
   ]
   return (
-    <Shell titre="Structure d'accueil" groupes={groupes}>
+    <Shell titre="Structure d'accueil" teinte="orange" groupes={groupes}>
       <Routes>
         <Route index element={<AccueilStructure />} />
         <Route path="demandes" element={<Structure vue="demandes" />} />
@@ -139,7 +139,7 @@ export function EspaceDecideur() {
     { titre: 'Ressources', liens: [{ to: '/carte/aide', nom: 'Aide', icone: 'aide' }] },
   ]
   return (
-    <Shell titre="Responsable régional" groupes={groupes}>
+    <Shell titre="Responsable régional" teinte="cyan" groupes={groupes}>
       <Routes>
         <Route index element={<Carte vue="tableau" />} />
         <Route path="carte" element={<Carte vue="carte" />} />
@@ -169,7 +169,7 @@ export function EspaceAdmin() {
     ] },
   ]
   return (
-    <Shell titre="Administrateur" groupes={groupes}>
+    <Shell titre="Administrateur" teinte="nuit" groupes={groupes}>
       <Routes>
         <Route index element={<Admin vue="services" />} />
         <Route path="cles" element={<Admin vue="cles" />} />

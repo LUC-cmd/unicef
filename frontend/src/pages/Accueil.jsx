@@ -14,6 +14,32 @@ const ETAPES = [
   ['5 ans', 'Nutrition, jeux d’éveil, entrée au préscolaire'],
 ]
 
+/** Plan du site : chaque page a un rôle précis, rien n'est caché. */
+const PLAN = [
+  ['Découvrir', [
+    ['/projet', 'Le projet', 'Le problème, la solution, le carnet et le QR signé'],
+    ['/parcours', 'Un enfant, un parcours', 'Les étapes, de la grossesse à 5 ans'],
+    ['/fonctionnement', 'Fonctionnement', 'Comment circulent les informations'],
+    ['/hors-reseau', 'Logiciel hors réseau', 'L’application bureau et la clé USB'],
+  ]],
+  ['Essayer', [
+    ['/visite', 'Visite guidée', 'La plateforme entière en 5 minutes'],
+    ['/famille', 'Espace famille', 'Rappels, notifications, naissance'],
+    ['/telephone', 'Simulateur de téléphone', 'SMS, appel vocal et *789#'],
+    ['/assistant', 'Assistant', 'Poser une question de santé'],
+    ['/jeux', 'Jeux d’éveil', 'Un jeu par jour selon l’âge'],
+    ['/grossesse', 'Ma grossesse', 'Mois par mois, CPN et exercices'],
+  ]],
+  ['Ressources', [
+    ['/acte', 'Acte de naissance', 'Les étapes et la gratuité des 45 jours'],
+    ['/annuaire', 'Annuaire', 'Centres de santé, crèches, mairies'],
+    ['/ecoute', 'Point d’écoute', 'Pour les familles sans téléphone'],
+    ['/creches', 'Crèches solidaires', 'La formation des femmes leaders'],
+    ['/adolescents', 'Adolescents', 'Informations et orientation'],
+    ['/signalement', 'Signaler', 'Une situation inquiétante, tout de suite'],
+  ]],
+]
+
 
 export default function Accueil() {
   const { session } = useAuth()
@@ -101,6 +127,29 @@ export default function Accueil() {
             <figcaption>Mesure du périmètre brachial d'un enfant, au village (photo d'illustration).</figcaption>
           </figure>
           </div>
+        </div>
+      </section>
+
+      <section className="section ciel" aria-labelledby="titre-plan">
+        <div className="interieur">
+          <h2 id="titre-plan" className="titre-section">Tout le site, en un coup d’œil</h2>
+          <p className="chapeau">Chaque page a un rôle clair. Si vous cherchez quelque chose, il est ici.</p>
+          <div className="plan-site">
+            {PLAN.map(([groupe, liens]) => (
+              <div className="plan-groupe" key={groupe}>
+                <h3>{groupe}</h3>
+                <ul>
+                  {liens.map(([to, nom, detail]) => (
+                    <li key={to}><Link to={to}><b>{nom}</b><small>{detail}</small></Link></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="petit">
+            Les espaces professionnels — agent de santé, état civil (mairie), crèche et structure, responsable
+            régional, administrateur — sont derrière la connexion : <Link to="/connexion">se connecter à un espace</Link>.
+          </p>
         </div>
       </section>
 

@@ -33,9 +33,10 @@ export function IconeShell({ nom }) {
 
 /**
  * Cadre commun des espaces professionnels : menu vertical à gauche, barre horizontale en haut.
+ * teinte : la couleur de l'espace (cyan, vert, bleu, orange, nuit) — chaque rôle reconnaît le sien d'un coup d'œil.
  * groupes : [{ titre, liens: [{ to, nom, icone, fin?, badge? }] }]
  */
-export default function Shell({ titre, groupes, children }) {
+export default function Shell({ titre, teinte = 'cyan', groupes, children }) {
   const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
@@ -45,7 +46,7 @@ export default function Shell({ titre, groupes, children }) {
     .find((l) => (l.fin ? lieu.pathname === l.to : lieu.pathname === l.to || lieu.pathname.startsWith(`${l.to}/`)))
 
   return (
-    <div className="shell">
+    <div className={`shell teinte-${teinte}`}>
       <aside className={`shell-menu${ouvert ? ' ouvert' : ''}`} aria-label={`Menu ${titre}`}>
         <div className="shell-entete">
           <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={40} />

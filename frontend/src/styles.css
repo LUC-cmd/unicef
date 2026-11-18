@@ -1478,3 +1478,34 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .video-fiche.a-venir .video-cadre { font-size: 2rem; }
 .video-fiche.a-venir figcaption { display: grid; gap: 0.2rem; }
 .deux-boutons { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* ===== Couleur par espace : chaque rôle reconnaît son espace d'un coup d'œil =====
+   Palette UNICEF uniquement : vert (santé/agent), bleu (état civil/mairie), orange (structure/crèche),
+   cyan (pilotage régional), noir (administration). */
+.shell.teinte-cyan { --accent: #1393c7; --accent-fond: #e4f4fc; }
+.shell.teinte-vert { --accent: #00833d; --accent-fond: #e6f4ec; }
+.shell.teinte-bleu { --accent: #374ea2; --accent-fond: #e9edf8; }
+.shell.teinte-orange { --accent: #c2500f; --accent-fond: #fdeee2; }
+.shell.teinte-nuit { --accent: #2d2926; --accent-fond: #efedec; }
+.shell-menu a.active { background: var(--accent-fond, #e4f4fc); color: var(--texte); font-weight: 700; }
+.shell-menu a.active svg { color: var(--accent, #0b86b8); }
+.shell-menu a.active::before { background: var(--accent, var(--cyan)); }
+.shell-avatar { background: var(--accent, var(--cyan)); }
+.shell-barre { box-shadow: inset 0 3px 0 0 var(--accent, var(--cyan)); }
+.shell-groupe-titre { color: var(--accent, var(--texte-doux)); opacity: .75; }
+
+/* ===== Tableaux : lecture facile (lignes alternées, en-tête marqué, survole net) ===== */
+.tableau-conteneur tbody tr:nth-child(even) td { background: #f7fafc; }
+.tableau-conteneur tbody tr:hover td { background: #eef6fb; }
+.tableau-conteneur th { border-bottom: 2px solid var(--bord-fort); letter-spacing: .02em; }
+.tableau-conteneur td { color: var(--texte); }
+
+/* ===== Plan du site : tout se trouve ===== */
+.plan-site { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.plan-groupe { background: #fff; border: 1.5px solid var(--bord); border-radius: 14px; padding: 1rem 1.1rem; }
+.plan-groupe h3 { margin: 0 0 .5rem; font-size: 1rem; color: var(--bleu-fonce); }
+.plan-groupe ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+.plan-groupe a { display: block; padding: .45rem .5rem; border-radius: 8px; text-decoration: none; color: var(--texte); line-height: 1.3; }
+.plan-groupe a:hover { background: var(--ciel); }
+.plan-groupe a b { display: block; font-size: .95rem; }
+.plan-groupe a small { color: var(--texte-doux); font-size: .82rem; }
