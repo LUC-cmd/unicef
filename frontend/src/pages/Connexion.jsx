@@ -8,11 +8,11 @@ import { MDP_DEMO } from '../lib/config.js'
 import { ZONES } from '../lib/format.js'
 
 const COMPTES = [
-  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Liste de visites priorisée, saisie hors ligne, inscription de familles. Chaque agent ne voit que sa zone.', cible: '/agent', Icone: IconeAgent },
-  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Reçoit les dossiers de naissance pré-remplis, les valide ou les rejette.', cible: '/mairie', Icone: IconeCarnet },
-  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel et d’orientation, met à jour ses horaires.', cible: '/structure', Icone: IconeBouclier },
-  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Carte anonyme des zones oubliées : où envoyer une équipe en premier.', cible: '/carte', Icone: IconeZone },
-  { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Fait avancer le temps pour montrer les rappels sans réponse.', cible: '/admin', Icone: IconeBouclier },
+  { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Visite les familles, saisit les données de santé, inscrit les nouveaux-nés, suit les vaccinations.', cible: '/agent', Icone: IconeAgent },
+  { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Enregistre les déclarations de naissance, délivre les actes de naissance.', cible: '/mairie', Icone: IconeCarnet },
+  { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel de vaccination, d’orientation vers les services, met à jour ses horaires.', cible: '/structure', Icone: IconeBouclier },
+  { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Voir la carte des zones oubliées, décider où envoyer une équipe en priorité.', cible: '/carte', Icone: IconeZone },
+  { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Gère les comptes, les messages, les clés USB, fait avancer le temps pour tester.', cible: '/admin', Icone: IconeBouclier },
 ]
 
 export default function Connexion() {
@@ -22,10 +22,11 @@ export default function Connexion() {
   const lieu = useLocation()
   const [enCours, setEnCours] = useState(false)
   const [erreur, setErreur] = useState('')
-  const [choisi, setChoisi] = useState(COMPTES[0].id)
-  const compte = COMPTES.find((c) => c.id === choisi) ?? COMPTES[0]
-  const [username, setUsername] = useState(compte.id)
-  const [mdp, setMdp] = useState(MDP_DEMO)
+  const [choisi, setChoisi] = useState(null)
+  const compte = COMPTES.find((c) => c.id === choisi)
+  const [username, setUsername] = useState('')
+  const [mdp, setMdp] = useState('')
+  const [mdpVisible, setMdpVisible] = useState(false)
 
   function choisir(c) {
     setChoisi(c.id)
@@ -55,41 +56,48 @@ export default function Connexion() {
 
   return (
     <>
-    <Bandeau surtitre="Démonstration" titre="Connexion à Fil d'Or">
-      Choisissez votre espace : le formulaire est déjà rempli pour ce rôle, il ne reste qu'à cliquer sur « Se connecter ».
-      Toutes les données sont fictives.
-    </Bandeau>
     <main className="page connexion-page">
+      <section className="carte connexion-centre">
+        <h1>Connexion à Fil d'Or</h1>
+        <p className="petit">Choisissez votre espace : le formulaire sera rempli automatiquement, il ne reste qu'à cliquer sur « Se connecter ».</p>
 
-      <div className="grille-deux connexion-grille">
-        <form className="carte connexion-form" onSubmit={envoyerFormulaire}>
-          <h2>Se connecter</h2>
-          <p className="petit">Espace choisi : <b>{compte.role}</b> — {compte.lieu}. Les champs sont pré-remplis pour la démonstration ; vous pouvez les modifier (par exemple <code>agent.golfe</code> avec le même mot de passe).</p>
-          {erreur && <p className="erreur" role="alert">{erreur}</p>}
-          <label>Identifiant
-            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
-          </label>
-          <label>Mot de passe
-            <input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
-          </label>
-          <button className="bouton" disabled={enCours}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
-        </form>
-
-        <section>
-          <h2 className="choix-espace-titre">Choisir un espace</h2>
-          <div className="comptes">
-            {COMPTES.map((c) => (
-              <button key={c.id} type="button" className={`compte ${choisi === c.id ? 'choisi' : ''}`} onClick={() => choisir(c)}>
-                <span className="compte-icone"><c.Icone /></span>
-                <span>
-                  <b>{c.role}</b>
-                  <span>{c.lieu} — {c.detail}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+        {!choisi ? (
+          <>
+            <h2 className="choix-espace-titre">Choisir un espace</h2>
+            <div className="comptes">
+              {COMPTES.map((c) => (
+                <button key={c.id} type="button" className="compte" onClick={() => choisir(c)}>
+                  <span className="compte-icone"><c.Icone /></span>
+                  <span>
+                    <b>{c.role}</b>
+                    <span>{c.lieu}</span>
+                    <small>{c.detail}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <form className="connexion-form" onSubmit={envoyerFormulaire}>
+            <button type="button" className="lien-bouton" onClick={() => { setChoisi(null); setUsername(''); setMdp(''); setErreur('') }}>← Changer d'espace</button>
+            <h2>Se connecter comme <b>{compte.role}</b></h2>
+            <p className="petit">Espace : {compte.lieu}. Les champs sont pré-remplis pour la démonstration.</p>
+            {erreur && <p className="erreur" role="alert">{erreur}</p>}
+            <label>Identifiant
+              <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
+            </label>
+            <label>Mot de passe
+              <div className="mdp-champ">
+                <input type={mdpVisible ? 'text' : 'password'} value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required />
+                <button type="button" className="mdp-oeil" onClick={() => setMdpVisible((v) => !v)} aria-label={mdpVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}>
+                  {mdpVisible ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </label>
+            <button className="bouton" disabled={enCours}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
+          </form>
+        )}
+      </section>
 
       <section className="carte entree-locale">
         <h2>Pas de réseau ici ?</h2>

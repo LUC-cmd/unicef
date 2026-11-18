@@ -41,4 +41,21 @@ public class UserRepository {
                 .param("s", codeStructure)
                 .update();
     }
+
+    public void creerAvecRegion(String username, String hash, String nom, String role, String codeZone, String codeStructure, String region) {
+        jdbc.sql("""
+                INSERT INTO app_user (username, password_hash, nom_complet, role, zone_id, structure_id, region)
+                VALUES (:u, :h, :n, :r, (SELECT id FROM zone WHERE code = :z), (SELECT id FROM structure WHERE code = :s), :reg)""")
+                .param("u", username).param("h", hash).param("n", nom).param("r", role).param("z", codeZone)
+                .param("s", codeStructure).param("reg", region)
+                .update();
+    }
+
+    public void desactiver(long id) {
+        jdbc.sql("UPDATE app_user SET actif = FALSE WHERE id = :id").param("id", id).update();
+    }
+
+    public void activer(long id) {
+        jdbc.sql("UPDATE app_user SET actif = TRUE WHERE id = :id").param("id", id).update();
+    }
 }

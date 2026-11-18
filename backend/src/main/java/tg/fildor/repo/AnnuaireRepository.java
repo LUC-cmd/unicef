@@ -170,4 +170,18 @@ public class AnnuaireRepository {
         return jdbc.sql("SELECT zone_id FROM famille WHERE id = :f").param("f", familleId)
                 .query(Long.class).optional();
     }
+
+    public long creerStructure(String code, String type, String nom, String codeZone, String telephone,
+                               String horaires, String services, boolean besoinsSpecifiques,
+                               double latitude, double longitude) {
+        return jdbc.sql("""
+                INSERT INTO structure (code, type, nom, zone_id, telephone, horaires, services, besoins_specifiques, latitude, longitude)
+                VALUES (:c, :t, :n, (SELECT id FROM zone WHERE code = :z), :tel, :h, :s, :b, :lat, :lon)
+                RETURNING id""")
+                .param("c", code).param("t", type).param("n", nom).param("z", codeZone)
+                .param("tel", telephone).param("h", horaires).param("s", services).param("b", besoinsSpecifiques)
+                .param("lat", Double.isNaN(latitude) ? null : latitude, java.sql.Types.NUMERIC)
+                .param("lon", Double.isNaN(longitude) ? null : longitude, java.sql.Types.NUMERIC)
+                .query(Long.class).single();
+    }
 }

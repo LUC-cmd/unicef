@@ -30,16 +30,42 @@ export default function Carte({ vue = 'carte' }) {
   const [toutes, setZones] = useState([])
   const [erreur, setErreur] = useState('')
   const [choisie, setChoisie] = useState(null)
+  const [chargement, setChargement] = useState(true)
 
   const [geo, setGeo] = useState([])
   useEffect(() => {
-    api.get('/api/decideur/zones').then(setZones).catch((e) => setErreur(e.message))
-    api.get('/api/decideur/geographie').then(setGeo).catch(() => {})
+    setChargement(true)
+    Promise.all([
+      api.get('/api/decideur/zones').then(setZones).catch((e) => setErreur(e.message)),
+      api.get('/api/decideur/geographie').then(setGeo).catch(() => {})
+    ]).finally(() => setChargement(false))
   }, [])
   const pilotes = useMemo(() => new Set(geo.filter((g) => g.pilote).map((g) => g.code)), [geo])
   const horsPilote = useMemo(() => geo.filter((g) => !g.pilote), [geo])
 
   const zones = useMemo(() => (pilotes.size ? toutes.filter((z) => pilotes.has(z.code)) : toutes), [toutes, pilotes])
+
+  // Zoom automatique sur la région de l'utilisateur via géolocalisation
+  useEffect(() => {
+    if (!geo.length || !zones.length) return
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          // Trouver la zone la plus proche
+          const proche = zones.reduce((best, z) => {
+            const dist = Math.sqrt(Math.pow(latitude - z.latitude, 2) + Math.pow(longitude - z.longitude, 2))
+            return dist < best.dist ? { zone: z, dist } : best
+          }, { zone: null, dist: Infinity })
+          if (proche.zone && proche.dist < 0.5) { // 0.5 degré ~ 55 km
+            setChoisi(proche.zone.code)
+          }
+        },
+        () => {}, // Erreur de géolocalisation : on ignore
+        { timeout: 5000 }
+      )
+    }
+  }, [geo, zones])
   const triees = useMemo(
     () => [...zones].sort((a, b) => (b.indiceOubli ?? -1) - (a.indiceOubli ?? -1)),
     [zones],
