@@ -2,6 +2,7 @@
 export const ANCRES_PROJET = [
   ['probleme', 'Le problème'],
   ['solution', 'La solution'],
+  ['carnet-qr', 'Carnet et QR signé'],
   ['piliers', 'Cinq piliers'],
   ['impact', "L'impact attendu"],
   ['feuille-de-route', 'Feuille de route'],

@@ -78,7 +78,15 @@ export default function CrecheTableau() {
           <div><b>{presents}</b><span>présent{presents > 1 ? 's' : ''} maintenant</span></div>
           <div className={enAttente.length ? 'a-traiter' : ''}><b>{enAttente.length}</b><span>demande{enAttente.length > 1 ? 's' : ''} à valider</span></div>
           <div><b>{Math.max(0, capacite - duJour.length)}</b><span>place{capacite - duJour.length > 1 ? 's' : ''} libre{capacite - duJour.length > 1 ? 's' : ''} aujourd'hui</span></div>
+          <div><b>{capacite ? Math.round((jours.reduce((s, j) => s + j.conf, 0) / (capacite * 7)) * 100) : 0} %</b><span>occupation moyenne sur 7 jours</span></div>
         </div>
+
+        {duJour.length > 0 && duJour.some((r) => !r.arriveeReelle) && (
+          <div className="alerte-acte" role="status">
+            ⏰ {duJour.filter((r) => !r.arriveeReelle).length} enfant(s) attendu(s) pas encore arrivé(s).
+            Si l'heure d'arrivée est passée, prévenez la famille et l'agent de santé par le code enfant.
+          </div>
+        )}
 
         <section className="carte" aria-labelledby="t-valider">
           <h2 id="t-valider">À valider</h2>
@@ -131,6 +139,15 @@ export default function CrecheTableau() {
             ))}
           </ul>
           <Link className="bouton secondaire" to="/structure/creche">Réservations de la semaine, conditions et horaires</Link>
+        </section>
+
+        <section className="carte" aria-labelledby="t-eveil">
+          <h2 id="t-eveil">🎲 L'éveil à la crèche</h2>
+          <p>
+            Le jeu du jour (par âge) est le même que celui des familles : les enfants retrouvent à la crèche le
+            jeu que la maman fait à la maison. Regardez le jeu du jour de chaque enfant, proposez-le aux présents.
+          </p>
+          <Link className="bouton" to="/jeux">Ouvrir les jeux d'éveil</Link>
         </section>
       </div>
     </>

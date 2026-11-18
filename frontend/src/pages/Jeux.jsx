@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
+import VideoFiche from '../components/VideoFiche.jsx'
+import { videoDe } from '../lib/videosEveil.js'
 
 /* ---------- utilitaires ---------- */
 
@@ -576,6 +578,7 @@ export default function Jeux() {
                 <li>Les étoiles restent seulement sur ce téléphone ou cet ordinateur.</li>
                 <li>Les voix en éwé, kabyè et tem ne sont pas encore enregistrées : les consignes sont lues en français.</li>
                 <li>Sans écran : le « jeu du jour » avec des objets de la maison arrive par SMS aux familles suivies (voir le <Link to="/telephone">simulateur de téléphone</Link>).</li>
+                <li>Chaque jeu a un emplacement de <b>vidéo pédagogique</b> : les vidéos seront tournées avec des locuteurs natifs (éwé, kabyè, tem, français) et enregistrées dans l'application pour marcher sans réseau.</li>
               </ul>
             </div>
           </>
@@ -587,6 +590,8 @@ export default function Jeux() {
             {jeu.memoire ? <Memoire contexte={contexte} /> : jeu.mains ? <MainsPropres contexte={contexte} /> : (
               <Quiz key={jeu.id} fabrique={jeu.fabrique} finMessage={jeu.fin} contexte={contexte} />
             )}
+            <VideoFiche titre={`Comment jouer : ${jeu.titre}`} video={videoDe(jeu.id)}
+              consigne={jeu.texte} />
           </div>
         )}
       </main>

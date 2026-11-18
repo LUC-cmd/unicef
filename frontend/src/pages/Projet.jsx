@@ -24,6 +24,11 @@ const PORTES = [
   ['Parents qui lisent peu ou parlent une langue locale', "4 · Le point d'écoute", 'Centre de santé, radio communautaire, causerie, marché : messages audio, histoires et chansons en langue locale pour toutes les familles.'],
 ]
 
+const CIRCUITS = [
+  ['Suivi de santé (carnet, SMS, agent, QR)', 'Non — codes et dates seulement', 'L\'enfant est identifié par son code (F-0033 · T033A). Si le carnet se perd, rien n\'identifie personne. Le QR signé ne porte que des rendez-vous faits et à venir.'],
+  ['Déclaration de naissance (mairie)', 'Oui — avec l\'accord des parents', 'L\'agent enregistre les noms (mère, père, prénom donné à partir du 8ᵉ jour) avec les cases d\'accord de la mère et du père. Le dossier part pré-rempli à la mairie : acte de naissance, puis nationalité.'],
+]
+
 const PILIERS = [
   ['Santé', "Assistant vocal : on appelle, on choisit un sujet (grossesse, nouveau-né, allaitement, vaccins, hygiène, développement) et on écoute un message court. Rappels de rendez-vous.", "L'agent suit grossesse et vaccins en visite, coche le carnet illustré et repère les signes d'urgence."],
   ['Nutrition', "Conseils d'alimentation selon l'âge, en audio dans sa langue.", 'Mesure au ruban, démonstrations au village, images dans le carnet.'],
@@ -141,6 +146,28 @@ export default function Projet() {
           <Tableau colonnes={['Situation de la famille', 'Porte', 'Comment l’enfant est suivi']} lignes={PORTES} />
           <p className="source"><strong>Ce qui change tout :</strong> si un rappel reste sans réponse, la famille passe automatiquement en haut de la liste de visites de l'agent. Le système va chercher les enfants qui ne répondent pas.</p>
           <p><Link className="bouton" to="/connexion">Voir le système fonctionner</Link></p>
+        </div>
+      </section>
+
+      <section className="section blanc" id="carnet-qr">
+        <div className="interieur">
+          <h2 className="titre-section">Le carnet porte sa mémoire : un QR signé, pas un nom</h2>
+          <p className="chapeau">
+            Le carnet illustré imprimé porte un <strong>code QR signé</strong> (Ed25519). Il contient seulement des
+            <strong> codes et des dates</strong> — rendez-vous faits, prochain rendez-vous — jamais de nom ni d'adresse.
+            La signature est le « cachet » de Fil d'Or : si quelqu'un modifie le contenu, la vérification refuse le code.
+            Un agent ou un centre scanne la page <em>Vérifier un QR</em> et lit l'état du suivi, même depuis un autre site,
+            même sans contacter la base d'origine. Le papier et le numérique forment <strong>un seul carnet qui voyage avec la famille</strong>.
+          </p>
+          <Tableau colonnes={['Circuit', 'Contient des noms ?', 'Comment ça marche']} lignes={CIRCUITS} />
+          <p className="source">
+            <strong>Pourquoi deux circuits ?</strong> Le suivi de santé reste anonyme pour protéger l'enfant : si le carnet
+            se perd, rien n'identifie personne. Les noms ne circulent que dans la <strong>déclaration de naissance</strong>,
+            avec l'accord de la mère et du père : le dossier part pré-rempli à la mairie, qui délivre l'acte puis la
+            nationalité. Le carnet ne remplace pas l'état civil, il mène la famille vers lui.
+          </p>
+          <p className="source">À valider avant tout usage réel : contenus de santé, calendrier vaccinal (PEV) et valeur légale du reçu de naissance.</p>
+          <p><Link className="bouton secondaire" to="/grossesse">Voir « Ma grossesse, mois par mois »</Link></p>
         </div>
       </section>
 

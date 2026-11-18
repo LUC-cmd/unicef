@@ -336,7 +336,14 @@ function Fiche({ code, enLigne, onChange }) {
       </ul>
 
       {fiche.statut === 'GROSSESSE' && (
-        <Accouchement fiche={fiche} enLigne={enLigne} onChange={() => { onChange(); rafraichir() }} />
+        <>
+          <p className="petit">
+            👩🏽‍🤝‍👩🏽 Avez-vous montré à la maman la page{' '}
+            <Link to="/grossesse">« Ma grossesse, mois par mois »</Link> ? Rendez-vous CPN, exercices doux
+            et signes d'alerte, à lire avec elle — ou à imprimer.
+          </p>
+          <Accouchement fiche={fiche} enLigne={enLigne} onChange={() => { onChange(); rafraichir() }} />
+        </>
       )}
       {fiche.statut === 'ENFANT' && <Naissance fiche={fiche} onChange={onChange} />}
       <ParcoursEnfant code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} />

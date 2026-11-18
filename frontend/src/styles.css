@@ -1461,3 +1461,20 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .verif-enfant { border-top: 1px dashed var(--bord); margin-top: 0.6rem; padding-top: 0.6rem; }
 .sans-puce { list-style: none; margin: 0.3rem 0; padding: 0; }
 .sans-marge { margin-top: 0; }
+
+/* ----- Grossesse, mois par mois ----- */
+.mois-grossesse { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; }
+.mois-bouton { border: 2px solid var(--bord); background: #fff; border-radius: 10px; padding: 0.45rem 0.9rem; font-weight: 700; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.mois-bouton:hover { border-color: var(--cyan-fonce); }
+.mois-bouton.actif { background: var(--cyan-fonce); border-color: var(--cyan-fonce); color: #fff; }
+.grossesse-fiche .gros { font-size: 1.08rem; }
+.exercices-grille { display: grid; gap: 1rem; margin: 0.8rem 0; }
+.exercice { border: 1.5px solid var(--bord); border-radius: 12px; padding: 0.9rem 1rem; display: grid; gap: 0.6rem; }
+.exercice-texte { display: grid; gap: 0.25rem; }
+.exercice-texte .gros-emoji { font-size: 2rem; }
+.video-fiche { margin: 0; }
+.video-fiche video { width: 100%; max-width: 420px; border-radius: 10px; border: 1px solid var(--bord); background: #000; }
+.video-fiche.a-venir { border: 2px dashed var(--bord); border-radius: 12px; padding: 0.7rem 0.9rem; display: grid; gap: 0.3rem; }
+.video-fiche.a-venir .video-cadre { font-size: 2rem; }
+.video-fiche.a-venir figcaption { display: grid; gap: 0.2rem; }
+.deux-boutons { display: flex; gap: 0.6rem; flex-wrap: wrap; }

@@ -27,6 +27,7 @@ const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
 const Signalement = lazy(() => import('./pages/Signalement.jsx'))
 const Projet = lazy(() => import('./pages/Projet.jsx'))
 const Jeux = lazy(() => import('./pages/Jeux.jsx'))
+const Grossesse = lazy(() => import('./pages/Grossesse.jsx'))
 const Fonctionnement = lazy(() => import('./pages/Fonctionnement.jsx'))
 const Telephone = lazy(() => import('./pages/Telephone.jsx'))
 const Assistant = lazy(() => import('./pages/Assistant.jsx'))
@@ -152,6 +153,7 @@ export default function App() {
                     <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
                     <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
                     <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
+                    <Link to="/grossesse"><b>Ma grossesse, mois par mois</b><small>CPN, exercices, signes d'alerte, kit d'accouchement</small></Link>
                   </div>
                 </details>
                 <details className="menu-deroulant">
@@ -214,6 +216,7 @@ export default function App() {
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
           <Route path="/jeux/:jeu" element={<Jeux />} />
+          <Route path="/grossesse" element={<Grossesse />} />
           <Route path="/agent/*" element={<Protegee page="agent"><EspaceAgent /></Protegee>} />
           <Route path="/structure/*" element={<Protegee page="structure"><EspaceStructure /></Protegee>} />
           <Route path="/mairie/*" element={<Protegee page="mairie"><EspaceMairie /></Protegee>} />
