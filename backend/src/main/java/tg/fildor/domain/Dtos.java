@@ -63,7 +63,7 @@ public final class Dtos {
 
     public record StructureDto(String code, String type, String nom, String zone, String telephone, String horaires,
                                String services, boolean besoinsSpecifiques, boolean actif,
-                               OffsetDateTime miseAJourLe) {
+                               Double latitude, Double longitude, OffsetDateTime miseAJourLe) {
     }
 
     public record DemandeDto(long id, String codeStructure, String nomStructure, String codeFamille, String zone,

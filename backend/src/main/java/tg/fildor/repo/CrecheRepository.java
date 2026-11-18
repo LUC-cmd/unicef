@@ -37,7 +37,9 @@ public class CrecheRepository {
     }
 
     private static final String SELECT_CRECHE = """
-            SELECT s.id, s.code, s.nom, z.nom AS zone, z.latitude AS lat, z.longitude AS lon, COALESCE(s.telephone, '') AS telephone,
+            SELECT s.id, s.code, s.nom, z.nom AS zone,
+                   COALESCE(s.latitude, z.latitude) AS lat, COALESCE(s.longitude, z.longitude) AS lon,
+                   COALESCE(s.telephone, '') AS telephone,
                    COALESCE(s.horaires, '') AS horaires,
                    COALESCE(o.age_min_mois, 12) AS age_min, COALESCE(o.age_max_mois, 60) AS age_max,
                    COALESCE(o.capacite, 20) AS capacite,

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, LIBELLE_REPONSE, LIBELLE_TYPE_STRUCTURE, formaterDate } from '../lib/format.js'
+import { lienCarte, positionUneFois } from '../lib/geo.js'
 import { COULEURS, TuileChiffre } from '../components/Courbes.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import { Squelette } from '../components/Chargement.jsx'
@@ -36,9 +37,20 @@ export default function Structure({ vue = 'demandes' }) {
       setMaStructure(await api.put('/api/structure/moi', {
         telephone: maStructure.telephone ?? '', horaires: maStructure.horaires ?? '', services: maStructure.services ?? '',
         besoinsSpecifiques: maStructure.besoinsSpecifiques, actif: maStructure.actif,
+        latitude: maStructure.latitude == null || maStructure.latitude === '' ? null : Number(maStructure.latitude),
+        longitude: maStructure.longitude == null || maStructure.longitude === '' ? null : Number(maStructure.longitude),
       }))
       setInfo({ ok: true, texte: 'Informations enregistrées : elles apparaissent dans l’annuaire public.' })
     } catch (err) { setInfo({ ok: false, texte: err.message }) }
+  }
+
+  /** La structure se place là où elle se trouve réellement : le point que les familles suivront. */
+  async function prendreMaPosition() {
+    setInfo({ ok: true, texte: 'Localisation en cours…' })
+    const p = await positionUneFois()
+    if (!p) { setInfo({ ok: false, texte: 'Localisation impossible ou refusée : entrez les coordonnées à la main.' }); return }
+    maj({ latitude: Number(p.lat.toFixed(6)), longitude: Number(p.lon.toFixed(6)) })
+    setInfo({ ok: true, texte: 'Position prise : vérifiez-la puis enregistrez.' })
   }
 
   async function repondre(id, reponse) {
@@ -118,6 +130,18 @@ export default function Structure({ vue = 'demandes' }) {
               <label>Téléphone de la structure <input value={maStructure.telephone ?? ''} maxLength={30} onChange={(e) => maj({ telephone: e.target.value })} /></label>
               <label>Horaires <input value={maStructure.horaires ?? ''} maxLength={120} onChange={(e) => maj({ horaires: e.target.value })} /></label>
               <label>Services <textarea rows="3" maxLength={300} value={maStructure.services ?? ''} onChange={(e) => maj({ services: e.target.value })} /></label>
+              <fieldset className="localisation-fiche">
+                <legend>Position sur la carte (là où les familles doivent venir)</legend>
+                <div className="ligne-age">
+                  <label>Latitude <input type="number" step="0.000001" min="5.9" max="11.4" value={maStructure.latitude ?? ''} onChange={(e) => maj({ latitude: e.target.value })} /></label>
+                  <label>Longitude <input type="number" step="0.000001" min="0" max="2" value={maStructure.longitude ?? ''} onChange={(e) => maj({ longitude: e.target.value })} /></label>
+                  <button type="button" className="bouton secondaire" onClick={prendreMaPosition}>📍 Prendre ma position ici</button>
+                </div>
+                {maStructure.latitude != null && maStructure.longitude != null && (
+                  <p className="petit"><a href={lienCarte(Number(maStructure.latitude), Number(maStructure.longitude))} target="_blank" rel="noreferrer">Vérifier ce point sur la carte</a></p>
+                )}
+                <p className="petit">Vraie position = les familles arrivent sans se perdre. En démonstration, un point proche du chef-lieu est déjà rempli.</p>
+              </fieldset>
               <label className="case"><input type="checkbox" checked={maStructure.besoinsSpecifiques} onChange={(e) => maj({ besoinsSpecifiques: e.target.checked })} /> Accueille les enfants à besoins spécifiques</label>
               <label className="case"><input type="checkbox" checked={maStructure.actif} onChange={(e) => maj({ actif: e.target.checked })} /> Visible dans l'annuaire</label>
               <button className="bouton">Enregistrer</button>

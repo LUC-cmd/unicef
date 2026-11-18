@@ -18,7 +18,7 @@ public class AnnuaireRepository {
 
     private static final String SELECT_STRUCTURE = """
             SELECT s.code, s.type, s.nom, z.nom AS zone, s.telephone, s.horaires, s.services,
-                   s.besoins_specifiques, s.actif, s.mis_a_jour_le
+                   s.besoins_specifiques, s.actif, s.latitude, s.longitude, s.mis_a_jour_le
             FROM structure s JOIN zone z ON z.id = s.zone_id
             """;
 
@@ -40,7 +40,9 @@ public class AnnuaireRepository {
     private static StructureDto structure(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
         return new StructureDto(rs.getString("code"), rs.getString("type"), rs.getString("nom"), rs.getString("zone"),
                 rs.getString("telephone"), rs.getString("horaires"), rs.getString("services"),
-                rs.getBoolean("besoins_specifiques"), rs.getBoolean("actif"), Lignes.horodatage(rs, "mis_a_jour_le"));
+                rs.getBoolean("besoins_specifiques"), rs.getBoolean("actif"),
+                rs.getObject("latitude", Double.class), rs.getObject("longitude", Double.class),
+                Lignes.horodatage(rs, "mis_a_jour_le"));
     }
 
     private static DemandeDto demande(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
@@ -105,13 +107,16 @@ public class AnnuaireRepository {
     }
 
     public void mettreAJour(long structureId, String telephone, String horaires, String services,
-                            boolean besoinsSpecifiques, boolean actif) {
+                            boolean besoinsSpecifiques, boolean actif, double latitude, double longitude) {
+        // NaN = coordonnée non fournie (ou retirée) : la colonne repasse à vide, jamais à 0.
         jdbc.sql("""
                 UPDATE structure SET telephone = :t, horaires = :h, services = :s, besoins_specifiques = :b,
-                       actif = :a, mis_a_jour_le = now()
+                       actif = :a, latitude = :lat, longitude = :lon, mis_a_jour_le = now()
                 WHERE id = :id""")
                 .param("t", telephone).param("h", horaires).param("s", services).param("b", besoinsSpecifiques)
-                .param("a", actif).param("id", structureId).update();
+                .param("a", actif).param("lat", Double.isNaN(latitude) ? null : latitude, java.sql.Types.NUMERIC)
+                .param("lon", Double.isNaN(longitude) ? null : longitude, java.sql.Types.NUMERIC)
+                .param("id", structureId).update();
     }
 
     /** Une seule demande ouverte par famille et par structure. Renvoie false s'il y en a déjà une. */

@@ -23,8 +23,11 @@ import tg.fildor.repo.MessageRepository;
 @Service
 public class AnnuaireService {
 
+    /** La structure entre ses coordonnées réelles (là où les familles doivent venir) : c'est ce point
+     *  que l'annuaire et les itinéraires utilisent. Vérifié une fois par mise à jour, jamais enrichi. */
     public record MiseAJour(@Size(max = 30) String telephone, @Size(max = 120) String horaires,
-                            @Size(max = 300) String services, boolean besoinsSpecifiques, boolean actif) {
+                            @Size(max = 300) String services, boolean besoinsSpecifiques, boolean actif,
+                            Double latitude, Double longitude) {
     }
 
     public record Reponse(@NotBlank @Pattern(regexp = "RDV_PROPOSE|PAS_DE_PLACE|AUTRE_STRUCTURE") String reponse) {
@@ -110,9 +113,20 @@ public class AnnuaireService {
 
     public StructureDto mettreAJour(AppUser u, MiseAJour m) {
         long id = structureDe(u);
-        annuaire.mettreAJour(id, m.telephone(), m.horaires(), m.services(), m.besoinsSpecifiques(), m.actif());
+        double[] p = positionValide(m.latitude(), m.longitude());
+        annuaire.mettreAJour(id, m.telephone(), m.horaires(), m.services(), m.besoinsSpecifiques(), m.actif(),
+                p[0], p[1]);
         acces.tracer(u, "METTRE_A_JOUR_STRUCTURE", String.valueOf(id));
         return maStructure(u);
+    }
+
+    /** Togo seulement (6,0–11,3 N · 0,1–1,9 E) : une erreur de saisie ne place pas la structure hors du pays. */
+    private static double[] positionValide(Double lat, Double lon) {
+        if (lat == null || lon == null) return new double[] { Double.NaN, Double.NaN };
+        if (lat < 5.9 || lat > 11.4 || lon < 0.0 || lon > 2.0) {
+            throw new IllegalArgumentException("Coordonnées hors du Togo : vérifiez latitude puis longitude.");
+        }
+        return new double[] { lat, lon };
     }
 
     public List<DemandeDto> demandes(AppUser u, String statut) {

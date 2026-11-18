@@ -39,7 +39,7 @@ public class CrecheService {
 
     public record CrecheDto(String code, String nom, String zone, String telephone, String horaires, int ageMinMois,
                             int ageMaxMois, int capacite, String ouverture, String fermeture, String jours,
-                            String conditions, String aApporter, String tarif) {
+                            String conditions, String aApporter, String tarif, Double latitude, Double longitude) {
     }
 
     public record EnfantChoix(String codeEnfant, int ageMois) {
@@ -91,7 +91,7 @@ public class CrecheService {
         Offre o = c.offre();
         return new CrecheDto(c.code(), c.nom(), c.zone(), c.telephone(), c.horaires(), o.ageMinMois(), o.ageMaxMois(),
                 o.capacite(), o.ouverture().format(HEURE), o.fermeture().format(HEURE), o.jours(), o.conditions(),
-                o.aApporter(), o.tarif());
+                o.aApporter(), o.tarif(), c.lat(), c.lon());
     }
 
     private static int ageMois(LocalDate naissance, LocalDate jour) {

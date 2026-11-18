@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import { api } from '../lib/api.js'
+import { lienCarte } from '../lib/geo.js'
 import { afficherNotification } from '../lib/notifier.js'
 
 const FORMULE = { JOURNEE: 'Journée', MATIN: 'Matin', APRES_MIDI: 'Après-midi' }
@@ -72,6 +73,14 @@ export default function CrecheTableau() {
       <div className="creche-gestion">
         {info && <p className={info.ok ? 'ok-notif' : 'alerte-jour'} role="status">{info.texte}</p>}
         {nouvelles > 0 && <div className="alerte-acte" role="status"><b>{nouvelles} nouvelle(s) demande(s)</b> depuis votre dernière visite. Elles sont dans la liste « À valider ».</div>}
+
+        {creche?.latitude != null && creche?.longitude != null && (
+          <div className="alerte-acte" role="status">
+            📍 Les familles trouvent la crèche sur la carte et suivent la route jusqu'ici (zone {creche.zone}).
+            {' '}
+            <a className="bouton clair petit-bouton" href={lienCarte(creche.latitude, creche.longitude)} target="_blank" rel="noreferrer">Voir la position</a>
+          </div>
+        )}
 
         <div className="famille-tuiles kpi-creche">
           <div><b>{duJour.length}</b><span>enfant{duJour.length > 1 ? 's' : ''} attendu{duJour.length > 1 ? 's' : ''} aujourd'hui</span></div>

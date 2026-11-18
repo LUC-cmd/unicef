@@ -87,10 +87,12 @@ export default function App() {
   const [intro, setIntro] = useState(() => {
     try {
       const reduit = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-      return lieu.pathname === '/' && !sessionStorage.getItem('fildor.intro') && !reduit && !globalThis.FILDOR_CONFIG?.logiciel
+      // L'ouverture se rejoue à chaque chargement de l'accueil (l'utilisateur l'a demandé) ;
+      // sauf si le mouvement est réduit ou dans l'application bureau, où elle est inutile.
+      return lieu.pathname === '/' && !reduit && !globalThis.FILDOR_CONFIG?.logiciel
     } catch { return false }
   })
-  const finIntro = () => { try { sessionStorage.setItem('fildor.intro', '1') } catch { /* sans stockage */ } setIntro(false) }
+  const finIntro = () => setIntro(false)
   const dansEspace = Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page

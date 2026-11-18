@@ -1,14 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AFRIQUE, AFRIQUE_BBOX } from '../lib/afrique.js'
 import { BBOX_TOGO, CENTRE_TOGO, REGIONS, cadre, facile } from './CarteImmersive.jsx'
-import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
+import { LIBELLE_REGION, REGIONS_TOGO, regionDeploiement } from '../lib/region.js'
+import { useAuth } from '../lib/contexte.jsx'
+import Logo from './Logo.jsx'
 
 /**
- * Ouverture du site : l'Afrique avec le logo UNICEF, puis le Togo, puis la région où ce déploiement est installé.
- * Se montre une fois par session, se passe en un clic, et s'efface seule pour laisser place à l'accueil.
+ * Ouverture du site : le logo Fil d'Or, puis l'Afrique, le Togo, puis la région de l'utilisateur connecté
+ * (sinon la région où ce déploiement est installé). Se passe en un clic, et s'efface seule pour laisser
+ * place à l'accueil. Le logo vient de /logo-fildor.png dès qu'il est déposé dans public/ ; sinon dessin original.
  */
+/** Le logo du site : dès qu'un fichier /logo-fildor.png est déposé dans public/, il s'affiche ;
+ *  sinon le dessin original (le fil d'or). L'utilisateur peut envoyer son logo à tout moment. */
+function LogoMarque() {
+  const [fichier, setFichier] = useState(true)
+  if (fichier) {
+    return <img src="/logo-fildor.png" alt="Fil d'Or" height="64" onError={() => setFichier(false)} />
+  }
+  return <Logo />
+}
+
 export default function IntroRegion({ onFin }) {
-  const region = regionDeploiement()
+  const { session } = useAuth()
+  const regionConnecte = REGIONS_TOGO.includes(session?.region) ? session.region : null
+  const region = regionConnecte || regionDeploiement()
   const cible = REGIONS.find((r) => r.nom === region) || REGIONS[0]
   const [ratio, setRatio] = useState(() => window.innerWidth / window.innerHeight)
   const [phase, setPhase] = useState(0) // 0 Afrique · 1 Togo · 2 région · 3 sortie
@@ -90,8 +105,8 @@ export default function IntroRegion({ onFin }) {
       <figure className={`intro-photo droite ${phase <= 1 ? 'vu' : ''}`}><img src="/partenaires/enfants-unicef.png" alt="" /></figure>
 
       <header className="intro-marque">
-        <img src="/partenaires/unicef-logo.png" alt="UNICEF" height="64" />
-        <span>Hack4Children Togo 2026</span>
+        <LogoMarque />
+        <span>Fil d'Or · Hack4Children Togo 2026 · avec l'UNICEF</span>
       </header>
       <div className="intro-titre" aria-live="polite" key={phase}>
         <h1>{titre[0]}</h1>

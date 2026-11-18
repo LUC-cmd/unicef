@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { lireCompte } from '../lib/famille.js'
 import Bandeau from '../components/Bandeau.jsx'
 import { api } from '../lib/api.js'
+import { lienCarte, lienItineraire } from '../lib/geo.js'
 
 const JOURS_NOM = { LUN: 'lundi', MAR: 'mardi', MER: 'mercredi', JEU: 'jeudi', VEN: 'vendredi', SAM: 'samedi', DIM: 'dimanche' }
 const FORMULES = [['JOURNEE', 'Journée'], ['MATIN', 'Matin'], ['APRES_MIDI', 'Après-midi']]
@@ -62,6 +63,7 @@ function Reservation({ compte }) {
         <p><Link to="/famille" className="bouton secondaire petit-bouton">Retour à mon espace</Link></p>
         <p className="petit">Famille {compte.codeFamille}. {mes.enfants.length ? `${mes.enfants.length} enfant(s) pour la crèche : ${mes.enfants.map((x) => `${x.codeEnfant} (${x.ageMois} mois)`).join(', ')}.` : 'Aucun enfant de la famille n\u2019est encore suivi : l\u2019agent de santé l\u2019inscrira.'}</p>
         <h2 className="titre-section">Les crèches les plus proches</h2>
+        <p className="petit">« M'y rendre » ouvre l'application de cartes de votre téléphone avec la route réelle jusqu'à la crèche. Votre position a servi une fois, sur cet appareil : Fil d'Or ne l'enregistre pas.</p>
         <div className="creches-liste">
           {creches.map(({ creche: x, proximite }, i) => (
             <article key={x.code} className={`creche-carte${choix === x.code ? ' choisie' : ''}`}>
@@ -74,6 +76,12 @@ function Reservation({ compte }) {
                 <dt>Tarif</dt><dd>{x.tarif || 'À demander à la crèche.'}</dd>
                 <dt>Âges accueillis</dt><dd>{x.ageMinMois} à {x.ageMaxMois} mois · {x.capacite} places par jour</dd>
               </dl>
+              {x.latitude != null && x.longitude != null && (
+                <p className="deux-boutons">
+                  <a className="bouton secondaire petit-bouton" href={lienItineraire(x.latitude, x.longitude)} target="_blank" rel="noreferrer">🧭 M'y rendre</a>
+                  <a className="bouton secondaire petit-bouton" href={lienCarte(x.latitude, x.longitude)} target="_blank" rel="noreferrer">🗺️ Voir la carte</a>
+                </p>
+              )}
               <button className="bouton" onClick={() => ouvrir(x)}>{choix === x.code ? 'Crèche choisie' : 'Réserver des jours ici'}</button>
             </article>
           ))}

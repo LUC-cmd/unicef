@@ -1509,3 +1509,9 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .plan-groupe a:hover { background: var(--ciel); }
 .plan-groupe a b { display: block; font-size: .95rem; }
 .plan-groupe a small { color: var(--texte-doux); font-size: .82rem; }
+
+/* ===== Localisation : itinéraires vers les structures ===== */
+.localisation-fiche { border: 1.5px solid var(--bord); border-radius: 12px; padding: .8rem 1rem; margin: .6rem 0; }
+.localisation-fiche legend { font-weight: 700; padding: 0 .4rem; }
+.localisation-fiche label { font-weight: 600; font-size: .9rem; }
+.localisation-fiche input[type='number'] { max-width: 9rem; }
