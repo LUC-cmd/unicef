@@ -156,17 +156,15 @@ export default function Shell({ titre, teinte = 'cyan', groupes, children }) {
             </ul>
           </div>
         ))}
-        <div className="shell-pied">
-          <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
-          <p className="shell-qui">{session?.nomComplet}</p>
-          <p className="petit">Photo et déconnexion : menu de votre compte, en haut à droite.</p>
-        </div>
       </aside>
 
       <div className="shell-corps">
         <div className="shell-barre">
-          <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
-          <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
+          <div className="shell-barre-gauche">
+            <img src="/logo-fildor.png" alt="Fil d'Or" height="32" onError={(e) => e.target.style.display = 'none'} />
+            <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
+            <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
+          </div>
           <div className="shell-barre-droite">
             <Notifications role={session?.role} />
             <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
