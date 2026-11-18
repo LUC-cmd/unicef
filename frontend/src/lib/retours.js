@@ -23,7 +23,7 @@ const ETIQUETTES = [
 ]
 
 // Seules les actions qui modifient quelque chose annoncent un succès (pas les simples consultations).
-const LECTURES = [/\/public\/(sms|jeu|structures|profil|voix|preuve)$/]
+const LECTURES = [/\/public\/(sms|jeu|structures|profil|voix|preuve)$/, /\/verification\/carnet-qr$/]
 
 export function etiquette(url) {
   const u = url.split('?')[0]

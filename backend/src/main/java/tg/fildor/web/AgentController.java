@@ -62,11 +62,13 @@ public class AgentController {
     private final ProchesService proches;
     private final AnnuaireService annuaire;
     private final tg.fildor.service.CarteService cartes;
+    private final tg.fildor.service.CarnetQrService carnetQr;
     private final Clock clock;
 
     public AgentController(SuiviService suivi, SyncService sync, NaissanceService naissances,
                            InscriptionService inscriptions, ProchesService proches, AnnuaireService annuaire,
-                           tg.fildor.service.CarteService cartes, Clock clock) {
+                           tg.fildor.service.CarteService cartes, tg.fildor.service.CarnetQrService carnetQr,
+                           Clock clock) {
         this.cartes = cartes;
         this.suivi = suivi;
         this.sync = sync;
@@ -74,6 +76,7 @@ public class AgentController {
         this.inscriptions = inscriptions;
         this.proches = proches;
         this.annuaire = annuaire;
+        this.carnetQr = carnetQr;
         this.clock = clock;
     }
 
@@ -107,6 +110,13 @@ public class AgentController {
     @GetMapping("/familles/{code}/carnet")
     Carnet carnet(@AuthenticationPrincipal AppUser u, @PathVariable String code) {
         return suivi.carnet(u, code, LocalDate.now(clock));
+    }
+
+    /** Le jeton signé imprimé dans le carnet : toute structure pourra le relire sans contacter notre base. */
+    @GetMapping("/familles/{code}/carnet/qr")
+    java.util.Map<String, String> carnetQr(@AuthenticationPrincipal AppUser u, @PathVariable String code) {
+        Carnet carnet = suivi.carnet(u, code, LocalDate.now(clock));
+        return java.util.Map.of("jeton", carnetQr.jeton(carnet, LocalDate.now(clock)), "codeFamille", carnet.codeFamille());
     }
 
     /** Synchronisation de ce qui a été saisi hors ligne (idempotente). */

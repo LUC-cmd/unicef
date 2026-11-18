@@ -15,6 +15,7 @@ import Admin from './Admin.jsx'
 import Aide from './Aide.jsx'
 import ActeNaissance from './ActeNaissance.jsx'
 import Fragiles from './Fragiles.jsx'
+import VerifierQr from './VerifierQr.jsx'
 
 /** Chaque rôle a son espace : un menu vertical, une barre en haut, et des vues qui marchent. */
 
@@ -28,6 +29,7 @@ export function EspaceAgent() {
       { to: '/agent/carte', nom: 'Carte de famille', icone: 'carnet' },
       { to: '/agent/fragiles', nom: 'Nouveau-nés fragiles', icone: 'bouclier' },
       { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
+      { to: '/agent/verifier-qr', nom: 'Vérifier un QR du carnet', icone: 'bouclier' },
     ] },
     { titre: 'Sans réseau', liens: [{ to: '/agent/synchronisation', nom: 'Clé USB et envoi', icone: 'cle' }] },
     { titre: 'Ressources', liens: [
@@ -47,6 +49,7 @@ export function EspaceAgent() {
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />
         <Route path="fragiles" element={<Fragiles />} />
+        <Route path="verifier-qr" element={<VerifierQr />} />
         <Route path="aide" element={<Aide role="AGENT" />} />
         <Route path="*" element={<Navigate to="/agent" replace />} />
       </Routes>
@@ -101,6 +104,7 @@ export function EspaceStructure() {
       { to: '/structure/demandes', nom: 'Demandes des familles', icone: 'boite' },
       { to: '/structure/creche', nom: 'Réservations et conditions', icone: 'boite' },
       { to: '/structure/fiche', nom: 'Mes informations', icone: 'batiment' },
+      { to: '/structure/verifier-qr', nom: 'Vérifier un QR du carnet', icone: 'bouclier' },
     ] },
     { titre: 'Ressources', liens: [
       { to: '/structure/annuaire', nom: "Voir l'annuaire", icone: 'carte' },
@@ -114,6 +118,7 @@ export function EspaceStructure() {
         <Route path="demandes" element={<Structure vue="demandes" />} />
         <Route path="creche" element={<CrecheGestion />} />
         <Route path="fiche" element={<Structure vue="fiche" />} />
+        <Route path="verifier-qr" element={<VerifierQr />} />
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="aide" element={<Aide role="STRUCTURE" />} />
         <Route path="*" element={<Navigate to="/structure" replace />} />

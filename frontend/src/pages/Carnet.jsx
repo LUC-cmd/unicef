@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { LIBELLE_LANGUE, formaterDate, nomDuJour } from '../lib/format.js'
+import QrCode from '../components/QrCode.jsx'
 
 const PICTO = { VACCIN: '💉', CONSULTATION_PRENATALE: '🤰', PESEE: '⚖️', NUTRITION: '🥣' }
 
-/** Carnet illustré à imprimer : pictogrammes et cases à cocher, sans nom, lisible sans savoir lire. */
+/** Carnet illustré à imprimer : pictogrammes et cases à cocher, sans nom, lisible sans savoir lire.
+ *  Chaque feuille porte un QR signé : l'état du suivi voyage avec le papier. */
 export default function Carnet() {
   const { code } = useParams()
   const [carnet, setCarnet] = useState(null)
+  const [jetonQr, setJetonQr] = useState('')
   const [erreur, setErreur] = useState('')
 
   useEffect(() => {
     api.get(`/api/agent/familles/${encodeURIComponent(code)}/carnet`).then(setCarnet).catch((e) => setErreur(e.message))
+    api.get(`/api/agent/familles/${encodeURIComponent(code)}/carnet/qr`)
+      .then((r) => setJetonQr(r.jeton || '')).catch(() => {})
   }, [code])
 
   if (erreur) return <main className="page"><p className="erreur" role="alert">{erreur}</p><Link to="/agent">Retour</Link></main>
@@ -80,6 +85,18 @@ export default function Carnet() {
           <p className="danger-papier">
             🚑 Allez tout de suite au centre de santé si l'enfant ne boit plus, est très faible, respire difficilement ou a des convulsions.
           </p>
+
+          {jetonQr && (
+            <div className="qr-carnet">
+              <QrCode valeur={jetonQr} taille={170} titre="Code de suivi signé de l'enfant" />
+              <p className="petit">
+                Ce code signé porte le suivi de <b>{e.codeEnfant}</b> : les rendez-vous faits et le prochain.
+                Un agent ou un centre peut le relire avec la page « Vérifier un QR », même depuis un autre site.
+                Aucun nom, aucune adresse n'y figure — le code famille suffit et la signature empêche la falsification.
+              </p>
+            </div>
+          )}
+
           <p className="petit">Ce carnet informe et oriente. Il ne remplace pas le personnel de santé.</p>
         </section>
       ))}

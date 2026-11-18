@@ -12,7 +12,7 @@ avec ou sans réseau : un seul carnet, quatre portes d'entrée (voix et SMS, age
 |---|---|
 | **Voix et SMS** (`/telephone`) | Un faux téléphone : appeler un sujet (grossesse, vaccins, nutrition…), lire les SMS de rappel et répondre OK, faire un appel manqué. |
 | **Agent de santé** (`/agent`) | Liste de visites **priorisée** (un rappel sans réponse fait monter la famille), fiche enfant, saisie hors ligne (périmètre brachial, vaccins faits), déclaration de naissance, synchronisation. Interrupteur « simuler un village sans réseau ». |
-| **Carnet illustré** (`/carnet/F-0045`) | Page imprimable : pictogrammes, cases à cocher, ruban de mesure, code famille, aucun nom. |
+| **Carnet illustré** (`/carnet/F-0045`) | Page imprimable : pictogrammes, cases à cocher, ruban de mesure, code famille, aucun nom. Un **QR signé** permet à tout centre de retrouver l'historique de suivi, même sans réseau (voir « Le carnet devient la base de données »). |
 | **Inscription** (`/agent/inscription`) | L'agent inscrit une famille avec son accord (langue, porte, téléphone facultatif, enfants, grossesses, vaccins déjà faits, proches). Marche hors ligne : les codes arrivent à la synchronisation. Bouton « Le bébé est né » et retrait de consentement sur la fiche. |
 | **Éveil** (fiche, téléphone, carnet) | Un jeu par jour selon l'âge (20 jeux avec objets de la maison), « On l'a fait ✓ », SMS « jeu de la semaine », taux d'éveil sur la carte. |
 | **Annuaire** (`/annuaire`) | Centres de santé, crèches, centres sociaux, état civil par zone. La famille ou l'agent demande un rappel ou une orientation ; la structure répond depuis `/structure` et la famille reçoit un SMS. |
@@ -47,6 +47,20 @@ cd assistant && pip install -r requirements.txt && python -m uvicorn app:app --h
 cd frontend && npm install && npm run dev  # http://localhost:5173
 ```
 
+### Option 3 : application Android (APK)
+L'enveloppe Android (Capacitor) est générée automatiquement : poussez le dépôt sur GitHub, puis
+**Actions › Application Android (APK) › Run workflow**. L'APK sort dans **Releases** (`apk-latest`) ;
+voir `apk/LISEZ-MOI.md`. L'application garde les saisies sur le téléphone sans réseau et les envoie
+au retour du réseau.
+
+### Option 4 : logiciel de bureau Windows (villages sans réseau)
+```bash
+cd bureau && npm install && npm start
+```
+Application Electron qui sert le site en local et **synchronise par clé USB** : les saisies de
+l'agent partent dans un fichier `fildor-cle-*.json` à la racine d'une clé, que l'on dépose ensuite
+au point où le réseau passe (voir `bureau/LISEZ-MOI.md`).
+
 ### Comptes de démonstration
 Créés au premier démarrage (`FILDOR_COMPTES_DEMO=true`). Mot de passe par défaut : `FilDor2026!demo`
 (changez-le avec `FILDOR_MDP_DEMO`).
@@ -73,17 +87,22 @@ Téléphones de démo pour le simulateur : familles `90000001` à `90000045` ; p
 1. **Agent** (`agent.golfe`) : « Inscrire une famille », ajouter un enfant et un proche relais, cocher « sans réseau » : l'inscription part au retour du réseau, sans doublon.
 2. **Simulateur** : numéro `91000046` (relais) : messages généraux seulement. Numéro `90000001` : onglet « Jeu du jour », puis « Structures » > « Me rappeler ».
 3. **Structure** (`structure.golfe`) : voir la demande par code famille, répondre : la famille reçoit un SMS.
-4. **Coulisses** (`admin`) : les quatre services, puis le cycle (rappels aux proches et jeux de la semaine). **Assistant** : une question sur les vaccins, une sur les convulsions.
+4. **Carnet et QR signé** : depuis la fiche d'un enfant (`agent.golfe`), ouvrir le carnet : chaque feuille porte un QR signé. Ouvrir « Vérifier un QR du carnet » (côté agent ou côté structure), coller le code : l'état du suivi s'affiche, garanti non falsifié par la signature.
+5. **Structure** (`structure.golfe`) : les quatre services, puis le cycle (rappels aux proches et jeux de la semaine). **Assistant** : une question sur les vaccins, une sur les convulsions.
 
 ## Architecture
 ```
-frontend/ (React + Vite)  ──/api──▶  backend/ (Spring Boot 3, Java 21)  ──JDBC──▶  PostgreSQL 16
+frontend/ (React + Vite, PWA)  ──/api──▶  backend/ (Spring Boot 3, Java 21)  ──JDBC──▶  PostgreSQL 16
    mode hors ligne (file locale)        API REST, sécurité par rôle                  migrations Flyway
-        │
-        └──/assistant──▶  assistant/ (Python)   textes approuvés seulement, aucun dossier
+        │                                   ▲
+        │                                   │ fichier fildor-cle-*.json (clé USB)
+        ├──/assistant──▶  assistant/ (Python)        bureau/ (Electron, Windows)
+        │                 textes approuvés          sert le site en local + sync par clé USB
+        └── apk/ (Capacitor) : enveloppe Android de la PWA, générée par GitHub Actions
 ```
 Si `uvicorn` ne démarre pas, `python serveur.py` dans `assistant/` sert les mêmes adresses sur le port 8092.
 - **Priorité de visite** (`PrioriteService`) : périmètre brachial bas, rappels sans réponse, rendez-vous manqués, naissance non déclarée. Chaque score est renvoyé avec ses raisons.
+- **Le carnet devient la base de données** (`CarnetQrService`) : le carnet illustré porte un **QR signé** (Ed25519) qui résume le suivi de chaque enfant (rendez-vous faits, prochain rendez-vous) — aucun nom, aucune adresse. Un agent, un centre ou la mairie le relit depuis « Vérifier un QR » (`/agent/verifier-qr`, `/structure/verifier-qr`), sans contacter le site d'origine : la signature garantit que le code n'a pas été falsifié. Le papier et le numérique forment un seul carnet, qui voyage avec la famille.
 - **Hors ligne** : chaque saisie porte un identifiant créé sur le téléphone ; le serveur ignore ce qu'il a déjà reçu (`ON CONFLICT DO NOTHING`).
 - **Cycle des rappels** (`RappelService`) : chaque jour à 6 h, ou à la demande via `/api/admin/cycle`.
 - **Inscription** : validations avant écriture, transaction unique, idempotente par `client_uuid`. Codes `F-0001` (famille) et `T001A` (enfant).
@@ -92,6 +111,7 @@ Si `uvicorn` ne démarre pas, `python serveur.py` dans `assistant/` sert les mê
 
 ## Protection de l'enfant et des données
 - Aucun nom, photo, adresse ni point GPS précis. Familles et enfants identifiés par un **code**.
+- Le QR du carnet suit la même règle : **codes et dates seulement**, signé cryptographiquement (Ed25519, clé configurable par `FILDOR_CLE_QR` ; clé de démonstration dans `application.yml`), jamais de nom ni de position.
 - Téléphones stockés sous forme de **hash** (SHA-256 avec un poivre secret), jamais en clair.
 - Accès **par rôle** et **par zone** ; **journal des accès** (`journal_acces`) pour chaque consultation.
 - Carte **anonyme** : taux par zone, zones de moins de 5 familles masquées.
@@ -103,11 +123,13 @@ Si `uvicorn` ne démarre pas, `python serveur.py` dans `assistant/` sert les mê
 - Faire valider les contenus de santé et le calendrier vaccinal (PEV), et la valeur légale du reçu de naissance.
 - Authentification de production (jetons, HTTPS obligatoire, mots de passe personnels, double facteur pour la mairie), limitation d'appels côté proxy.
 - Mesurer la couverture réseau réelle par zone (colonne `zone.couverture_reseau`, aujourd'hui `INCONNUE`).
-- Application agent installable (PWA) avec stockage chiffré sur le téléphone ; la file hors ligne actuelle utilise `localStorage`.
+- Stockage chiffré de la file hors ligne sur le téléphone (aujourd'hui `localStorage`) ; distribution de la clé de signature Android (l'APK de démo est signé avec la clé de debug, passer à un bundle AAB pour le Play Store).
 - Hébergement et transferts de données conformes à la loi togolaise (art. 28).
 
 ## Tests
 ```bash
-cd backend && mvn test      # priorités, indice d'oubli, hash des téléphones, calendrier vaccinal, choix des jeux, règles d'inscription
-cd frontend && npm test     # formats, âge, périmètre brachial, file hors ligne
+cd backend && mvn test      # priorités, indice d'oubli, hash des téléphones, calendrier vaccinal, choix des jeux, règles d'inscription, QR signé
+cd frontend && npm test     # formats, âge, périmètre brachial, file hors ligne, lecture du QR
 ```
+Une CI GitHub Actions (`.github/workflows/ci.yml`) lance les deux à chaque poussée sur `main` :
+backend avec un vrai PostgreSQL en conteneur (Testcontainers), frontend avec Vitest.

@@ -32,3 +32,6 @@ fildor:
   seuil-anonymat: 5
   # Cycle quotidien des rappels (06h00). Désactivable pour les tests.
   cycle-rappels-actif: ${FILDOR_CYCLE_ACTIF:true}
+  # Clé de signature des QR du carnet (Ed25519 en PKCS#8, Base64). Clé de démonstration ci-dessous ;
+  # EN PRODUCTION : secret propre via FILDOR_CLE_QR, sinon une clé éphémère est générée à chaque démarrage.
+  cle-qr: ${FILDOR_CLE_QR:MC4CAQAwBQYDK2VwBCIEID5zk8lvYCyCguMn80FeKIQ60o4vef2hZCw011z4NJa+}

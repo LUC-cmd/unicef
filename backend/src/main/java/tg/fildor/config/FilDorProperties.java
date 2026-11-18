@@ -11,7 +11,8 @@ public record FilDorProperties(
         String motDePasseDemo,
         String originesAutorisees,
         int seuilAnonymat,
-        boolean cycleRappelsActif) {
+        boolean cycleRappelsActif,
+        String cleQr) {
 
     public List<String> origines() {
         return Arrays.stream(originesAutorisees.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();

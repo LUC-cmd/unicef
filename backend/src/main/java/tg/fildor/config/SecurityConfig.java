@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/structure/**").hasRole("STRUCTURE")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/**").authenticated()
+                        .requestMatchers("/api/verification/**").authenticated()
                         .anyRequest().denyAll())
                 // Pas d'en-tête WWW-Authenticate : le navigateur n'ouvre pas sa fenêtre de connexion, le front gère l'erreur.
                 .httpBasic(b -> b.authenticationEntryPoint((req, res, ex) -> {

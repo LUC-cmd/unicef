@@ -10,7 +10,7 @@ import tg.fildor.config.FilDorProperties;
 class TelephoneHasherTest {
 
     private final TelephoneHasher hasher = new TelephoneHasher(
-            new FilDorProperties("fildor-demo-pepper", true, "x", "http://localhost", 5, false));
+            new FilDorProperties("fildor-demo-pepper", true, "x", "http://localhost", 5, false, null));
 
     @Test
     void memeNumeroQuelleQueSoitLaForme() {

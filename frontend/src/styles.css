@@ -362,6 +362,8 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .jours { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; text-align: center; }
 .jours div { display: grid; justify-items: center; gap: 0.2rem; }
 .danger-papier { border: 3px solid var(--rouge); border-radius: 10px; padding: 0.6rem; font-weight: 700; margin-top: 1rem; }
+.qr-carnet { display: flex; align-items: flex-start; gap: 1rem; border-top: 2px solid var(--nuit); margin-top: 1.2rem; padding-top: 1rem; }
+.qr-carnet .petit { margin: 0; }
 
 @media print {
   .no-print { display: none !important; }
@@ -1452,3 +1454,10 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .occ-jour { font-weight: 700; text-transform: capitalize; } .occ-val { text-align: right; color: var(--texte-doux); font-variant-numeric: tabular-nums; }
 .occ-barre { display: flex; height: 16px; background: #e6eef4; border-radius: 8px; overflow: hidden; gap: 2px; }
 .occ-barre i { display: block; height: 100%; transition: width 0.6s cubic-bezier(.2,.7,.2,1); } .occ-barre .conf { background: #00833E; } .occ-barre .att { background: #F2A900; }
+
+/* ----- Vérification du QR du carnet ----- */
+.verif-qr textarea { width: 100%; font-family: monospace; font-size: 0.8rem; word-break: break-all; margin: 0.4rem 0 0.6rem; }
+.scan-video { width: 100%; max-width: 340px; border-radius: 10px; border: 1px solid var(--bord); background: #000; display: block; margin-bottom: 0.6rem; }
+.verif-enfant { border-top: 1px dashed var(--bord); margin-top: 0.6rem; padding-top: 0.6rem; }
+.sans-puce { list-style: none; margin: 0.3rem 0; padding: 0; }
+.sans-marge { margin-top: 0; }
