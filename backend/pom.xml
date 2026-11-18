@@ -17,7 +17,7 @@
     <description>Suivi de chaque enfant de la grossesse à 5 ans (Hack4Children Togo 2026)</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
