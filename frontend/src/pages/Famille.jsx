@@ -182,7 +182,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
       <main className="page espace-famille">
         <div className="famille-barre"><span className="petit">Connecté avec le numéro {compte.telephone}</span><button className="bouton secondaire petit-bouton" onClick={() => setConfirmerSortie(true)}>Se déconnecter</button></div>
         <ConfirmerSortie ouvert={confirmerSortie} onAnnuler={() => setConfirmerSortie(false)} onConfirmer={() => { setConfirmerSortie(false); sortir() }} texte="Vous quittez votre espace famille. Pour y revenir, il faudra le numéro de téléphone, le code famille et votre code secret." />
-        <FamilleNav aRepondre={aRepondre} />
+        <div className="fam-mise"><aside className="fam-aside"><FamilleNav aRepondre={aRepondre} /></aside><div className="fam-contenu">
         {onglet === 'accueil' && (
           <>
           {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/famille/acte">Voir les étapes du retrait</Link></div>}
@@ -306,6 +306,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
         </section>
           </>
         )}
+        </div></div>
       </main>
     </>
   )
