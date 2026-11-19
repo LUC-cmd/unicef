@@ -4,6 +4,7 @@ import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
 
 const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 import ParcoursCartes from '../components/ParcoursCartes.jsx'
+import FilInteractif from '../components/FilInteractif.jsx'
 import { MereEtEnfant } from '../components/Illustrations.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
@@ -37,6 +38,7 @@ const PLAN = [
   ['Découvrir', [
     ['/projet', 'Le projet', 'Le problème, la solution, le carnet et le QR signé'],
     ['/parcours', 'Un enfant, un parcours', 'Les étapes, de la grossesse à 5 ans'],
+    ['/impact', 'Innovation et impact', 'Trois prix, six étapes, ce qui existe vraiment'],
     ['/fonctionnement', 'Fonctionnement', 'Comment circulent les informations'],
     ['/hors-reseau', 'Logiciel hors réseau', 'L’application bureau et la clé USB'],
   ]],
@@ -107,6 +109,8 @@ export default function Accueil() {
         </div>
         <div style={{ height: '3.5rem' }} />
       </section>
+
+      <FilInteractif />
 
       <section className="section parcours-enfant" aria-labelledby="titre-parcours">
         <div className="interieur">

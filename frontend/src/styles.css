@@ -2024,3 +2024,50 @@ h2 > .picto { color: #0b86b8; }
 .installer-mobile { text-align: center; display: grid; justify-items: center; gap: .5rem; border-top: 4px solid #e0a100; }
 .installer-mobile img { border-radius: 22px; box-shadow: 0 4px 14px rgba(20, 50, 80, .25); }
 .installer-mobile h2 { margin: .2rem 0 0; }
+
+/* Liste « à visiter » de l'agent : l'étiquette de priorité ne doit jamais être coupée */
+.liste-visites .ligne { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
+.liste-visites .ligne-texte { flex: 1; min-width: 0; }
+.liste-visites .pastille { flex: none; }
+
+/* Le fil d'or interactif de l'accueil */
+.fil-vivant { padding: 3rem 0 2.5rem; background: linear-gradient(180deg, #fffaf0, #fff); }
+.chapeau-fil { max-width: 46rem; color: #44505a; }
+.fil-piste { position: relative; margin: 2.2rem .8rem 1.2rem; height: 44px; }
+.fil-rail { position: absolute; left: 0; right: 0; top: 19px; height: 6px; border-radius: 3px; background: #eadfc3; }
+.fil-rail i { display: block; height: 100%; width: var(--p); border-radius: 3px; background: linear-gradient(90deg, #f3c04a, var(--c)); transition: width .35s ease; }
+.fil-reperes { list-style: none; margin: 0; padding: 0; }
+.fil-reperes li { position: absolute; top: 10px; transform: translateX(-50%); }
+.fil-reperes button { width: 24px; height: 24px; border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
+.fil-reperes span { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #eadfc3; transition: all .25s; }
+.fil-reperes .fait span { background: #e0a100; border-color: #e0a100; }
+.fil-reperes .ici span { width: 22px; height: 22px; background: #fff; border-color: var(--c); box-shadow: 0 0 0 6px color-mix(in srgb, var(--c) 22%, transparent); }
+.fil-piste input[type=range] { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; margin: 0; }
+.fil-piste:focus-within .fil-reperes .ici span { outline: 3px solid #12304f; outline-offset: 3px; }
+.fil-titre { display: flex; flex-wrap: wrap; align-items: baseline; gap: .8rem; margin: 1.4rem 0 .8rem; animation: fil-entre .3s ease; }
+.fil-titre b { font-size: 1.5rem; color: #12304f; }
+.fil-titre span { color: #5a6672; }
+.fil-trois { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; animation: fil-entre .3s ease; }
+.fil-trois article { background: #fff; border: 1px solid #eadfc3; border-top: 4px solid var(--c, #e0a100); border-radius: 12px; padding: 1rem 1.1rem; }
+.fil-trois h3 { margin: 0 0 .4rem; font-size: 1rem; color: #12304f; }
+.fil-trois p { margin: 0; }
+.fil-evite { margin: 1rem 0; padding: .8rem 1rem; background: #fdf4e3; border-radius: 10px; }
+@keyframes fil-entre { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 760px) { .fil-trois { grid-template-columns: 1fr; } .fil-titre b { font-size: 1.25rem; } }
+@media (prefers-reduced-motion: reduce) { .fil-rail i, .fil-reperes span { transition: none; } .fil-titre, .fil-trois { animation: none; } }
+
+/* Page Innovation et impact */
+.impact-onglets { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.impact-onglets button { border: 2px solid #c9d6e0; background: #fff; border-radius: 999px; padding: .6rem 1.2rem; font: inherit; font-weight: 700; cursor: pointer; color: #12304f; }
+.impact-onglets button.actif { background: #12304f; border-color: #12304f; color: #fff; }
+.impact-question { font-size: 1.15rem; color: #12304f; font-weight: 700; margin: 0 0 .8rem; }
+.impact-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.impact-liste li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: #fff; border: 1px solid #e3e9ee; border-left: 5px solid #e0a100; border-radius: 10px; padding: .8rem 1rem; }
+.impact-liste li div { display: grid; gap: .2rem; }
+.impact-liste li span { color: #44505a; }
+.impact-etapes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.impact-etapes article { background: #fff; border: 1px solid #e3e9ee; border-top: 5px solid var(--c); border-radius: 12px; padding: 1rem 1.1rem; }
+.impact-etapes h3 { margin: 0 0 .5rem; } .impact-etapes h3 small { font-weight: 400; color: #5a6672; }
+.impact-etapes p { margin: .45rem 0; }
+.impact section + section { margin-top: 2rem; }
+@media (max-width: 640px) { .impact-liste li { flex-direction: column; align-items: stretch; } }

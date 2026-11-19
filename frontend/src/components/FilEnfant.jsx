@@ -14,7 +14,7 @@ export function prochainPas(e) {
   if (e.statut !== 'ENFANT') return "Venir à la prochaine consultation prénatale : chaque rendez-vous compte."
   const m = e.ageMois ?? 0
   if (!e.acte && m < 2) return "Déclarer la naissance à la mairie : c'est gratuit pendant 45 jours."
-  if (!e.acte) return "Obtenir l'acte de naissance : l'agent de santé vous aide à choisir la bonne démarche."
+  if (!e.acte) return "Vérifier avec votre agent de santé que la naissance est bien déclarée à la mairie, sinon la déclarer."
   if (e.acte === 'ETABLI') return "Aller retirer l'acte de naissance à la mairie, il est prêt."
   if (m < 12) return "Garder les vaccins à jour et faire le jeu du jour avec votre bébé."
   if (m < 36) return "Faire le jeu du jour, et voir la crèche proche de chez vous pour ses journées d'éveil."

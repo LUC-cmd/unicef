@@ -29,7 +29,7 @@ export default function DeclarationFamille({ compte, profil }) {
   const [erreur, setErreur] = useState('')
   const [attente, setAttente] = useState(false)
 
-  const charger = useCallback(() => { api.post('/api/public/famille/naissances', acces).then(setListe).catch(() => {}) },
+  const charger = useCallback(() => { api.post('/api/public/famille/naissances', acces).then((l) => setListe(Array.isArray(l) ? l : [])).catch(() => {}) },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [compte.telephone, compte.codeFamille])
   useEffect(() => { charger() }, [charger])

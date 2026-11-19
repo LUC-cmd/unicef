@@ -7,6 +7,7 @@ import Picto from '../components/Picto.jsx'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
 import FilEnfant from '../components/FilEnfant.jsx'
+import { MESSAGES_SECOURS, PROCHES_SECOURS, PROFIL_SECOURS } from '../lib/secoursFamille.js'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
 
 const TYPES = {
@@ -126,12 +127,14 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
   const acces = { telephone: compte.telephone, codeFamille: compte.codeFamille }
 
   const chargerProfil = useCallback(async () => {
-    try { setProfil(await api.post('/api/public/famille/connexion', acces)); setProches(await api.post('/api/public/famille/creches/proches', acces)) }
+    if (compte.secours) { setProfil(PROFIL_SECOURS); setProches(PROCHES_SECOURS); return }
+    try { const p = await api.post('/api/public/famille/connexion', acces); if (!Array.isArray(p?.enfants)) throw new Error('profil invalide'); setProfil(p); const pr = await api.post('/api/public/famille/creches/proches', acces); setProches(Array.isArray(pr) ? pr : []) }
     catch (e) { if (e.statut === 403 || e.statut === 401) sortir(); else setErreur('Pas de réseau pour le moment. Vos informations reviendront avec la connexion.') }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compte.telephone, compte.codeFamille])
 
   const charger = useCallback(async () => {
+    if (compte.secours) { setMessages(MESSAGES_SECOURS); return }
     try {
       const r = await api.post('/api/public/sms', { telephone: numero })
       const liste = r.messages ?? []
@@ -144,9 +147,9 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
       nouveaux.forEach((m) => vus.current.add(`${m.type}-${m.id}`))
       ecrire('fildor.famille.vus', [...vus.current].slice(-300))
     } catch { setErreur('Pas de réseau pour le moment. Vos messages s\u2019afficheront dès le retour de la connexion.') }
-  }, [numero])
+  }, [numero, compte.secours])
 
-  useEffect(() => { chargerProfil(); api.get('/api/public/ecoute/zones').then(setZones).catch(() => {}) }, [chargerProfil])
+  useEffect(() => { chargerProfil(); api.get('/api/public/ecoute/zones').then((z) => setZones(Array.isArray(z) ? z : [])).catch(() => {}) }, [chargerProfil])
   useEffect(() => { premier.current = true; charger() }, [charger])
   useEffect(() => {
     const t = setInterval(charger, 60000)

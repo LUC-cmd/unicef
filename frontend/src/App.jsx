@@ -28,6 +28,7 @@ const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
 const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
 const Signalement = lazy(() => import('./pages/Signalement.jsx'))
 const Projet = lazy(() => import('./pages/Projet.jsx'))
+const Impact = lazy(() => import('./pages/Impact.jsx'))
 const Jeux = lazy(() => import('./pages/Jeux.jsx'))
 const Grossesse = lazy(() => import('./pages/Grossesse.jsx'))
 const Fonctionnement = lazy(() => import('./pages/Fonctionnement.jsx'))
@@ -179,6 +180,7 @@ export default function App() {
               <div className="nav-liens">
                 <NavLink to="/" end className="lien-accueil">Accueil</NavLink>
                 <NavLink to="/parcours">Un enfant, un parcours</NavLink>
+                <NavLink to="/impact">Innovation et impact</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
                 <details className="menu-deroulant">
                   <summary>Essayer</summary>
@@ -233,6 +235,7 @@ export default function App() {
           <Route path="/" element={enApplicationFamille() && !session ? <Navigate to="/famille" replace /> : <Accueil />} />
           <Route path="/preparation" element={<Preparation />} />
           <Route path="/projet" element={<Projet />} />
+          <Route path="/impact" element={<Impact />} />
           <Route path="/territoire" element={<Territoire />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/telephone" element={<Telephone />} />
