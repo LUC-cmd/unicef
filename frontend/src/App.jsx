@@ -159,7 +159,6 @@ export default function App() {
         <header className="entete">
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
-            <div className="marque-unicef" aria-label="UNICEF, pour chaque enfant"><img src="/partenaires/unicef-globe.png" alt="UNICEF" width="46" height="45" /><span>Hack4Children<br />Togo 2026</span></div>
             <div className="entete-action">
               {!session && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}

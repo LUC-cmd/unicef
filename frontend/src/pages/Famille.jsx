@@ -6,7 +6,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Picto from '../components/Picto.jsx'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
-import FamilleNav from '../components/FamilleNav.jsx'
+import EspaceFamille from '../components/EspaceFamille.jsx'
 import FilEnfant from '../components/FilEnfant.jsx'
 import { MESSAGES_SECOURS, PROCHES_SECOURS, PROFIL_SECOURS } from '../lib/secoursFamille.js'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
@@ -175,14 +175,14 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
 
   if (!compte.secret) return <ChoixSecret compte={compte} onSecret={onSecret} sortir={sortir} />
   return (
-    <>
+    <EspaceFamille aRepondre={aRepondre}>
       <Bandeau surtitre="Pour les familles" titre={`Famille ${compte.codeFamille}`}>
         <span className="fam-sous">{profil ? `Zone : ${profil.zone}. ` : ''}Vos rappels, les crèches proches de chez vous et votre dossier de naissance.</span>
       </Bandeau>
       <main className="page espace-famille">
         <div className="famille-barre"><span className="petit">Connecté avec le numéro {compte.telephone}</span><button className="bouton secondaire petit-bouton" onClick={() => setConfirmerSortie(true)}>Se déconnecter</button></div>
         <ConfirmerSortie ouvert={confirmerSortie} onAnnuler={() => setConfirmerSortie(false)} onConfirmer={() => { setConfirmerSortie(false); sortir() }} texte="Vous quittez votre espace famille. Pour y revenir, il faudra le numéro de téléphone, le code famille et votre code secret." />
-        <div className="fam-mise"><aside className="fam-aside"><FamilleNav aRepondre={aRepondre} /></aside><div className="fam-contenu">
+        <div className="fam-contenu">
         {onglet === 'accueil' && (
           <>
           {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/famille/acte">Voir les étapes du retrait</Link></div>}
@@ -306,8 +306,8 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
         </section>
           </>
         )}
-        </div></div>
+        </div>
       </main>
-    </>
+    </EspaceFamille>
   )
 }
