@@ -22,5 +22,5 @@ export default function EspaceFamille({ aRepondre = 0, children }) {
       { to: '/famille/acte', nom: 'Acte de naissance', icone: 'livre' },
     ] },
   ]
-  return <Shell titre="Espace famille" teinte="orange" groupes={groupes} nom={compte ? `Famille ${compte.codeFamille}` : 'Famille'} sous="Espace famille">{children}</Shell>
+  return <Shell titre="Espace famille" teinte="orange" groupes={groupes} nom={compte ? `Famille ${compte.codeFamille}` : 'Famille'} utilisateur={compte ? `famille-${compte.codeFamille}` : undefined} sous="Espace famille">{children}</Shell>
 }

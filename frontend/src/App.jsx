@@ -1,5 +1,8 @@
 import BandeauAndroid from './components/BandeauAndroid.jsx'
 import MenuProfil from './components/MenuProfil.jsx'
+import MenuProfilFamille from './components/MenuProfilFamille.jsx'
+import NotificationsFamille from './components/NotificationsFamille.jsx'
+import { useCompteFamille } from './lib/famille.js'
 import { Notifications } from './components/Shell.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
@@ -104,7 +107,9 @@ export default function App() {
     } catch { return false }
   })
   const finIntro = () => setIntro(false)
-  const dansEspace = Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)
+  const compteFamille = useCompteFamille()
+  const dansFamille = Boolean(compteFamille) && !session && /^\/famille(\/|$)/.test(lieu.pathname)
+  const dansEspace = (Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)) || dansFamille
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
   useEffect(() => {
@@ -160,18 +165,19 @@ export default function App() {
           <div className="interieur">
             <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
             <div className="entete-action">
-              {!session && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
+              {!session && !dansFamille && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
-              {session && dansEspace && <Link className="bouton-entete principal" to="/">Accueil</Link>}
-              {session && dansEspace && (
+              {(session || dansFamille) && dansEspace && <Link className="bouton-entete principal" to="/">Accueil</Link>}
+              {(session || dansFamille) && dansEspace && (
                 <>
-                  <Notifications role={session.role} />
+                  {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
                   <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
                     <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
                   </span>
                 </>
               )}
               {session && <MenuProfil />}
+              {dansFamille && <MenuProfilFamille compte={compteFamille} />}
             </div>
             <button className="menu-bouton" aria-label="Menu" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>
               <IconeMenu /> <span className="txt-menu">Menu</span>
@@ -209,7 +215,7 @@ export default function App() {
                 <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel hors réseau</NavLink>
               </div>
               <div className="nav-actions">
-                {!session && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
+                {!session && !dansFamille && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
                   <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
                 </span>}
               </div>

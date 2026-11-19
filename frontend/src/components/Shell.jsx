@@ -129,7 +129,7 @@ export function Notifications({ role }) {
  * teinte : la couleur de l'espace (cyan, vert, bleu, orange, nuit) — chaque rôle reconnaît le sien d'un coup d'œil.
  * groupes : [{ titre, liens: [{ to, nom, icone, fin?, badge? }] }]
  */
-export default function Shell({ titre, teinte = 'cyan', groupes, nom, sous, children }) {
+export default function Shell({ titre, teinte = 'cyan', groupes, nom, sous, utilisateur, children }) {
   const { session } = useAuth()
   const lieu = useLocation()
   const [ouvert, setOuvert] = useState(false)
@@ -141,7 +141,7 @@ export default function Shell({ titre, teinte = 'cyan', groupes, nom, sous, chil
     <div className={`shell teinte-${teinte}`}>
       <aside className={`shell-menu${ouvert ? ' ouvert' : ''}`} aria-label={`Menu ${titre}`}>
         <div className="shell-entete">
-          <Avatar username={session?.username} nom={nom || session?.nomComplet || titre} taille={40} />
+          <Avatar username={utilisateur || session?.username} nom={nom || session?.nomComplet || titre} taille={40} />
           <div><p className="shell-role">{nom || session?.nomComplet || titre}</p><p className="shell-sous">{sous || titre}</p></div>
         </div>
         {groupes.map((g) => (

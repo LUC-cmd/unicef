@@ -78,6 +78,7 @@ function Connexion({ onConnecte }) {
 
 export default function Famille({ onglet = 'accueil' }) {
   const [compte, setCompte] = useState(lireCompte)
+  useEffect(() => { const maj = () => setCompte(lireCompte()); window.addEventListener('fildor-famille', maj); return () => window.removeEventListener('fildor-famille', maj) }, [])
   const [profil, setProfil] = useState(null)
   if (!compte) return <><Bandeau surtitre="Pour les familles" titre="Mon espace famille">Rappels, crèches, dossier de naissance : tout ce qui concerne votre famille, au même endroit.</Bandeau><Connexion onConnecte={(p) => { setProfil(p); setCompte(lireCompte()) }} /></>
   return <Tableau onglet={onglet} compte={compte} profil={profil} setProfil={setProfil} sortir={() => { definirSecretFamille(''); ecrireCompte(null); setCompte(null); setProfil(null) }} onSecret={(sec) => { const c = { ...compte, secret: sec }; definirSecretFamille(sec); ecrireCompte(c); setCompte(c) }} />

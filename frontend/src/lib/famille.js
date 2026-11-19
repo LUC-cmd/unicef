@@ -4,7 +4,18 @@ import { useLocation } from 'react-router-dom'
 
 const CLE = 'fildor.famille.compte'
 export const lireCompte = () => { try { const c = JSON.parse(localStorage.getItem(CLE)); return c?.telephone && c?.codeFamille ? c : null } catch { return null } }
-export const ecrireCompte = (c) => { try { if (c) localStorage.setItem(CLE, JSON.stringify(c)); else localStorage.removeItem(CLE) } catch { /* stockage indisponible */ } }
+export const ecrireCompte = (c) => { try { if (c) localStorage.setItem(CLE, JSON.stringify(c)); else localStorage.removeItem(CLE) } catch { /* stockage indisponible */ } window.dispatchEvent(new Event('fildor-famille')) }
+
+/** Le compte famille, tenu à jour quand la famille se connecte ou se déconnecte. */
+export function useCompteFamille() {
+  const [compte, setCompte] = useState(lireCompte)
+  useEffect(() => {
+    const maj = () => setCompte(lireCompte())
+    window.addEventListener('fildor-famille', maj); window.addEventListener('storage', maj)
+    return () => { window.removeEventListener('fildor-famille', maj); window.removeEventListener('storage', maj) }
+  }, [])
+  return compte
+}
 
 /** Invite d'installation de l'application (Android / navigateurs compatibles). */
 export function useInstallation() {
