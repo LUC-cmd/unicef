@@ -2071,3 +2071,76 @@ h2 > .picto { color: #0b86b8; }
 .impact-etapes p { margin: .45rem 0; }
 .impact section + section { margin-top: 2rem; }
 @media (max-width: 640px) { .impact-liste li { flex-direction: column; align-items: stretch; } }
+
+/* ===== Adaptation aux téléphones : en-tête compact, rien ne dépasse, rien à faire glisser de côté ===== */
+.assistant-grille { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+@media (max-width: 900px) { .assistant-grille { grid-template-columns: minmax(0, 1fr); } }
+.assistant-grille > *, .assistant-cote, .assistant-cote .carte { min-width: 0; max-width: 100%; }
+main .carte, main section.carte { min-width: 0; max-width: 100%; }
+main img, main video, main canvas { max-width: 100%; height: auto; }
+.assistant-grille [class*="entete"], .assistant-grille header { flex-wrap: wrap; row-gap: .4rem; }
+table { max-width: 100%; }
+.table-defile { max-width: 100%; overflow-x: auto; }
+
+@media (max-width: 760px) {
+  .entete .interieur { padding: 0 .7rem; gap: .5rem; min-height: 60px; flex-wrap: nowrap; }
+  .entete .logo { min-width: 0; flex: 0 1 auto; }
+  .entete .marque-unicef { margin-left: 0; padding: .15rem; border-radius: 10px; }
+  .entete .marque-unicef span { display: none; }
+  .entete .marque-unicef img { height: 32px; }
+  .entete-action { margin-left: auto; gap: .35rem; align-items: center; }
+  .entete-action .bouton-entete.principal { padding: .45rem .8rem; font-size: .9rem; white-space: nowrap; }
+  .entete-bloc.espace .entete-action .bouton-entete.principal { display: none; }
+  .etat-reseau-entete { font-size: 0; padding: .45rem; margin: 0; }
+  .etat-reseau-entete i { width: 11px; height: 11px; }
+  .menu-bouton .txt-menu { display: none; }
+}
+
+/* Espace famille : cinq onglets, un seul sujet à l'écran */
+.fam-onglets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .3rem; position: sticky; top: calc(var(--haut-entete, 60px) + var(--haut-retour, 44px)); z-index: 12; background: #f4f9fd; padding: .45rem 0 .55rem; margin: 0 0 .6rem; border-bottom: 1px solid #dbe7f0; }
+.fam-onglets button { position: relative; display: grid; justify-items: center; gap: .15rem; border: 0; background: transparent; border-radius: 12px; padding: .45rem .1rem; font: inherit; font-size: .76rem; font-weight: 600; color: #44505a; cursor: pointer; min-width: 0; }
+.fam-onglets button .picto { font-size: 1.35rem; }
+.fam-onglets button span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.fam-onglets button.actif { background: #12304f; color: #fff; }
+.fam-onglets button:focus-visible { outline: 3px solid #1cabe2; outline-offset: 2px; }
+.fam-pastille { position: absolute; top: 2px; right: 10%; min-width: 18px; height: 18px; border-radius: 9px; background: #e2231a; color: #fff; font-style: normal; font-size: .7rem; display: grid; place-items: center; padding: 0 4px; }
+.espace-famille > .famille-barre { margin-top: 0; }
+@media (max-width: 760px) {
+  .famille-tuiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+  .famille-tuiles div { padding: .55rem .5rem; border-radius: 12px; }
+  .famille-tuiles b { font-size: 1.7rem; }
+  .famille-tuiles span { font-size: .78rem; display: block; line-height: 1.2; }
+  .espace-famille .nb-enfants { flex-wrap: wrap; gap: .6rem; }
+  .espace-famille .carte { padding: 1rem; }
+}
+@media (min-width: 900px) { .fam-onglets { max-width: 640px; } .fam-onglets button { font-size: .88rem; flex-direction: row; } }
+@media (max-width: 520px) {
+  .fil-enfant li { min-width: 0; }
+  .fil-enfant li small { font-size: .64rem; overflow-wrap: anywhere; padding: 0 1px; }
+  .fil-enfant ol::before { left: 8%; right: 8%; }
+}
+@media (max-width: 760px) {
+  .fam-sous { display: none; }
+  .espace-famille { padding-top: .8rem; }
+  .famille-barre { flex-wrap: nowrap; gap: .5rem; margin-bottom: .4rem; }
+  .famille-barre .petit { font-size: .8rem; min-width: 0; }
+  .famille-barre .petit-bouton { flex: none; padding: .3rem .7rem; font-size: .82rem; }
+  .alerte-acte { padding: .7rem .85rem; font-size: .92rem; }
+}
+.fam-cadre { max-width: var(--largeur); margin: 0 auto; padding: 0 1.25rem; }
+.fam-cadre .fam-onglets { margin-top: .4rem; }
+.fam-retour { max-width: var(--largeur); margin: 1.5rem auto 2rem; padding: 0 1.25rem; }
+.fam-onglets a { position: relative; display: grid; justify-items: center; gap: .15rem; border-radius: 12px; padding: .45rem .1rem; font-size: .76rem; font-weight: 600; color: #44505a; text-decoration: none; min-width: 0; }
+.fam-onglets a .picto { font-size: 1.35rem; }
+.fam-onglets a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.fam-onglets a.actif { background: #12304f; color: #fff; }
+.fam-onglets a:focus-visible { outline: 3px solid #1cabe2; outline-offset: 2px; }
+@media (min-width: 900px) { .fam-onglets a { font-size: .88rem; } }
+/* Menu de l'espace famille : liste verticale */
+.fam-onglets { position: static; display: flex; flex-direction: column; gap: .35rem; padding: .5rem; margin: .6rem 0 1rem; background: #fff; border: 1px solid #dbe7f0; border-radius: 16px; max-width: 640px; }
+.fam-onglets a { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: .8rem; padding: .75rem .9rem; font-size: 1rem; border-radius: 12px; }
+.fam-onglets a .picto { font-size: 1.4rem; flex: none; }
+.fam-onglets a span { flex: 1; text-align: left; }
+.fam-onglets a:hover { background: #eef6fc; }
+.fam-onglets a.actif { background: #12304f; color: #fff; }
+.fam-pastille { flex: none; min-width: 1.4rem; height: 1.4rem; padding: 0 .35rem; border-radius: 999px; background: #e2412f; color: #fff; font-style: normal; font-size: .8rem; display: grid; place-items: center; position: static; }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useBaseFamille } from '../lib/famille.js'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import VideoFiche from '../components/VideoFiche.jsx'
@@ -9,6 +10,7 @@ import Picto from '../components/Picto.jsx'
  *  signes d'alerte et kit d'accouchement. À informer et orienter, jamais à diagnostiquer :
  *  les contenus attendent la validation de professionnels de santé. */
 export default function Grossesse() {
+  const base = useBaseFamille()
   const [mois, setMois] = useState(1)
   const fiche = MOIS_GROSSESSE.find((m) => m.mois === mois)
 
@@ -102,8 +104,8 @@ export default function Grossesse() {
             <strong> gratuite dans les 45 jours</strong>.
           </p>
           <div className="deux-boutons">
-            <Link className="bouton" to="/acte">Les étapes de la déclaration</Link>
-            <Link className="bouton secondaire" to="/jeux">Les jeux d'éveil pour le bébé</Link>
+            <Link className="bouton" to={`${base}/acte`}>Les étapes de la déclaration</Link>
+            <Link className="bouton secondaire" to={`${base}/jeux`}>Les jeux d'éveil pour le bébé</Link>
           </div>
         </section>
 

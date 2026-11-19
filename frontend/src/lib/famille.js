@@ -1,5 +1,6 @@
 // Compte famille : numéro de téléphone et code famille, gardés sur l'appareil de la famille (jamais envoyés ailleurs que dans les appels au serveur).
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 const CLE = 'fildor.famille.compte'
 export const lireCompte = () => { try { const c = JSON.parse(localStorage.getItem(CLE)); return c?.telephone && c?.codeFamille ? c : null } catch { return null } }
@@ -17,4 +18,9 @@ export function useInstallation() {
   }, [])
   const installer = async () => { if (!invite) return; invite.prompt(); await invite.userChoice; setInvite(null) }
   return { installee, peutInstaller: Boolean(invite), installer }
+}
+
+/** Dans l'espace famille, les liens de service restent dans l'espace : '/famille' devant, sinon rien. */
+export function useBaseFamille() {
+  return useLocation().pathname.startsWith('/famille') ? '/famille' : ''
 }

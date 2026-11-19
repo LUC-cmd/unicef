@@ -1,6 +1,7 @@
 // Appels au serveur. Les identifiants (HTTP Basic) restent en mémoire de l'onglet (sessionStorage), jamais en dur.
 
 import { annoncer, estLecture, etiquette, occupe } from './retours.js'
+import { demoAppeler, modeDemo } from './demoFamille.js'
 
 const CLE_SESSION = 'fildor.session'
 
@@ -35,6 +36,7 @@ try { secretFamille = JSON.parse(localStorage.getItem('fildor.famille.compte'))?
 export const definirSecretFamille = (s) => { secretFamille = s || '' }
 
 async function appeler(methode, url, corps, extraEntetes = {}) {
+  if (modeDemo(url)) return demoAppeler(methode, url, corps)
   let reponse
   try {
     reponse = await fetch(url, {

@@ -6,6 +6,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Picto from '../components/Picto.jsx'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
+import FamilleNav from '../components/FamilleNav.jsx'
 import FilEnfant from '../components/FilEnfant.jsx'
 import { MESSAGES_SECOURS, PROCHES_SECOURS, PROFIL_SECOURS } from '../lib/secoursFamille.js'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
@@ -75,11 +76,11 @@ function Connexion({ onConnecte }) {
   )
 }
 
-export default function Famille() {
+export default function Famille({ onglet = 'accueil' }) {
   const [compte, setCompte] = useState(lireCompte)
   const [profil, setProfil] = useState(null)
   if (!compte) return <><Bandeau surtitre="Pour les familles" titre="Mon espace famille">Rappels, crèches, dossier de naissance : tout ce qui concerne votre famille, au même endroit.</Bandeau><Connexion onConnecte={(p) => { setProfil(p); setCompte(lireCompte()) }} /></>
-  return <Tableau compte={compte} profil={profil} setProfil={setProfil} sortir={() => { definirSecretFamille(''); ecrireCompte(null); setCompte(null); setProfil(null) }} onSecret={(sec) => { const c = { ...compte, secret: sec }; definirSecretFamille(sec); ecrireCompte(c); setCompte(c) }} />
+  return <Tableau onglet={onglet} compte={compte} profil={profil} setProfil={setProfil} sortir={() => { definirSecretFamille(''); ecrireCompte(null); setCompte(null); setProfil(null) }} onSecret={(sec) => { const c = { ...compte, secret: sec }; definirSecretFamille(sec); ecrireCompte(c); setCompte(c) }} />
 }
 
 function ChoixSecret({ compte, onSecret, sortir }) {
@@ -110,7 +111,7 @@ function ChoixSecret({ compte, onSecret, sortir }) {
   )
 }
 
-function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
+function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
   const numero = compte.telephone
   const [messages, setMessages] = useState([])
   const [erreur, setErreur] = useState('')
@@ -168,6 +169,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
     try { const p = await api.post('/api/public/famille/demenagement', { ...acces, codeZone: nouvelleZone }); setProfil(p); setProches(await api.post('/api/public/famille/creches/proches', acces)); setInfo({ ok: true, texte: `Votre famille est maintenant dans la zone ${p.zone}. Les crèches proches et votre agent de santé suivent.` }); setNouvelleZone('') }
     catch (e) { setInfo({ ok: false, texte: e.message }) }
   }
+  const aRepondre = messages.filter((m) => m.type === 'RAPPEL' && m.statut !== 'ACQUITTE').length
   const declares = profil?.enfantsDeclares ?? 0
   const suivis = profil?.enfantsSuivis ?? 0
 
@@ -175,28 +177,20 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
   return (
     <>
       <Bandeau surtitre="Pour les familles" titre={`Famille ${compte.codeFamille}`}>
-        {profil ? `Zone : ${profil.zone}. ` : ''}Vos rappels, les crèches proches de chez vous et votre dossier de naissance.
+        <span className="fam-sous">{profil ? `Zone : ${profil.zone}. ` : ''}Vos rappels, les crèches proches de chez vous et votre dossier de naissance.</span>
       </Bandeau>
       <main className="page espace-famille">
         <div className="famille-barre"><span className="petit">Connecté avec le numéro {compte.telephone}</span><button className="bouton secondaire petit-bouton" onClick={() => setConfirmerSortie(true)}>Se déconnecter</button></div>
         <ConfirmerSortie ouvert={confirmerSortie} onAnnuler={() => setConfirmerSortie(false)} onConfirmer={() => { setConfirmerSortie(false); sortir() }} texte="Vous quittez votre espace famille. Pour y revenir, il faudra le numéro de téléphone, le code famille et votre code secret." />
-        {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/acte">Voir les étapes du retrait</Link></div>}
-
-        {!installee && (
-          <section className="carte carte-installer" aria-labelledby="t-install">
-            <h2 id="t-install">Installer l'application sur mon téléphone</h2>
-            <p>Avec l'application, les rappels, les crèches proches et le dossier de naissance sont toujours à portée de main, même avec peu de réseau.</p>
-            {peutInstaller ? <button className="bouton" onClick={installer}>Installer Fil d'Or</button> : <p className="petit">Sur Android : menu du navigateur, puis « Ajouter à l'écran d'accueil ».</p>}
-            <Link className="bouton secondaire" to="/telecharger">Autres façons d'installer</Link>
-          </section>
-        )}
-
+        <FamilleNav aRepondre={aRepondre} />
+        {onglet === 'accueil' && (
+          <>
+          {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/famille/acte">Voir les étapes du retrait</Link></div>}
         <div className="famille-tuiles">
           <div><b>{suivis}</b><span>enfant{suivis > 1 ? 's' : ''} suivi{suivis > 1 ? 's' : ''} par l'agent</span></div>
           <div><b>{declares}</b><span>enfant{declares > 1 ? 's' : ''} dans la famille</span></div>
           <div><b>{proches.length}</b><span>crèche{proches.length > 1 ? 's' : ''} près de chez vous</span></div>
         </div>
-
         <section className="carte" aria-labelledby="t-enfants">
           <h2 id="t-enfants">Mes enfants</h2>
           <div className="nb-enfants">
@@ -210,31 +204,23 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
             ))}
           </ul>
         </section>
-
         <section className="carte famille-pour-vous" aria-labelledby="t-pourvous">
           <h2 id="t-pourvous">Pour vous et vos enfants</h2>
           <div className="pour-vous-grille">
             {(profil?.enfants || []).some((e) => e.statut === 'GROSSESSE') && (
-              <Link to="/grossesse" className="pour-vous-carte"><Picto nom="enceinte" /><b>Ma grossesse, mois par mois</b><span>Consultations, exercices doux, signes d'alerte, kit d'accouchement.</span></Link>
+              <Link to="/famille/grossesse" className="pour-vous-carte"><Picto nom="enceinte" /><b>Ma grossesse, mois par mois</b><span>Consultations, exercices doux, signes d'alerte, kit d'accouchement.</span></Link>
             )}
             {(profil?.enfants || []).some((e) => e.statut === 'ENFANT') && (
-              <Link to="/jeux" className="pour-vous-carte"><Picto nom="danse" /><b>Jeux et vidéos d'éveil</b><span>Des jeux simples à faire à la maison, adaptés à l'âge de l'enfant.</span></Link>
+              <Link to="/famille/jeux" className="pour-vous-carte"><Picto nom="danse" /><b>Jeux et vidéos d'éveil</b><span>Des jeux simples à faire à la maison, adaptés à l'âge de l'enfant.</span></Link>
             )}
-            <Link to="/assistant" className="pour-vous-carte"><Picto nom="parole" /><b>Poser une question</b><span>L'assistant répond sur la santé de l'enfant, et dit quand voir un agent.</span></Link>
-            <Link to="/acte" className="pour-vous-carte"><Picto nom="fiche" /><b>Obtenir l'acte de naissance</b><span>Les étapes, les délais et la gratuité.</span></Link>
+            <Link to="/famille/assistant" className="pour-vous-carte"><Picto nom="parole" /><b>Poser une question</b><span>L'assistant répond sur la santé de l'enfant, et dit quand voir un agent.</span></Link>
+            <Link to="/famille/acte" className="pour-vous-carte"><Picto nom="fiche" /><b>Obtenir l'acte de naissance</b><span>Les étapes, les délais et la gratuité.</span></Link>
           </div>
         </section>
-
-        <DeclarationFamille compte={compte} profil={profil} />
-
-        <section className="carte carte-creche" aria-labelledby="t-creche">
-          <h2 id="t-creche">Crèches près de chez moi</h2>
-          {proches.slice(0, 3).map((x) => (
-            <p key={x.creche.code} className="creche-ligne"><b>{x.creche.nom}</b><span>{x.proximite}</span></p>
-          ))}
-          <Link className="bouton" to="/famille/creche">Voir les conditions et réserver</Link>
-        </section>
-
+          </>
+        )}
+        {onglet === 'messages' && (
+          <>
         <section className="carte" aria-labelledby="t-boite">
           <h2 id="t-boite">Ma boîte de messages</h2>
           <div className="notif-etat">
@@ -256,7 +242,56 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
             ))}
           </ul>
         </section>
-
+        <section className="carte" aria-labelledby="t-canaux">
+          <h2 id="t-canaux">Comment chaque famille est prévenue</h2>
+          <p className="petit">Le même message, la porte qui convient à la famille. Si une porte reste sans réponse, la suivante s'ouvre, jusqu'à la visite de l'agent.</p>
+          <ol className="fam-canaux">
+            <li><b>Application sur le téléphone</b><span>Notification sur l'écran et message dans cette boîte, même au retour du réseau.</span></li>
+            <li><b>Téléphone basique</b><span>SMS court, sans nom d'enfant. La famille répond OK pour confirmer. Appel vocal dans sa langue si elle préfère.</span></li>
+            <li><b>Famille sans téléphone</b><span>Un proche désigné reçoit le rappel général et prévient la famille. Le carnet imprimé garde les dates.</span></li>
+            <li><b>Aucune réponse</b><span>La famille monte en haut de la liste de l'agent de santé, qui passe la voir.</span></li>
+          </ol>
+        </section>
+          </>
+        )}
+        {onglet === 'creches' && (
+          <>
+        <section className="carte carte-creche" aria-labelledby="t-creche">
+          <h2 id="t-creche">Crèches près de chez moi</h2>
+          {proches.slice(0, 3).map((x) => (
+            <p key={x.creche.code} className="creche-ligne"><b>{x.creche.nom}</b><span>{x.proximite}</span></p>
+          ))}
+          <Link className="bouton" to="/famille/creche">Voir les conditions et réserver</Link>
+        </section>
+          </>
+        )}
+        {onglet === 'dossier' && (
+          <>
+        <DeclarationFamille compte={compte} profil={profil} />
+        <section className="carte" aria-labelledby="t-dossier">
+          <h2 id="t-dossier">Préparer la déclaration de naissance</h2>
+          <p className="petit">Cochez ce que la famille a déjà. La liste reste sur ce téléphone et n'est envoyée à personne : les noms ne sont donnés qu'à la mairie, par la famille.</p>
+          <div className="barre-progres" aria-hidden="true"><i style={{ width: `${(faits / DOSSIER.length) * 100}%` }} /></div>
+          <p><b>{faits} sur {DOSSIER.length}</b> éléments prêts</p>
+          <ul className="fam-dossier">
+            {DOSSIER.map(([k, t, d]) => (
+              <li key={k}><label><input type="checkbox" checked={Boolean(coches[k])} onChange={() => cocher(k)} /><span><b>{t}</b>{d && <small>{d}</small>}</span></label></li>
+            ))}
+          </ul>
+          <Link className="bouton" to="/famille/acte">Voir le chemin vers l'acte</Link>
+        </section>
+          </>
+        )}
+        {onglet === 'compte' && (
+          <>
+        {!installee && (
+          <section className="carte carte-installer" aria-labelledby="t-install">
+            <h2 id="t-install">Installer l'application sur mon téléphone</h2>
+            <p>Avec l'application, les rappels, les crèches proches et le dossier de naissance sont toujours à portée de main, même avec peu de réseau.</p>
+            {peutInstaller ? <button className="bouton" onClick={installer}>Installer Fil d'Or</button> : <p className="petit">Sur Android : menu du navigateur, puis « Ajouter à l'écran d'accueil ».</p>}
+            <Link className="bouton secondaire" to="/telecharger">Autres façons d'installer</Link>
+          </section>
+        )}
         <section className="carte" aria-labelledby="t-demenage">
           <h2 id="t-demenage">J'ai déménagé</h2>
           <p className="petit">Votre carnet vous suit : choisissez votre nouvelle zone. Les rappels, les crèches proches et l'agent de santé changent avec vous. Aucune adresse n'est demandée.</p>
@@ -269,30 +304,8 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
           <button className="bouton" disabled={!nouvelleZone} onClick={demenager}>Confirmer le déménagement</button>
           {info && <p className={info.ok ? 'ok-notif' : 'alerte-jour'} role="status">{info.texte}</p>}
         </section>
-
-        <section className="carte" aria-labelledby="t-canaux">
-          <h2 id="t-canaux">Comment chaque famille est prévenue</h2>
-          <p className="petit">Le même message, la porte qui convient à la famille. Si une porte reste sans réponse, la suivante s'ouvre, jusqu'à la visite de l'agent.</p>
-          <ol className="fam-canaux">
-            <li><b>Application sur le téléphone</b><span>Notification sur l'écran et message dans cette boîte, même au retour du réseau.</span></li>
-            <li><b>Téléphone basique</b><span>SMS court, sans nom d'enfant. La famille répond OK pour confirmer. Appel vocal dans sa langue si elle préfère.</span></li>
-            <li><b>Famille sans téléphone</b><span>Un proche désigné reçoit le rappel général et prévient la famille. Le carnet imprimé garde les dates.</span></li>
-            <li><b>Aucune réponse</b><span>La famille monte en haut de la liste de l'agent de santé, qui passe la voir.</span></li>
-          </ol>
-        </section>
-
-        <section className="carte" aria-labelledby="t-dossier">
-          <h2 id="t-dossier">Préparer la déclaration de naissance</h2>
-          <p className="petit">Cochez ce que la famille a déjà. La liste reste sur ce téléphone et n'est envoyée à personne : les noms ne sont donnés qu'à la mairie, par la famille.</p>
-          <div className="barre-progres" aria-hidden="true"><i style={{ width: `${(faits / DOSSIER.length) * 100}%` }} /></div>
-          <p><b>{faits} sur {DOSSIER.length}</b> éléments prêts</p>
-          <ul className="fam-dossier">
-            {DOSSIER.map(([k, t, d]) => (
-              <li key={k}><label><input type="checkbox" checked={Boolean(coches[k])} onChange={() => cocher(k)} /><span><b>{t}</b>{d && <small>{d}</small>}</span></label></li>
-            ))}
-          </ul>
-          <Link className="bouton" to="/acte">Voir le chemin vers l'acte</Link>
-        </section>
+          </>
+        )}
       </main>
     </>
   )

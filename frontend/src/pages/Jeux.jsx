@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useBaseFamille } from '../lib/famille.js'
 import { Link, useParams } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import Chansons from '../components/Chansons.jsx'
@@ -675,6 +676,7 @@ const JEUX = [
 /* ---------- page ---------- */
 
 export default function Jeux() {
+  const base = useBaseFamille()
   const { jeu: jeuId } = useParams()
   const [etoiles, setEtoiles] = useState(lireEtoiles)
   const [voix, setVoix] = useState(true)
@@ -764,7 +766,7 @@ export default function Jeux() {
             <Chansons />
             <div className="jeux-catalogue">
               {JEUX.map((j) => (
-                <Link key={j.id} to={`/jeux/${j.id}`} className="jeu-carte">
+                <Link key={j.id} to={`${base}/jeux/${j.id}`} className="jeu-carte">
                   <span className="jeu-icone" aria-hidden="true"><Picto nom={j.icone} /></span>
                   <span className="jeu-texte">
                     <b>{j.titre}</b>
@@ -789,7 +791,7 @@ export default function Jeux() {
 
         {jeu && (
           <div className="jeu-cadre">
-            <Link to="/jeux" className="retour-jeux" onClick={quitter}>‹ Tous les jeux</Link>
+            <Link to={`${base}/jeux`} className="retour-jeux" onClick={quitter}>‹ Tous les jeux</Link>
             {jeu.memoire ? <Memoire contexte={contexte} /> : jeu.mains ? <MainsPropres contexte={contexte} /> : (
               <Quiz key={jeu.id} fabrique={jeu.fabrique} finMessage={jeu.fin} contexte={contexte} />
             )}
