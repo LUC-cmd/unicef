@@ -29,12 +29,17 @@ export class ErreurApi extends Error {
   }
 }
 
+// Code secret de la famille connectée : envoyé avec les appels de son espace, jamais ailleurs.
+let secretFamille = ''
+try { secretFamille = JSON.parse(localStorage.getItem('fildor.famille.compte'))?.secret || '' } catch { secretFamille = '' }
+export const definirSecretFamille = (s) => { secretFamille = s || '' }
+
 async function appeler(methode, url, corps, extraEntetes = {}) {
   let reponse
   try {
     reponse = await fetch(url, {
       method: methode,
-      headers: { 'Content-Type': 'application/json', ...enteteAuth(), ...extraEntetes },
+      headers: { 'Content-Type': 'application/json', ...enteteAuth(), ...(secretFamille && url.startsWith('/api/public/') ? { 'X-Fildor-Secret': secretFamille } : {}), ...extraEntetes },
       body: corps === undefined ? undefined : JSON.stringify(corps),
       signal: AbortSignal.timeout(8000),
     })

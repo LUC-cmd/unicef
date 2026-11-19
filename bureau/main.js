@@ -22,6 +22,8 @@ process.on('uncaughtException', (e) => {
 })
 // Évite les fenêtres blanches sur certains ordinateurs (pilotes graphiques anciens)
 app.disableHardwareAcceleration()
+// Regroupe la fenêtre avec le raccourci épinglé et affiche le bon nom dans la barre des tâches
+app.setAppUserModelId('tg.fildor.bureau')
 
 const PORT = 47831 // fixe : les saisies en attente sont rangées par adresse, elles ne doivent pas changer d'un jour à l'autre
 const SERVEUR_PAR_DEFAUT = 'https://frontend-production-5667500e.up.railway.app'
@@ -118,7 +120,7 @@ function servir(req, res) {
 
 function ouvrir() {
   const fenetre = new BrowserWindow({ width: 1366, height: 860, minWidth: 360, minHeight: 600, title: "Fil d'Or",
-    icon: path.join(RACINE, 'icons', 'icon-512.png'), autoHideMenuBar: true, backgroundColor: '#ffffff' })
+    icon: path.join(__dirname, 'fildor.ico'), autoHideMenuBar: true, backgroundColor: '#ffffff' })
   fenetrePrincipale = fenetre
   fenetre.setMenuBarVisibility(false)
   fenetre.webContents.on('did-fail-load', (_e, code, desc) => {

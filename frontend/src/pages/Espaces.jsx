@@ -14,6 +14,7 @@ import Carte from './Carte.jsx'
 import Admin from './Admin.jsx'
 import Aide from './Aide.jsx'
 import ActeNaissance from './ActeNaissance.jsx'
+import Naissance from './Naissance.jsx'
 import Fragiles from './Fragiles.jsx'
 import VerifierQr from './VerifierQr.jsx'
 
@@ -26,9 +27,10 @@ export function EspaceAgent() {
       { to: '/agent/visites', nom: 'Mes visites', icone: 'liste' },
       { to: '/agent/familles', nom: 'Familles', icone: 'carnet' },
       { to: '/agent/inscription', nom: 'Inscrire une famille', icone: 'plus' },
+      { to: '/agent/naissance', nom: 'Déclarer une naissance', icone: 'carnet' },
       { to: '/agent/carte', nom: 'Carnet de famille', icone: 'carnet' },
       { to: '/agent/fragiles', nom: 'Nouveau-nés fragiles', icone: 'bouclier' },
-      { to: '/agent/acte', nom: 'Actes de naissance', icone: 'livre' },
+      { to: '/agent/acte', nom: 'Aide : acte de naissance', icone: 'livre' },
     ] },
     { titre: 'Outils', liens: [
       { to: '/agent/verifier-qr', nom: 'Vérifier un QR', icone: 'bouclier' },
@@ -43,6 +45,7 @@ export function EspaceAgent() {
         <Route path="visites" element={<Agent vue="visites" />} />
         <Route path="familles" element={<Agent vue="familles" />} />
         <Route path="inscription" element={<Inscription />} />
+        <Route path="naissance" element={<Naissance />} />
         <Route path="carte" element={<CarteFamille />} />
         <Route path="synchronisation" element={<Agent vue="synchronisation" />} />
         <Route path="annuaire" element={<Annuaire />} />

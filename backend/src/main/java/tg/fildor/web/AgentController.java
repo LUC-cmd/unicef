@@ -44,7 +44,9 @@ public class AgentController {
                                    boolean certificatAccouchement,
                                    @Pattern(regexp = "AGENT|CENTRE_SANTE|HOPITAL") String source,
                                    String mereNom, String pereNom, String enfantPrenom,
-                                   boolean accordMere, boolean accordPere) {
+                                   boolean accordMere, boolean accordPere,
+                                   @Pattern(regexp = "([01][0-9]|2[0-3]):[0-5][0-9]") String heureNaissance,
+                                   @Pattern(regexp = "EXACTE|APPROXIMATIVE|INCONNUE") String precisionDate) {
     }
 
     public record ProcheRequest(@NotBlank @Pattern(regexp = "RELAIS|PERE|GRAND_PARENT|AUTRE_PROCHE") String role,
@@ -159,7 +161,7 @@ public class AgentController {
     NaissanceService.Resultat declarer(@AuthenticationPrincipal AppUser u, @Valid @RequestBody NaissanceRequest r) {
         return naissances.declarer(u, r.codeEnfant(), r.lieuNaissance(), r.certificatAccouchement(),
                 new NaissanceService.Identite(r.mereNom(), r.pereNom(), r.enfantPrenom(), r.accordMere(), r.accordPere()),
-                r.source(), LocalDate.now(clock));
+                r.source(), r.heureNaissance(), r.precisionDate(), LocalDate.now(clock));
     }
 
     // ------------------------------------------------------------------ inscription

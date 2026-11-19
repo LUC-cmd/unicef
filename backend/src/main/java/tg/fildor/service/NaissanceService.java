@@ -157,6 +157,29 @@ public class NaissanceService {
         return new Resultat(creee, d);
     }
 
+    /** Déclaration complète : provenance, noms choisis par la famille, heure de naissance (« HH:mm », facultative)
+     *  et précision de la date (EXACTE, APPROXIMATIVE ou INCONNUE). */
+    public Resultat declarer(AppUser u, String codeEnfant, String lieu, boolean certificat, Identite identite,
+                             String source, String heureNaissance, String precisionDate, LocalDate aujourdhui) {
+        java.time.LocalTime heure = null;
+        if (heureNaissance != null && !heureNaissance.isBlank()) {
+            try {
+                heure = java.time.LocalTime.parse(heureNaissance.strip());
+            } catch (java.time.format.DateTimeParseException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Heure de naissance invalide (format HH:mm)");
+            }
+        }
+        String precision = precisionDate == null || precisionDate.isBlank() ? "EXACTE" : precisionDate.strip();
+        if (!precision.equals("EXACTE") && !precision.equals("APPROXIMATIVE") && !precision.equals("INCONNUE")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Précision de la date invalide");
+        }
+        Resultat r = declarer(u, codeEnfant, lieu, certificat, identite, source, aujourdhui);
+        if (r.creee()) {
+            declarations.definirComplement(r.declaration().id(), heure, precision);
+        }
+        return r;
+    }
+
     /** Déclaration avec sa provenance et, si la famille l'a choisi, les informations pour l'acte. */
     public Resultat declarer(AppUser u, String codeEnfant, String lieu, boolean certificat, Identite identite,
                              String source, LocalDate aujourdhui) {

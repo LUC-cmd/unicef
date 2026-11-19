@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
+import ConfirmerSortie from './ConfirmerSortie.jsx'
 import Avatar, { ecrirePhoto, lirePhoto, preparerPhoto } from './Avatar.jsx'
 
 const ROLES = { AGENT: 'Agent de santé', MAIRIE: 'État civil', STRUCTURE: 'Structure d’accueil', DECIDEUR: 'Responsable régional', ADMIN: 'Administrateur' }
@@ -12,6 +13,7 @@ export default function MenuProfil() {
   const { enLigne } = useReseau()
   const [ouvert, setOuvert] = useState(false)
   const [erreur, setErreur] = useState('')
+  const [confirmer, setConfirmer] = useState(false)
   const [aPhoto, setAPhoto] = useState(() => Boolean(lirePhoto(session?.username)))
   const ref = useRef(null)
   useEffect(() => {
@@ -61,9 +63,10 @@ export default function MenuProfil() {
           {aPhoto && <button type="button" role="menuitem" onClick={() => ecrirePhoto(session.username, '')}>Retirer la photo</button>}
           <p className="profil-note">La photo reste sur cet appareil.</p>
           {erreur && <p className="erreur" role="alert">{erreur}</p>}
-          <button type="button" role="menuitem" className="profil-sortie" onClick={() => { setOuvert(false); deconnexion() }}>Se déconnecter</button>
+          <button type="button" role="menuitem" className="profil-sortie" onClick={() => { setOuvert(false); setConfirmer(true) }}>Se déconnecter</button>
         </div>
       )}
+      <ConfirmerSortie ouvert={confirmer} onAnnuler={() => setConfirmer(false)} onConfirmer={() => { setConfirmer(false); deconnexion() }} />
     </div>
   )
 }

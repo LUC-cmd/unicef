@@ -5,12 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1cabe2" />
     <meta name="description" content="Fil d'Or suit chaque enfant du premier rendez-vous de grossesse jusqu'à 5 ans, avec ou sans téléphone, avec ou sans réseau. Candidature au concours Hack4Children Togo 2026." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon-64.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icone-192.png" />
     <title>Fil d'Or — Hack4Children Togo 2026</title>
+    <style>
+      /* Écran de démarrage : visible avant même que le site soit chargé */
+      #demarrage { position: fixed; inset: 0; z-index: 9999; display: grid; place-content: center; justify-items: center; gap: 1.1rem; background: linear-gradient(160deg, #ffffff 0%, #e8f5fc 100%); transition: opacity .45s ease, visibility .45s; font-family: Roboto, system-ui, sans-serif; }
+      #demarrage.parti { opacity: 0; visibility: hidden; }
+      #demarrage .dem-logo { position: relative; width: 128px; height: 128px; }
+      #demarrage .dem-logo img { position: absolute; inset: 14px; width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+      #demarrage .dem-logo svg { position: absolute; inset: 0; width: 128px; height: 128px; transform: rotate(-90deg); }
+      #demarrage circle { fill: none; stroke-width: 4; }
+      #demarrage .dem-piste { stroke: #cfe8f6; }
+      #demarrage .dem-fil { stroke: #f2b705; stroke-linecap: round; stroke-dasharray: 90 290; animation: dem-tour 1.5s cubic-bezier(.5, .1, .5, .9) infinite; transform-origin: 50% 50%; }
+      #demarrage .dem-nom { margin: 0; font-size: 1.5rem; font-weight: 700; color: #0d3b66; letter-spacing: -.01em; }
+      #demarrage .dem-ligne { width: 160px; height: 3px; border-radius: 3px; background: #d6eaf6; overflow: hidden; }
+      #demarrage .dem-ligne i { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, #f2b705, transparent); animation: dem-fil 1.4s ease-in-out infinite; }
+      @keyframes dem-tour { to { transform: rotate(360deg); } }
+      @keyframes dem-fil { from { transform: translateX(-120%); } to { transform: translateX(300%); } }
+      @media (prefers-reduced-motion: reduce) { #demarrage .dem-fil, #demarrage .dem-ligne i { animation-duration: 4s; } #demarrage { transition: none; } }
+    </style>
   </head>
   <body>
+    <div id="demarrage" role="status" aria-live="polite" aria-label="Ouverture de Fil d'Or">
+      <div class="dem-logo">
+        <svg viewBox="0 0 128 128" aria-hidden="true"><circle class="dem-piste" cx="64" cy="64" r="58" /><circle class="dem-fil" cx="64" cy="64" r="58" /></svg>
+        <img src="/logo-rond.png" alt="" width="100" height="100" />
+      </div>
+      <p class="dem-nom">Fil d'Or</p>
+      <div class="dem-ligne" aria-hidden="true"><i></i></div>
+    </div>
     <div id="root"></div>
     <script src="/fildor-config.js"></script>
     <script type="module" src="/src/main.jsx"></script>

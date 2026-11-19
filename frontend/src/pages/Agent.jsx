@@ -159,6 +159,7 @@ export default function Agent({ vue = 'visites' }) {
           </div>
           <div className="actions">
             <Link className="bouton" to="/agent/inscription">Inscrire une famille</Link>
+            <Link className="bouton secondaire" to="/agent/naissance">Déclarer une naissance</Link>
             <Link className="bouton secondaire" to="/agent/visites">Mes visites</Link>
           </div>
         </header>

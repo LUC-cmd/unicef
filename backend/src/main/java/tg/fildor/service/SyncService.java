@@ -40,7 +40,17 @@ public class SyncService {
             @NotBlank @Pattern(regexp = "CENTRE_SANTE|DOMICILE") String lieuNaissance,
             boolean certificatAccouchement,
             @Pattern(regexp = "AGENT|CENTRE_SANTE|HOPITAL") String source,
-            String mereNom, String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere) {
+            String mereNom, String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere,
+            @Pattern(regexp = "([01][0-9]|2[0-3]):[0-5][0-9]") String heureNaissance,
+            @Pattern(regexp = "EXACTE|APPROXIMATIVE|INCONNUE") String precisionDate) {
+
+        /** Ancien format (sans heure ni précision de date) : reste valable pour les téléphones pas encore mis à jour. */
+        public SyncDeclaration(String codeEnfant, String lieuNaissance, boolean certificatAccouchement, String source,
+                               String mereNom, String pereNom, String enfantPrenom, boolean accordMere,
+                               boolean accordPere) {
+            this(codeEnfant, lieuNaissance, certificatAccouchement, source, mereNom, pereNom, enfantPrenom,
+                    accordMere, accordPere, null, null);
+        }
     }
 
     public record SyncAccouchement(@NotBlank String codeEnfant, @NotNull LocalDate dateNaissance,
@@ -141,9 +151,14 @@ public class SyncService {
 
         for (SyncDeclaration d : req.declarations() == null ? List.<SyncDeclaration>of() : req.declarations()) {
             try {
-                boolean cree = naissances.declarer(u, d.codeEnfant(), d.lieuNaissance(), d.certificatAccouchement(),
-                        new NaissanceService.Identite(d.mereNom(), d.pereNom(), d.enfantPrenom(), d.accordMere(),
-                                d.accordPere()), d.source(), aujourdhui).creee();
+                NaissanceService.Identite identite = new NaissanceService.Identite(d.mereNom(), d.pereNom(),
+                        d.enfantPrenom(), d.accordMere(), d.accordPere());
+                boolean complet = d.heureNaissance() != null || d.precisionDate() != null;
+                boolean cree = (complet
+                        ? naissances.declarer(u, d.codeEnfant(), d.lieuNaissance(), d.certificatAccouchement(),
+                                identite, d.source(), d.heureNaissance(), d.precisionDate(), aujourdhui)
+                        : naissances.declarer(u, d.codeEnfant(), d.lieuNaissance(), d.certificatAccouchement(),
+                                identite, d.source(), aujourdhui)).creee();
                 if (cree) {
                     dCrees++;
                 } else {

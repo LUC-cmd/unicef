@@ -83,6 +83,11 @@ function Protegee({ page, children }) {
   return children
 }
 
+/** Application installée sur le téléphone (écran d'accueil) : on ouvre directement l'espace famille. */
+function enApplicationFamille() {
+  try { return Boolean(window.matchMedia?.('(display-mode: standalone)').matches) && !globalThis.FILDOR_CONFIG?.logiciel } catch { return false }
+}
+
 export default function App() {
   const { session } = useAuth()
   const { enLigne } = useReseau()
@@ -93,7 +98,7 @@ export default function App() {
       const reduit = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
       // L'ouverture se rejoue à chaque chargement de l'accueil (l'utilisateur l'a demandé) ;
       // sauf si le mouvement est réduit ou dans l'application bureau, où elle est inutile.
-      return lieu.pathname === '/' && !reduit && !globalThis.FILDOR_CONFIG?.logiciel
+      return lieu.pathname === '/' && !reduit && !globalThis.FILDOR_CONFIG?.logiciel && !enApplicationFamille()
     } catch { return false }
   })
   const finIntro = () => setIntro(false)
@@ -225,7 +230,7 @@ export default function App() {
         <Suspense fallback={<Chargement texte="Ouverture de la page…" />}>
         <div className="page-entree" key={lieu.pathname.split("/")[1] || "/"}>
         <Routes location={lieu}>
-          <Route path="/" element={<Accueil />} />
+          <Route path="/" element={enApplicationFamille() && !session ? <Navigate to="/famille" replace /> : <Accueil />} />
           <Route path="/preparation" element={<Preparation />} />
           <Route path="/projet" element={<Projet />} />
           <Route path="/territoire" element={<Territoire />} />

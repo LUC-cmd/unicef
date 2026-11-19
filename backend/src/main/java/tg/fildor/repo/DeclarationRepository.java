@@ -76,6 +76,13 @@ public class DeclarationRepository {
                 .update() > 0;
     }
 
+    /** Heure de naissance et précision de la date, saisies par l'agent avec la déclaration. */
+    public void definirComplement(long declarationId, java.time.LocalTime heure, String precision) {
+        jdbc.sql("UPDATE declaration_naissance SET heure_naissance = :h, precision_date = :p WHERE id = :id")
+                .param("h", heure).param("p", precision == null ? "EXACTE" : precision).param("id", declarationId)
+                .update();
+    }
+
     /** Dossier vu par l'état civil : la déclaration, sa provenance, son avancement et ce que la famille a choisi de communiquer. */
     public record DossierMairie(long id, String codeEnfant, String statut, String lieuNaissance,
                                 boolean certificatAccouchement, String numeroRecu, java.time.OffsetDateTime envoyeeLe,
@@ -85,7 +92,7 @@ public class DeclarationRepository {
                                 String pereNom, String enfantPrenom, boolean accordMere, boolean accordPere,
                                 String pieceType, String pieceNumero, String nationaliteMere,
                                 String nationaliteConjoint, LocalDate prenomAttenduLe, boolean prenomDonne,
-                                boolean prisEnGrossesse) {
+                                boolean prisEnGrossesse, String heureNaissance, String precisionDate) {
     }
 
     public List<DossierMairie> dossiers(String statut) {
@@ -101,7 +108,8 @@ public class DeclarationRepository {
                        (COALESCE(i.accord_pere, FALSE) OR COALESCE(p.accord_conjoint, FALSE)) AS accord_pere,
                        p.piece_type, p.piece_numero, p.nationalite_mere, p.nationalite_conjoint,
                        (d.prenom_enfant IS NOT NULL) AS prenom_donne,
-                       (p.enfant_id IS NOT NULL) AS pris_en_grossesse
+                       (p.enfant_id IS NOT NULL) AS pris_en_grossesse,
+                       LEFT(CAST(d.heure_naissance AS VARCHAR), 5) AS heure_naissance, d.precision_date
                 FROM declaration_naissance d
                 JOIN enfant e ON e.id = d.enfant_id
                 JOIN famille f ON f.id = e.famille_id
@@ -127,7 +135,8 @@ public class DeclarationRepository {
                     rs.getBoolean("accord_mere"), rs.getBoolean("accord_pere"),
                     rs.getString("piece_type"), rs.getString("piece_numero"), rs.getString("nationalite_mere"),
                     rs.getString("nationalite_conjoint"), naissance == null ? null : naissance.plusDays(8),
-                    rs.getBoolean("prenom_donne"), rs.getBoolean("pris_en_grossesse"));
+                    rs.getBoolean("prenom_donne"), rs.getBoolean("pris_en_grossesse"),
+                    rs.getString("heure_naissance"), rs.getString("precision_date"));
         }).list();
     }
 

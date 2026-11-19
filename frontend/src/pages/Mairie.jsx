@@ -62,6 +62,8 @@ function FicheDossier({ d, fermer, valider, rejeter, preuve }) {
         <Parcours d={d} />
         <dl className="stats">
           <dt>Envoyé par</dt><dd>{SOURCE_DECLARATION[d.source] ?? 'Agent de santé'}</dd>
+          <dt>Heure de naissance</dt><dd>{d.heureNaissance || 'Non indiquée'}</dd>
+          <dt>Précision de la date</dt><dd>{{ EXACTE: 'Date exacte', APPROXIMATIVE: 'Date approximative', INCONNUE: 'Date inconnue : orienter vers un jugement supplétif' }[d.precisionDate] || 'Date exacte'}</dd>
           <dt>Lieu de naissance</dt><dd>{d.lieuNaissance === 'CENTRE_SANTE' ? 'Centre de santé' : 'Domicile'}</dd>
           <dt>Certificat d’accouchement</dt><dd>{d.certificatAccouchement ? 'Vu par l’agent' : 'Non vu'}</dd>
           <dt>Délai</dt><dd>{d.dansDelaiGratuit ? 'Gratuit (dans les 45 jours)' : 'Hors délai : jugement supplétif, 6 000 FCFA'}</dd>

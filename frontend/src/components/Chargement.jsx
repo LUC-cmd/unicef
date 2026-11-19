@@ -4,34 +4,21 @@ export function Roue({ petite = false }) {
   return <span className={`roue${petite ? ' petite' : ''}`} role="progressbar" aria-label="Chargement" />
 }
 
-/** Zone de contenu en cours de chargement — avec logo animé. */
-export default function Chargement({ texte = 'Chargement…', pleinEcran = false }) {
-  if (pleinEcran) {
-    return (
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        minHeight: '100vh', background: 'linear-gradient(135deg, #f0f8ff 0%, #e8f4fd 100%)',
-        gap: '1.2rem', padding: '2rem',
-      }} role="status" aria-live="polite">
-        <img src="/logo-fildor.png" alt="Fil d'Or" style={{
-          width: 80, height: 80, borderRadius: '50%', objectFit: 'cover',
-          animation: 'pulseLogo 1.6s ease-in-out infinite',
-          boxShadow: '0 4px 20px rgba(28,171,226,0.25)',
-        }} />
-        <Roue />
-        <p style={{ color: '#1cabe2', fontWeight: 600, fontSize: '1.05rem' }}>{texte}</p>
-        <style>{`
-          @keyframes pulseLogo {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.85; }
-          }
-        `}</style>
-      </div>
-    )
-  }
+/** Le logo entouré d'un fil d'or qui tourne : même signature que l'écran de démarrage. */
+function Chargeur({ taille }) {
   return (
-    <div className="chargement-zone" role="status" aria-live="polite">
-      <Roue />
+    <span className="chargeur" style={{ '--t': `${taille}px` }} aria-hidden="true">
+      <svg viewBox="0 0 128 128"><circle className="chargeur-piste" cx="64" cy="64" r="58" /><circle className="chargeur-fil" cx="64" cy="64" r="58" /></svg>
+      <img src="/logo-rond.png" alt="" />
+    </span>
+  )
+}
+
+/** Zone de contenu en cours de chargement, avec le logo et son fil d'or. */
+export default function Chargement({ texte = 'Chargement…', pleinEcran = false }) {
+  return (
+    <div className={pleinEcran ? 'chargement-plein' : 'chargement-zone'} role="status" aria-live="polite">
+      <Chargeur taille={pleinEcran ? 112 : 64} />
       <p>{texte}</p>
     </div>
   )

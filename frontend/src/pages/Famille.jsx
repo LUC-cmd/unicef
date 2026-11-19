@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import DeclarationFamille from '../components/DeclarationFamille.jsx'
+import ConfirmerSortie from '../components/ConfirmerSortie.jsx'
 import Bandeau from '../components/Bandeau.jsx'
-import { api } from '../lib/api.js'
+import Picto from '../components/Picto.jsx'
+import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
 
@@ -33,24 +36,37 @@ async function afficherNotification(titre, corps) {
 function Connexion({ onConnecte }) {
   const [tel, setTel] = useState('')
   const [code, setCode] = useState('')
+  const [secret, setSecret] = useState('')
+  const [secretRequis, setSecretRequis] = useState(false)
   const [erreur, setErreur] = useState('')
   const [attente, setAttente] = useState(false)
   const entrer = async (e) => {
     e.preventDefault(); setAttente(true); setErreur('')
-    try { const p = await api.post('/api/public/famille/connexion', { telephone: tel, codeFamille: code }); ecrireCompte({ telephone: tel, codeFamille: code.trim().toUpperCase() }); onConnecte(p) }
-    catch (err) { setErreur(err.statut === 403 ? 'Numéro ou code famille incorrect. Le code est écrit sur votre carte de famille ; sinon demandez-le à votre agent de santé.' : err.message) }
+    definirSecretFamille(secret.trim())
+    try {
+      const p = await api.post('/api/public/famille/connexion', { telephone: tel, codeFamille: code })
+      const codeF = code.trim().toUpperCase()
+      ecrireCompte({ telephone: tel, codeFamille: codeF, secret: codeF === 'F-0001' ? 'demo' : secret.trim() }); onConnecte(p)
+    } catch (err) {
+      definirSecretFamille('')
+      if (err.statut === 401) { setSecretRequis(true); setErreur('Entrez le code secret que vous avez choisi à votre première connexion.') }
+      else if (err.statut === 429) setErreur(err.message)
+      else setErreur(err.statut === 403 ? (secret ? 'Numéro, code famille ou code secret incorrect.' : 'Numéro ou code famille incorrect. Le code est écrit sur votre carte de famille ; sinon demandez-le à votre agent de santé.') : err.message)
+    }
     finally { setAttente(false) }
   }
   return (
     <main className="page espace-famille">
       <form className="carte connexion-famille" onSubmit={entrer}>
         <h2>Entrer dans mon espace</h2>
-        <p className="petit">Deux informations suffisent : le numéro de téléphone de la famille et le code famille, écrit sur la carte de famille.</p>
+        <p className="petit">Le numéro de téléphone de la famille et le code famille (sur la carte de famille). À la première connexion, vous choisirez un code secret personnel : sans lui, personne d'autre ne peut ouvrir votre espace, même avec votre carte.</p>
         <label className="champ">Numéro de téléphone<input inputMode="tel" autoComplete="tel" required value={tel} onChange={(e) => setTel(e.target.value)} placeholder="90 00 00 01" /></label>
         <label className="champ">Code famille<input required value={code} onChange={(e) => setCode(e.target.value)} placeholder="F-0001" autoCapitalize="characters" /></label>
+        <label className="champ">Code secret {secretRequis ? '' : <em>(après votre première connexion)</em>}<input type="password" inputMode="numeric" autoComplete="current-password" pattern="\d{4,6}" maxLength={6} value={secret} onChange={(e) => setSecret(e.target.value.replace(/\D/g, ''))} placeholder="4 à 6 chiffres" required={secretRequis} /></label>
         {erreur && <p className="alerte-jour" role="alert">{erreur}</p>}
         <button className="bouton" disabled={attente}>Entrer dans mon espace</button>
-        <button type="button" className="bouton secondaire" onClick={() => { setTel('90000001'); setCode('F-0001') }}>Remplir la famille de démonstration</button>
+        <button type="button" className="bouton secondaire" onClick={() => { setTel('90000001'); setCode('F-0001'); setSecret('') }}>Remplir la famille de démonstration</button>
+        <p className="petit">Vous êtes agent de santé, mairie ou structure ? <Link to="/connexion">Ouvrir mon espace professionnel</Link>.</p>
         <p className="petit">Une famille sans compte : l'agent de santé l'inscrit lors de sa visite et lui remet sa carte de famille.</p>
       </form>
     </main>
@@ -61,13 +77,42 @@ export default function Famille() {
   const [compte, setCompte] = useState(lireCompte)
   const [profil, setProfil] = useState(null)
   if (!compte) return <><Bandeau surtitre="Pour les familles" titre="Mon espace famille">Rappels, crèches, dossier de naissance : tout ce qui concerne votre famille, au même endroit.</Bandeau><Connexion onConnecte={(p) => { setProfil(p); setCompte(lireCompte()) }} /></>
-  return <Tableau compte={compte} profil={profil} setProfil={setProfil} sortir={() => { ecrireCompte(null); setCompte(null); setProfil(null) }} />
+  return <Tableau compte={compte} profil={profil} setProfil={setProfil} sortir={() => { definirSecretFamille(''); ecrireCompte(null); setCompte(null); setProfil(null) }} onSecret={(sec) => { const c = { ...compte, secret: sec }; definirSecretFamille(sec); ecrireCompte(c); setCompte(c) }} />
 }
 
-function Tableau({ compte, profil, setProfil, sortir }) {
+function ChoixSecret({ compte, onSecret, sortir }) {
+  const [a, setA] = useState('')
+  const [b, setB] = useState('')
+  const [erreur, setErreur] = useState('')
+  const [attente, setAttente] = useState(false)
+  const valider = async (e) => {
+    e.preventDefault()
+    if (!/^\d{4,6}$/.test(a)) { setErreur('Le code secret a 4 à 6 chiffres.'); return }
+    if (a !== b) { setErreur('Les deux codes ne sont pas identiques.'); return }
+    setAttente(true); setErreur('')
+    try { await api.post('/api/public/famille/code-secret', { telephone: compte.telephone, codeFamille: compte.codeFamille, nouveauCode: a }); onSecret(a) }
+    catch (err) { setErreur(err.message) } finally { setAttente(false) }
+  }
+  return (
+    <main className="page espace-famille">
+      <form className="carte connexion-famille" onSubmit={valider}>
+        <h2>Choisissez votre code secret</h2>
+        <p className="petit">Votre carte de famille peut être vue par d'autres personnes. Ce code, que vous seul connaissez, protège les informations de vos enfants. Notez-le ailleurs que sur la carte. Il vous sera demandé à chaque connexion. Si vous l'oubliez, votre agent de santé peut l'effacer.</p>
+        <label className="champ">Code secret (4 à 6 chiffres)<input type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} value={a} onChange={(e) => setA(e.target.value.replace(/\D/g, ''))} required /></label>
+        <label className="champ">Répétez le code<input type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} value={b} onChange={(e) => setB(e.target.value.replace(/\D/g, ''))} required /></label>
+        {erreur && <p className="alerte-jour" role="alert">{erreur}</p>}
+        <button className="bouton" disabled={attente}>Enregistrer mon code secret</button>
+        <button type="button" className="bouton secondaire" onClick={sortir}>Quitter</button>
+      </form>
+    </main>
+  )
+}
+
+function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
   const numero = compte.telephone
   const [messages, setMessages] = useState([])
   const [erreur, setErreur] = useState('')
+  const [confirmerSortie, setConfirmerSortie] = useState(false)
   const [permission, setPermission] = useState(() => ('Notification' in window ? Notification.permission : 'indisponible'))
   const [coches, setCoches] = useState(() => lire('fildor.famille.dossier', {}))
   const [proches, setProches] = useState([])
@@ -81,7 +126,7 @@ function Tableau({ compte, profil, setProfil, sortir }) {
 
   const chargerProfil = useCallback(async () => {
     try { setProfil(await api.post('/api/public/famille/connexion', acces)); setProches(await api.post('/api/public/famille/creches/proches', acces)) }
-    catch (e) { if (e.statut === 403) sortir(); else setErreur('Pas de réseau pour le moment. Vos informations reviendront avec la connexion.') }
+    catch (e) { if (e.statut === 403 || e.statut === 401) sortir(); else setErreur('Pas de réseau pour le moment. Vos informations reviendront avec la connexion.') }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compte.telephone, compte.codeFamille])
 
@@ -122,13 +167,15 @@ function Tableau({ compte, profil, setProfil, sortir }) {
   const declares = profil?.enfantsDeclares ?? 0
   const suivis = profil?.enfantsSuivis ?? 0
 
+  if (!compte.secret) return <ChoixSecret compte={compte} onSecret={onSecret} sortir={sortir} />
   return (
     <>
       <Bandeau surtitre="Pour les familles" titre={`Famille ${compte.codeFamille}`}>
         {profil ? `Zone : ${profil.zone}. ` : ''}Vos rappels, les crèches proches de chez vous et votre dossier de naissance.
       </Bandeau>
       <main className="page espace-famille">
-        <div className="famille-barre"><span className="petit">Connecté avec le numéro {compte.telephone}</span><button className="bouton secondaire petit-bouton" onClick={sortir}>Se déconnecter</button></div>
+        <div className="famille-barre"><span className="petit">Connecté avec le numéro {compte.telephone}</span><button className="bouton secondaire petit-bouton" onClick={() => setConfirmerSortie(true)}>Se déconnecter</button></div>
+        <ConfirmerSortie ouvert={confirmerSortie} onAnnuler={() => setConfirmerSortie(false)} onConfirmer={() => { setConfirmerSortie(false); sortir() }} texte="Vous quittez votre espace famille. Pour y revenir, il faudra le numéro de téléphone, le code famille et votre code secret." />
         {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/acte">Voir les étapes du retrait</Link></div>}
 
         {!installee && (
@@ -159,6 +206,22 @@ function Tableau({ compte, profil, setProfil, sortir }) {
             ))}
           </ul>
         </section>
+
+        <section className="carte famille-pour-vous" aria-labelledby="t-pourvous">
+          <h2 id="t-pourvous">Pour vous et vos enfants</h2>
+          <div className="pour-vous-grille">
+            {(profil?.enfants || []).some((e) => e.statut === 'GROSSESSE') && (
+              <Link to="/grossesse" className="pour-vous-carte"><Picto nom="enceinte" /><b>Ma grossesse, mois par mois</b><span>Consultations, exercices doux, signes d'alerte, kit d'accouchement.</span></Link>
+            )}
+            {(profil?.enfants || []).some((e) => e.statut === 'ENFANT') && (
+              <Link to="/jeux" className="pour-vous-carte"><Picto nom="danse" /><b>Jeux et vidéos d'éveil</b><span>Des jeux simples à faire à la maison, adaptés à l'âge de l'enfant.</span></Link>
+            )}
+            <Link to="/assistant" className="pour-vous-carte"><Picto nom="parole" /><b>Poser une question</b><span>L'assistant répond sur la santé de l'enfant, et dit quand voir un agent.</span></Link>
+            <Link to="/acte" className="pour-vous-carte"><Picto nom="fiche" /><b>Obtenir l'acte de naissance</b><span>Les étapes, les délais et la gratuité.</span></Link>
+          </div>
+        </section>
+
+        <DeclarationFamille compte={compte} profil={profil} />
 
         <section className="carte carte-creche" aria-labelledby="t-creche">
           <h2 id="t-creche">Crèches près de chez moi</h2>

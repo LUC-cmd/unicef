@@ -1,6 +1,6 @@
 {
   "name": "fildor-bureau",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Fil d'Or pour Windows : fonctionne sans réseau, envoie les données quand le réseau revient.",
   "main": "main.js",
   "author": "Équipe Fil d'Or",
