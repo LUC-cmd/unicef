@@ -31,7 +31,7 @@ public class AlerteRepository {
                 SELECT a.id, a.famille_id, f.code_famille, f.zone_id, a.motif, a.statut, a.cree_le
                 FROM alerte_urgence a
                 LEFT JOIN famille f ON f.id = a.famille_id
-                WHERE (:zone IS NULL OR f.zone_id = :zone)
+                WHERE (CAST(:zone AS bigint) IS NULL OR f.zone_id = :zone)
                 ORDER BY a.cree_le DESC
                 LIMIT :limite""")
                 .param("zone", zoneId).param("limite", limite)
@@ -48,7 +48,7 @@ public class AlerteRepository {
         return jdbc.sql("""
                 SELECT count(*) FROM alerte_urgence a
                 LEFT JOIN famille f ON f.id = a.famille_id
-                WHERE a.statut = 'NOUVELLE' AND (:zone IS NULL OR f.zone_id = :zone)""")
+                WHERE a.statut = 'NOUVELLE' AND (CAST(:zone AS bigint) IS NULL OR f.zone_id = :zone)""")
                 .param("zone", zoneId).query(Integer.class).single();
     }
 
@@ -57,7 +57,7 @@ public class AlerteRepository {
         return jdbc.sql("""
                 UPDATE alerte_urgence a SET statut = :s, traite_le = CASE WHEN :s = 'NOUVELLE' THEN NULL ELSE now() END
                 WHERE a.id = :id AND a.statut <> 'CLOTUREE'
-                  AND (:zone IS NULL OR EXISTS (SELECT 1 FROM famille f WHERE f.id = a.famille_id AND f.zone_id = :zone))""")
+                  AND (CAST(:zone AS bigint) IS NULL OR EXISTS (SELECT 1 FROM famille f WHERE f.id = a.famille_id AND f.zone_id = :zone))""")
                 .param("s", statut).param("id", id).param("zone", zoneId).update() > 0;
     }
 }

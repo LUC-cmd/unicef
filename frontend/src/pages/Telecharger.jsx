@@ -37,7 +37,13 @@ export default function Telecharger() {
               : invite ? <button type="button" className="bouton gros" onClick={ajouter}>Installer l'application</button>
               : apk && android ? <a className="bouton gros" href={apk}>Télécharger et installer</a>
               : iphone ? <p className="petit">Sur iPhone : touchez le bouton Partager de Safari, puis « Sur l'écran d'accueil ».</p>
-              : <p className="petit">Ouvrez le menu ⋮ du navigateur, puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</p>}
+              : android ? (
+                <>
+                  <p className="petit">L'installation ne se propose pas ici : cette page est ouverte dans un navigateur intégré (WhatsApp, appareil photo, Facebook…). Ouvrez-la dans Chrome.</p>
+                  <a className="bouton gros" href={`intent://${window.location.host}/telecharger#Intent;scheme=https;package=com.android.chrome;end`}>Ouvrir dans Chrome pour installer</a>
+                  <p className="petit">Sinon, dans Chrome : menu ⋮, puis « Installer l'application ».</p>
+                </>
+              ) : <p className="petit">Ouvrez le menu du navigateur, puis « Ajouter à l'écran d'accueil ».</p>}
           </section>
         )}
         <section className="carte telechargement telecharger-haut">
@@ -59,7 +65,7 @@ export default function Telecharger() {
               <p>Ouvrez cette page sur un téléphone Android, ou scannez le code à côté.</p>
             )}
             <ol className="pas-a-pas">
-              <li>Appuyez sur « Télécharger », puis ouvrez le fichier reçu.</li>
+              <li>Appuyez sur « Installer l'application » (ou « Télécharger » si le fichier est proposé).</li>
               <li>Si Android le demande, autorisez l'installation depuis ce navigateur (une seule fois).</li>
               <li>Ouvrez Fil d'Or. Au premier lancement, gardez le réseau quelques secondes.</li>
             </ol>

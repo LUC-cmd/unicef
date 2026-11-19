@@ -3,7 +3,7 @@
   "appName": "Fil d'Or",
   "webDir": "www",
   "server": {
-    "url": "https://frontend-production-5667500e.up.railway.app",
+    "url": "https://fildor.up.railway.app",
     "cleartext": false,
     "androidScheme": "https"
   },
