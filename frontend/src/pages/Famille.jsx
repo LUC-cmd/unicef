@@ -6,6 +6,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Picto from '../components/Picto.jsx'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
+import FilEnfant from '../components/FilEnfant.jsx'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
 
 const TYPES = {
@@ -202,7 +203,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret }) {
           {profil && declares > suivis && <p className="petit">{declares - suivis} enfant(s) pas encore suivi(s) : votre agent de santé les inscrira à sa prochaine visite, ou au centre de santé avec le carnet.</p>}
           <ul className="fam-boite">
             {(profil?.enfants ?? []).map((e) => (
-              <li key={e.codeEnfant} style={{ '--c': '#0E86B8' }}><b>Enfant {e.codeEnfant}</b><small>{e.statut === 'ENFANT' ? `${e.ageMois} mois` : `Naissance attendue vers le ${formaterDate(e.termePrevu)}`}</small></li>
+              <li key={e.codeEnfant} style={{ '--c': '#0E86B8' }}><b>Enfant {e.codeEnfant}</b><small>{e.statut === 'ENFANT' ? `${e.ageMois} mois` : `Naissance attendue vers le ${formaterDate(e.termePrevu)}`}</small><FilEnfant enfant={e} /></li>
             ))}
           </ul>
         </section>

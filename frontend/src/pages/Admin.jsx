@@ -123,7 +123,7 @@ export default function Admin({ vue = 'services' }) {
     return (
       <main className="page">
         <Bandeau surtitre="Administrateur" titre="Comptes et structures">
-          Un compte par agent, centre, état civil ou responsable, rattaché à sa zone.
+          L'administrateur crée les responsables régionaux, un par région. Chaque responsable régional crée ensuite les agents, états civils, centres de santé et crèches de sa région.
         </Bandeau>
         <GestionComptes />
       </main>

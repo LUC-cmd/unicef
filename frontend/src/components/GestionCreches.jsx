@@ -4,21 +4,36 @@ import { api } from '../lib/api.js'
 const REGIONS = ['Maritime', 'Plateaux', 'Centrale', 'Kara', 'Savanes']
 const JOURS = [['LUN', 'Lun'], ['MAR', 'Mar'], ['MER', 'Mer'], ['JEU', 'Jeu'], ['VEN', 'Ven'], ['SAM', 'Sam'], ['DIM', 'Dim']]
 const court = (nom) => nom.replace(/ \(.*\)/, '')
+const identifiantDe = (nom) => 'creche.' + nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/^creches?-/, '').slice(0, 28)
 
 /** Les crèches : la liste, et la création complète (conditions d'accueil + compte du responsable). */
-export default function GestionCreches({ geo, apres }) {
+export default function GestionCreches({ geo, apres, base = '/api/decideur/gestion' }) {
   const [liste, setListe] = useState(null)
   const [erreur, setErreur] = useState('')
   const [ouvert, setOuvert] = useState(false)
   const [f, setF] = useState({ nom: '', zone: '', tel: '', lat: '', lon: '', capacite: 20, ageMin: 12, ageMax: 60, ouv: '07:00', fer: '17:00',
     jours: ['LUN', 'MAR', 'MER', 'JEU', 'VEN'], tarif: '', conditions: '', apporter: '', besoins: false, username: '', responsable: '' })
   const maj = (k, v) => setF((x) => ({ ...x, [k]: v }))
+  const [modifie, setModifie] = useState(false)
+  const [compteDe, setCompteDe] = useState(null) // { code, nom, username }
+  const [erreurCompte, setErreurCompte] = useState('')
+  const changerNom = (v) => setF((x) => ({ ...x, nom: v, username: modifie || !v.trim() ? x.username : identifiantDe(v) }))
 
-  const charger = useCallback(() => { api.get('/api/admin/creches').then(setListe).catch((e) => setErreur(e.message)) }, [])
+  async function creerCompte(e) {
+    e.preventDefault(); setErreurCompte('')
+    if (!/^[a-z0-9._-]{3,40}$/.test(compteDe.username)) return setErreurCompte('L’identifiant : 3 à 40 caractères, minuscules, chiffres, point ou tiret.')
+    try {
+      const r = await api.post(`${base}/comptes`, { username: compteDe.username, nomComplet: `Responsable, ${compteDe.nom}`, role: 'STRUCTURE', codeStructure: compteDe.code })
+      apres({ titre: `Compte du responsable de « ${compteDe.nom} » : ${compteDe.username}`, motDePasseProvisoire: r.motDePasseProvisoire })
+      setCompteDe(null); charger()
+    } catch (err) { setErreurCompte(err.message) }
+  }
+
+  const charger = useCallback(() => { api.get(`${base}/creches`).then(setListe).catch((e) => setErreur(e.message)) }, [base])
   useEffect(charger, [charger])
 
   async function basculer(c) {
-    try { await api.post(`/api/admin/creches/${encodeURIComponent(c.code)}/actif`, { actif: !c.actif }); charger() } catch { /* le retour s'affiche déjà */ }
+    try { await api.post(`${base}/creches/${encodeURIComponent(c.code)}/actif`, { actif: !c.actif }); charger() } catch { /* le retour s'affiche déjà */ }
   }
 
   async function envoyer(e) {
@@ -28,7 +43,7 @@ export default function GestionCreches({ geo, apres }) {
     if (f.jours.length === 0) return setErreur('Choisissez au moins un jour d’ouverture.')
     if ((f.lat && !f.lon) || (!f.lat && f.lon)) return setErreur('Renseignez la latitude et la longitude ensemble, ou aucune des deux.')
     try {
-      const r = await api.post('/api/admin/creches', {
+      const r = await api.post(`${base}/creches`, {
         nom: f.nom.trim(), codeZone: f.zone, telephone: f.tel.trim() || null,
         latitude: f.lat ? Number(f.lat.replace(',', '.')) : null, longitude: f.lon ? Number(f.lon.replace(',', '.')) : null,
         capacite: Number(f.capacite), ageMinMois: Number(f.ageMin), ageMaxMois: Number(f.ageMax), ouverture: f.ouv, fermeture: f.fer,
@@ -57,7 +72,8 @@ export default function GestionCreches({ geo, apres }) {
                 <tr key={c.code} className={c.actif ? '' : 'inactif'}>
                   <td><b>{c.nom}</b><br /><span className="petit">{c.code}{c.telephone ? ` · ${c.telephone}` : ''}</span></td>
                   <td>{court(c.nomZone)}</td><td>{c.capacite}</td><td>{c.ageMinMois} à {c.ageMaxMois} mois</td><td>{c.horaires || '—'}</td>
-                  <td>{c.comptes > 0 ? <span className="etat ok">Compte créé</span> : <span className="etat off">Aucun compte</span>}</td>
+                  <td>{c.comptes > 0 ? <span className="etat ok">Compte créé</span>
+                    : <><span className="etat off">Aucun compte</span><br /><button type="button" className="lien-bouton" onClick={() => setCompteDe({ code: c.code, nom: c.nom, username: identifiantDe(c.nom) })}>Créer le compte</button></>}</td>
                   <td className="actions-ligne"><button type="button" className="lien-bouton" onClick={() => basculer(c)}>{c.actif ? 'Masquer aux familles' : 'Réactiver'}</button></td>
                 </tr>
               ))}
@@ -67,13 +83,27 @@ export default function GestionCreches({ geo, apres }) {
         </div>
       </section>
 
+      {compteDe && (
+        <form className="carte formulaire-compte" onSubmit={creerCompte} noValidate>
+          <h3>Compte du responsable de « {compteDe.nom} »</h3>
+          <p className="petit">Ce compte ouvre l’espace de la crèche : réservations des familles et fiche d’accueil. Un mot de passe provisoire vous sera montré une seule fois : remettez-le au responsable, qui le changera.</p>
+          <label className="champ"><span className="champ-titre">Identifiant</span>
+            <input value={compteDe.username} maxLength={40} autoCapitalize="none" onChange={(e) => setCompteDe({ ...compteDe, username: e.target.value.toLowerCase() })} /></label>
+          {erreurCompte && <p className="erreur" role="alert">{erreurCompte}</p>}
+          <div className="actions-formulaire">
+            <button type="submit" className="bouton">Créer le compte</button>
+            <button type="button" className="bouton secondaire" onClick={() => { setCompteDe(null); setErreurCompte('') }}>Annuler</button>
+          </div>
+        </form>
+      )}
+
       {ouvert && (
         <form className="carte formulaire-compte" onSubmit={envoyer} noValidate>
           <h2>Ajouter une crèche</h2>
           <p className="petit">La crèche apparaît tout de suite dans la liste des familles de sa préfecture. Son responsable pourra ensuite mettre à jour les conditions et traiter les réservations.</p>
           <h3>La crèche</h3>
           <div className="champs">
-            <label className="champ"><span className="champ-titre">Nom</span><input value={f.nom} maxLength={120} onChange={(e) => maj('nom', e.target.value)} placeholder="Crèche communautaire de Kévé" /></label>
+            <label className="champ"><span className="champ-titre">Nom</span><input value={f.nom} maxLength={120} onChange={(e) => changerNom(e.target.value)} placeholder="Crèche communautaire de Kévé" /></label>
             <label className="champ"><span className="champ-titre">Préfecture</span>
               <select value={f.zone} onChange={(e) => maj('zone', e.target.value)}>
                 <option value="">Choisir…</option>
@@ -101,10 +131,10 @@ export default function GestionCreches({ geo, apres }) {
           <label className="champ"><span className="champ-titre">Conditions d’accueil <em>facultatif</em></span><textarea rows="2" maxLength={600} value={f.conditions} onChange={(e) => maj('conditions', e.target.value)} /></label>
           <label className="champ"><span className="champ-titre">À apporter <em>facultatif</em></span><textarea rows="2" maxLength={600} value={f.apporter} onChange={(e) => maj('apporter', e.target.value)} placeholder="Carnet de santé, change, eau" /></label>
           <h3>Le responsable</h3>
-          <p className="petit">Facultatif : renseignez un identifiant pour créer son compte maintenant. Un mot de passe provisoire vous sera montré une seule fois.</p>
+          <p className="petit">Le compte du responsable est créé avec la crèche : l’identifiant est proposé à partir du nom, vous pouvez le changer. Un mot de passe provisoire vous sera montré une seule fois. Videz l’identifiant pour créer la crèche sans compte.</p>
           <div className="champs">
             <label className="champ"><span className="champ-titre">Nom du responsable</span><input value={f.responsable} maxLength={100} onChange={(e) => maj('responsable', e.target.value)} /></label>
-            <label className="champ"><span className="champ-titre">Identifiant</span><input value={f.username} maxLength={40} autoCapitalize="none" onChange={(e) => maj('username', e.target.value.toLowerCase())} placeholder="creche.keve" /></label>
+            <label className="champ"><span className="champ-titre">Identifiant</span><input value={f.username} maxLength={40} autoCapitalize="none" onChange={(e) => { setModifie(true); maj('username', e.target.value.toLowerCase()) }} placeholder="creche.keve" /></label>
           </div>
           {erreur && <p className="erreur" role="alert">{erreur}</p>}
           <div className="actions-formulaire">

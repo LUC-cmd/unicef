@@ -18,6 +18,9 @@ export default function Telecharger() {
     return () => { window.removeEventListener('beforeinstallprompt', avant); window.removeEventListener('appinstalled', fini) }
   }, [])
   async function ajouter() { if (invite) { invite.prompt(); await invite.userChoice; setInvite(null) } }
+  const iphone = /iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+  const mobile = android || iphone
+  const dansApp = window.matchMedia?.('(display-mode: standalone)').matches
 
   return (
     <>
@@ -25,6 +28,18 @@ export default function Telecharger() {
         Scannez le code avec l'appareil photo : l'installation se propose directement sur le téléphone.
       </Bandeau>
       <main className="page">
+        {mobile && !dansApp && (
+          <section className="carte installer-mobile" aria-labelledby="t-inst">
+            <img src="/icone-192.png" alt="" width="96" height="96" />
+            <h2 id="t-inst">Installer Fil d'Or</h2>
+            <p className="petit">Sur l'écran d'accueil de votre téléphone, avec son logo, même sans réseau.</p>
+            {installe ? <p><b>Application installée.</b></p>
+              : invite ? <button type="button" className="bouton gros" onClick={ajouter}>Installer l'application</button>
+              : apk && android ? <a className="bouton gros" href={apk}>Télécharger et installer</a>
+              : iphone ? <p className="petit">Sur iPhone : touchez le bouton Partager de Safari, puis « Sur l'écran d'accueil ».</p>
+              : <p className="petit">Ouvrez le menu ⋮ du navigateur, puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</p>}
+          </section>
+        )}
         <section className="carte telechargement telecharger-haut">
           <div className="telecharger-qr">
             <QrCode valeur={page} titre="Code QR pour installer Fil d'Or" />

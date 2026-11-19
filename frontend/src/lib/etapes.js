@@ -62,3 +62,42 @@ export const ETAPES_PARCOURS = [
   },
 ]
 export const etapeParCode = (c) => ETAPES_PARCOURS.find((e) => e.code === c)
+
+/**
+ * Pour chaque étape : le problème (chiffres du briefing thématique Hack4Children, UNICEF Togo, 16 novembre 2026),
+ * ce que Fil d'Or invente, et qui en profite. Ce qui est décrit existe dans le prototype.
+ */
+export const SOURCE_BRIEFING = 'UNICEF Togo, briefing thématique Hack4Children, 16 novembre 2026'
+const PLUS = {
+  adolescence: {
+    probleme: "17 % des décès maternels touchent des adolescentes de 12 à 19 ans, et 60,9 % des 15 à 19 ans sexuellement actives n'ont pas de contraception adaptée à leurs besoins.",
+    innovation: "La jeune mère est repérée dès l'inscription et son suivi est renforcé tout seul : priorité plus haute, orientation vers la santé et l'école. Le responsable régional a un tableau « filles et jeunes mères ».",
+    aide: "Les adolescentes et les jeunes mères : moins de grossesses à risque sans suivi, un retour à l'école accompagné.",
+  },
+  grossesse: {
+    probleme: "6 530 nouveau-nés meurent chaque année au Togo. Une mère suivie pendant sa grossesse dont le bébé n'est jamais enregistré est perdue entre deux services.",
+    innovation: "Le dossier de grossesse devient le début du dossier de l'enfant : si le terme est dépassé sans naissance notée, l'agent est alerté, et la déclaration est préparée avant le jour J.",
+    aide: "Les futures mères, surtout les plus jeunes : des rappels dans leur langue, les signes de danger, et rien ne se perd au moment de l'accouchement.",
+  },
+  naissance: {
+    probleme: "17,7 % des enfants de moins de 5 ans n'ont pas d'acte de naissance. À Vo, 184 actes établis sur 454 n'ont pas été retirés par les familles (40 %).",
+    innovation: "La famille signale la naissance, l'agent la vérifie, la mairie dresse l'acte. Fil d'Or distingue « pas d'acte », « acte établi, non retiré » et « acte retiré », et ne relance que les familles qui en ont besoin.",
+    aide: "Chaque enfant, et surtout les filles sans acte, qui auront plus de mal à entrer à l'école et à accéder aux services.",
+  },
+  petite: {
+    probleme: "16 496 enfants de moins de 5 ans meurent chaque année, et 300 000 sont touchés par la malnutrition chronique. Le nouveau-né de petit poids est le plus exposé, surtout la première semaine à la maison.",
+    innovation: "Un nouveau-né fragile garde un suivi après le retour à la maison : visites J1, J3 et J7, mesures du bracelet, alerte si la température ou le pouls sortent des repères. Un rendez-vous manqué fait remonter la famille en haut de la liste de l'agent.",
+    aide: "Les nouveau-nés de petit poids et leurs mères, et les familles sans téléphone, que seule la visite peut atteindre.",
+  },
+  eveil: {
+    probleme: "Un enfant vacciné n'est jamais orienté vers l'éveil : c'est entre deux services que l'enfant se perd.",
+    innovation: "Un jeu par jour avec les objets de la maison, des chansons et de petits films, et une « mallette de la crèche » pour les femmes qui gardent les enfants : jeux par âge, menu local, hygiène, signes d'alerte, formation de deux minutes.",
+    aide: "Les mères à la maison, et les femmes leaders des crèches solidaires, peu formées en santé, nutrition et éveil.",
+  },
+  prescolaire: {
+    probleme: "Seulement 27,6 % des enfants de 3 à 5 ans vont au préscolaire.",
+    innovation: "Les crèches proches s'affichent avec la route, les conditions et la réservation en ligne, et le responsable voit où les enfants de 3 à 5 ans sont hors du préscolaire.",
+    aide: "Les mères qui peuvent reprendre le travail ou l'école, et les enfants, mieux préparés à entrer à l'école.",
+  },
+}
+ETAPES_PARCOURS.forEach((e) => Object.assign(e, PLUS[e.code]))

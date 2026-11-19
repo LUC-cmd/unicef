@@ -8,6 +8,7 @@ import CarteTogo from '../components/CarteTogo.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 import RupturesParcours from '../components/RupturesParcours.jsx'
 import FillesImpact from '../components/FillesImpact.jsx'
+import GestionComptes from '../components/GestionComptes.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GraphiqueEvolution from '../components/GraphiqueEvolution.jsx'
 import AlertesZones from '../components/AlertesZones.jsx'
@@ -266,6 +267,16 @@ export default function Carte({ vue = 'carte' }) {
     )
   }
 
+  if (vue === 'gestion') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Responsable régional" titre="Comptes et crèches de ma région">
+          Vous créez les agents de santé, les états civils, les centres de santé et les crèches de votre région, avec leurs comptes de connexion.
+        </Bandeau>
+        <GestionComptes portee="REGION" />
+      </main>
+    )
+  }
   if (vue === 'filles') {
     return (
       <main className="page">

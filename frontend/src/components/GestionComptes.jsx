@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { Squelette } from './Chargement.jsx'
 import GestionCreches from './GestionCreches.jsx'
+import { useAuth } from '../lib/contexte.jsx'
 
 const ROLES = [
   { code: 'AGENT', nom: 'Agent de santé', aide: 'Inscrit les familles et suit les enfants d’une préfecture, même sans réseau.', rattache: 'prefecture' },
@@ -10,6 +11,8 @@ const ROLES = [
   { code: 'DECIDEUR', nom: 'Responsable régional', aide: 'Voit les taux de sa région, jamais un enfant.', rattache: 'region' },
   { code: 'ADMIN', nom: 'Administrateur', aide: 'Crée les comptes, reçoit les clés USB, suit la plateforme.', rattache: 'aucun' },
 ]
+// L'administrateur crée les responsables régionaux ; chacun crée ensuite les comptes de sa région.
+const ROLES_PAR_PORTEE = { ADMIN: ['DECIDEUR'], REGION: ['AGENT', 'MAIRIE', 'STRUCTURE'] }
 const NOM_ROLE = Object.fromEntries(ROLES.map((r) => [r.code, r.nom]))
 const TYPES = { CENTRE_SANTE: 'Centre de santé', CRECHE: 'Crèche', CENTRE_SOCIAL: 'Centre social', ETAT_CIVIL: 'État civil' }
 const REGIONS = ['Maritime', 'Plateaux', 'Centrale', 'Kara', 'Savanes']
@@ -37,8 +40,9 @@ function MotDePasse({ info, fermer }) {
   )
 }
 
-function FormulaireCompte({ geo, structures, apres }) {
-  const [role, setRole] = useState('AGENT')
+function FormulaireCompte({ geo, structures, apres, base, portee }) {
+  const permis = ROLES.filter((r) => ROLES_PAR_PORTEE[portee].includes(r.code))
+  const [role, setRole] = useState(permis[0].code)
   const [nom, setNom] = useState('')
   const [identifiant, setIdentifiant] = useState('')
   const [zone, setZone] = useState('')
@@ -68,7 +72,7 @@ function FormulaireCompte({ geo, structures, apres }) {
     if (def.rattache === 'structure' && !structure) return setErreur('Choisissez la structure, ou créez-la d’abord dans l’onglet Structures.')
     setEnvoi(true)
     try {
-      const r = await api.post('/api/admin/comptes', {
+      const r = await api.post(`${base}/comptes`, {
         username: identifiant, nomComplet: nom.trim(), role,
         codeZone: def.rattache === 'prefecture' ? zone : null,
         region: def.rattache === 'region' ? region : null,
@@ -89,7 +93,7 @@ function FormulaireCompte({ geo, structures, apres }) {
       <fieldset className="choix-roles">
         <legend className="champ-titre">Qui est cette personne ?</legend>
         <div className="roles-grille">
-          {ROLES.map((r) => (
+          {permis.map((r) => (
             <label key={r.code} className={`role-carte ${role === r.code ? 'choisi' : ''}`}>
               <input type="radio" name="role" value={r.code} checked={role === r.code} onChange={() => { setRole(r.code); setStructure('') }} />
               <b>{r.nom}</b>
@@ -135,12 +139,12 @@ function FormulaireCompte({ geo, structures, apres }) {
         )}
         <label className="champ">
           <span className="champ-titre">Nom du compte</span>
-          <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder={role === 'MAIRIE' ? 'État civil de Vo' : 'Agent de santé de Vo'} maxLength={100} />
+          <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder={role === 'MAIRIE' ? 'État civil de Vo' : role === 'DECIDEUR' ? 'Responsable régional, Kara' : 'Agent de santé de Vo'} maxLength={100} />
           <span className="champ-aide">Affiché en haut du tableau de bord.</span>
         </label>
         <label className="champ">
           <span className="champ-titre">Identifiant de connexion</span>
-          <input value={identifiant} onChange={(e) => setIdentifiant(e.target.value.toLowerCase())} placeholder="agent.vo" autoCapitalize="none" autoComplete="off" />
+          <input value={identifiant} onChange={(e) => setIdentifiant(e.target.value.toLowerCase())} placeholder={role === 'DECIDEUR' ? 'region.kara' : 'agent.vo'} autoCapitalize="none" autoComplete="off" />
           <span className="champ-aide">Sans espace ni accent. La personne le saisira pour se connecter.</span>
         </label>
       </div>
@@ -153,7 +157,7 @@ function FormulaireCompte({ geo, structures, apres }) {
   )
 }
 
-function FormulaireStructure({ geo, apres }) {
+function FormulaireStructure({ geo, apres, base }) {
   const [type, setType] = useState('CENTRE_SANTE')
   const [nom, setNom] = useState('')
   const [zone, setZone] = useState('')
@@ -163,7 +167,7 @@ function FormulaireStructure({ geo, apres }) {
     e.preventDefault(); setErreur('')
     if (!nom.trim() || !zone) return setErreur('Indiquez le nom de la structure et sa préfecture.')
     try {
-      await api.post('/api/admin/structures', { type, nom: nom.trim(), codeZone: zone, telephone: tel.trim() || null })
+      await api.post(`${base}/structures`, { type, nom: nom.trim(), codeZone: zone, telephone: tel.trim() || null })
       setNom(''); setTel(''); apres()
     } catch (err) { setErreur(err.message) }
   }
@@ -190,7 +194,9 @@ function FormulaireStructure({ geo, apres }) {
   )
 }
 
-export default function GestionComptes() {
+export default function GestionComptes({ portee = 'ADMIN' }) {
+  const { session } = useAuth()
+  const base = portee === 'ADMIN' ? '/api/admin' : '/api/decideur/gestion'
   const [onglet, setOnglet] = useState('comptes')
   const [comptes, setComptes] = useState(null)
   const [structures, setStructures] = useState([])
@@ -200,18 +206,18 @@ export default function GestionComptes() {
   const [erreur, setErreur] = useState('')
 
   const charger = useCallback(() => {
-    api.get('/api/admin/comptes').then(setComptes).catch((e) => setErreur(e.message))
-    api.get('/api/admin/structures').then(setStructures).catch(() => {})
-    api.get('/api/decideur/geographie').then(setGeo).catch(() => {})
-  }, [])
+    api.get(`${base}/comptes`).then(setComptes).catch((e) => setErreur(e.message))
+    api.get(`${base}/structures`).then(setStructures).catch(() => {})
+    api.get('/api/decideur/geographie').then((g) => setGeo(portee === 'REGION' && session?.region ? g.filter((z) => z.region === session.region) : g)).catch(() => {})
+  }, [base, portee, session?.region])
   useEffect(charger, [charger])
 
   async function basculer(c) {
-    try { await api.post(`/api/admin/comptes/${c.id}/actif`, { actif: !c.actif }); charger() } catch { /* le retour s'affiche déjà */ }
+    try { await api.post(`${base}/comptes/${c.id}/actif`, { actif: !c.actif }); charger() } catch { /* le retour s'affiche déjà */ }
   }
   async function reinitialiser(c) {
     try {
-      const r = await api.post(`/api/admin/comptes/${c.id}/reinitialiser`)
+      const r = await api.post(`${base}/comptes/${c.id}/reinitialiser`)
       setMdp({ titre: `Nouveau mot de passe pour « ${c.username} »`, motDePasseProvisoire: r.motDePasseProvisoire })
     } catch { /* idem */ }
   }
@@ -224,17 +230,17 @@ export default function GestionComptes() {
   return (
     <>
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
-      <div className="onglets-pro" role="tablist" aria-label="Comptes et structures">
+      {portee === 'REGION' && <div className="onglets-pro" role="tablist" aria-label="Comptes et structures">
         <button role="tab" aria-selected={onglet === 'comptes'} className={onglet === 'comptes' ? 'actif' : ''} onClick={() => setOnglet('comptes')}>Comptes ({comptes?.length ?? 0})</button>
         <button role="tab" aria-selected={onglet === 'structures'} className={onglet === 'structures' ? 'actif' : ''} onClick={() => setOnglet('structures')}>Structures ({structures.length})</button>
         <button role="tab" aria-selected={onglet === 'creches'} className={onglet === 'creches' ? 'actif' : ''} onClick={() => setOnglet('creches')}>Crèches ({structures.filter((x) => x.type === 'CRECHE').length})</button>
-      </div>
+      </div>}
       {mdp && <MotDePasse info={mdp} fermer={() => setMdp(null)} />}
 
       {onglet === 'comptes' ? (
         <>
           <div className="filtres-comptes" role="group" aria-label="Filtrer par rôle">
-            {[['TOUS', `Tous (${comptes?.length ?? 0})`], ...ROLES.map((r) => [r.code, `${r.nom} (${compte(r.code)})`])].map(([k, t]) => (
+            {[['TOUS', `Tous (${comptes?.length ?? 0})`], ...ROLES.filter((r) => portee === 'ADMIN' || ROLES_PAR_PORTEE.REGION.includes(r.code)).map((r) => [r.code, `${r.nom} (${compte(r.code)})`])].map(([k, t]) => (
               <button key={k} type="button" className={`filtre ${filtre === k ? 'actif' : ''}`} aria-pressed={filtre === k} onClick={() => setFiltre(k)}>{t}</button>
             ))}
           </div>
@@ -260,10 +266,10 @@ export default function GestionComptes() {
               </table>
             </div>
           </section>
-          <FormulaireCompte geo={geo} structures={structures} apres={(info) => { setMdp(info); charger() }} />
+          <FormulaireCompte geo={geo} structures={structures} base={base} portee={portee} apres={(info) => { setMdp(info); charger() }} />
         </>
       ) : onglet === 'creches' ? (
-        <GestionCreches geo={geo} apres={(info) => { if (info) setMdp(info); charger() }} />
+        <GestionCreches geo={geo} base={base} apres={(info) => { if (info) setMdp(info); charger() }} />
       ) : (
         <>
           <section className="carte">
@@ -278,7 +284,7 @@ export default function GestionComptes() {
               </table>
             </div>
           </section>
-          <FormulaireStructure geo={geo} apres={charger} />
+          <FormulaireStructure geo={geo} base={base} apres={charger} />
         </>
       )}
     </>

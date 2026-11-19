@@ -1973,32 +1973,6 @@ h2 > .picto { color: #0b86b8; }
 .bracelet-table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .9rem; }
 .bracelet-table th, .bracelet-table td { text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #e6e0d2; }
 
-/* Ouverture : fond clair, fil d'or entre les six étapes */
-.intro-fil { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; text-align: center;
-  background: radial-gradient(ellipse at 50% 35%, #fffdf6 0%, #f7f3e8 70%); color: #12304f; transition: opacity .45s ease; }
-.intro-fil.sortie { opacity: 0; pointer-events: none; }
-.intro-centre { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; max-width: 46rem; }
-.intro-logo { position: relative; width: 120px; height: 120px; display: grid; place-items: center; }
-.intro-logo svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-.intro-logo circle { fill: none; stroke: #e0a100; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 352; stroke-dashoffset: 352; animation: intro-trace 1.2s .1s ease-out forwards; }
-.intro-logo img { border-radius: 50%; opacity: 0; animation: intro-apparait .6s .45s ease-out forwards; }
-.intro-centre h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin: 1rem 0 .1rem; opacity: 0; animation: intro-apparait .6s .8s ease-out forwards; }
-.intro-ligne { margin: 0; font-size: 1.1rem; color: #4a5d70; opacity: 0; animation: intro-apparait .6s 1s ease-out forwards; }
-.intro-etapes { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.6rem; margin: 2rem 0 0; padding: 0; position: relative; }
-.intro-etapes li { position: relative; display: flex; flex-direction: column; align-items: center; gap: .45rem; font-size: .88rem; font-weight: 600; min-width: 5.2rem;
-  opacity: 0; animation: intro-apparait .45s calc(1.4s + var(--i) * .26s) ease-out forwards; }
-.intro-etapes li span { width: 14px; height: 14px; border-radius: 50%; background: #e0a100; box-shadow: 0 0 0 4px #fbe9b4; }
-.intro-etapes li + li::before { content: ''; position: absolute; top: 6px; right: calc(50% + 7px); width: calc(100% + 1.6rem - 14px); height: 2px; background: #e0a100; transform-origin: right;
-  animation: intro-fil .35s calc(1.4s + var(--i) * .26s) ease-out both; }
-.intro-pied { margin: 1.8rem 0 0; font-size: .85rem; color: #6b7a89; opacity: 0; animation: intro-apparait .5s 3s ease-out forwards; }
-.intro-passer { position: absolute; right: 1.2rem; bottom: 1.2rem; background: #fff; border: 1px solid #cfc7b3; border-radius: 999px; padding: .55rem 1.2rem; font-weight: 600; color: #12304f; cursor: pointer; }
-.intro-passer:hover { background: #fff7de; }
-@keyframes intro-trace { to { stroke-dashoffset: 0; } }
-@keyframes intro-apparait { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes intro-fil { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@media (max-width: 640px) { .intro-etapes { gap: .8rem 1rem; } .intro-etapes li + li::before { display: none; } }
-@media (prefers-reduced-motion: reduce) { .intro-logo circle, .intro-logo img, .intro-centre h1, .intro-ligne, .intro-etapes li, .intro-pied, .intro-etapes li::before { animation: none !important; opacity: 1; stroke-dashoffset: 0; } }
-
 /* Filles et jeunes mères */
 .filles-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; margin: 1rem 0; }
 .filles-tuile { display: flex; flex-direction: column; gap: .2rem; background: #fdf4f7; border: 1px solid #f0d3de; border-radius: 12px; padding: .9rem 1rem; }
@@ -2012,3 +1986,41 @@ h2 > .picto { color: #0b86b8; }
 .filles-parite .barre i { display: block; height: 100%; border-radius: 6px; }
 .filles-parite .fille { background: #b0386b; }
 .filles-parite .garcon { background: #2f5fa8; }
+
+.table-comptes .actions-ligne button + button { margin-left: 1rem; }
+
+/* Mallette de la crèche */
+.mallette .mal-groupe { border-top: 1px solid #e6e0d2; padding-top: .6rem; margin-top: .8rem; }
+.mallette .mal-groupe h3 { margin: 0 0 .4rem; }
+.mallette .mal-nb { font-weight: 400; color: #5f6b75; }
+.mallette .mal-groupe ul, .mal-menu, .mal-regles { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.mallette .mal-groupe li { display: grid; gap: .1rem; background: #f7f5ee; border-radius: 10px; padding: .55rem .8rem; }
+.mallette .mal-groupe li span { color: #44505a; }
+.mal-menu li { display: grid; grid-template-columns: 6.5rem 1fr; gap: .7rem; background: #fdf4e3; border-radius: 10px; padding: .55rem .8rem; }
+.mal-regles { margin-top: .8rem; list-style: disc; padding-left: 1.2rem; display: block; }
+.mal-regles li { margin: .25rem 0; }
+.mal-progres { background: #e8eef2; border-radius: 6px; height: 10px; overflow: hidden; margin: .4rem 0 .8rem; }
+.mal-progres i { display: block; height: 100%; background: #00833e; transition: width .3s; }
+.mal-module { border-top: 1px solid #e6e0d2; padding: .5rem 0; }
+.mal-module summary { cursor: pointer; font-weight: 700; }
+.mal-module ol { margin: .5rem 0 0 1.2rem; }
+
+/* Fil d'or de l'enfant */
+.fil-enfant { margin-top: .6rem; width: 100%; }
+.fil-enfant ol { list-style: none; display: flex; justify-content: space-between; margin: 0; padding: 0; position: relative; }
+.fil-enfant ol::before { content: ''; position: absolute; left: 10%; right: 10%; top: 8px; height: 3px; background: #e6dcc0; }
+.fil-enfant li { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: .3rem; text-align: center; }
+.fil-enfant li span { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid #e6dcc0; z-index: 1; }
+.fil-enfant li.fait span { background: #e0a100; border-color: #e0a100; }
+.fil-enfant li.ici span { background: #fff; border-color: #e0a100; box-shadow: 0 0 0 5px #fbe9b4; animation: fil-ici 2s ease-in-out infinite; }
+.fil-enfant li small { font-size: .74rem; color: #5a6672; line-height: 1.15; }
+.fil-enfant li.ici small { color: #12304f; font-weight: 700; }
+.fil-enfant .fil-pas { margin: .7rem 0 0; font-size: .92rem; }
+@keyframes fil-ici { 0%, 100% { box-shadow: 0 0 0 4px #fbe9b4; } 50% { box-shadow: 0 0 0 8px #fdf2d0; } }
+@media (prefers-reduced-motion: reduce) { .fil-enfant li.ici span { animation: none; } }
+.carte-innov { border-top: 4px solid #e0a100; background: #fffaf0; }
+.fam-boite .fil-enfant li { border: 0; background: none; box-shadow: none; padding: 0; display: flex; border-radius: 0; }
+
+.installer-mobile { text-align: center; display: grid; justify-items: center; gap: .5rem; border-top: 4px solid #e0a100; }
+.installer-mobile img { border-radius: 22px; box-shadow: 0 4px 14px rgba(20, 50, 80, .25); }
+.installer-mobile h2 { margin: .2rem 0 0; }

@@ -8,6 +8,7 @@ import Mairie from './Mairie.jsx'
 import Structure from './Structure.jsx'
 import CrecheGestion from './CrecheGestion.jsx'
 import CrecheTableau from './CrecheTableau.jsx'
+import CrecheMallette from './CrecheMallette.jsx'
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import Carte from './Carte.jsx'
@@ -89,16 +90,21 @@ export function EspaceMairie() {
 }
 
 /** Un compte de crèche voit le tableau de bord de la crèche ; les autres structures gardent le leur. */
-function AccueilStructure() {
-  const [creche, setCreche] = useState(null)
-  useEffect(() => { api.get('/api/structure/creche').then(() => setCreche(true)).catch(() => setCreche(false)) }, [])
+function AccueilStructure({ creche }) {
   if (creche === null) return null
   return creche ? <CrecheTableau /> : <Structure vue="tableau" />
 }
 
 export function EspaceStructure() {
+  const [creche, setCreche] = useState(null)
+  useEffect(() => { api.get('/api/structure/creche').then(() => setCreche(true)).catch(() => setCreche(false)) }, [])
   const groupes = [
-    { titre: 'Ma structure', liens: [
+    { titre: creche ? 'Ma crèche' : 'Ma structure', liens: creche ? [
+      { to: '/structure', nom: 'Tableau de bord', icone: 'accueil', fin: true },
+      { to: '/structure/creche', nom: 'Réservations et horaires', icone: 'boite' },
+      { to: '/structure/mallette', nom: 'Mallette de la crèche', icone: 'livre' },
+      { to: '/structure/fiche', nom: 'Mes informations', icone: 'batiment' },
+    ] : [
       { to: '/structure', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/structure/demandes', nom: 'Demandes des familles', icone: 'boite' },
       { to: '/structure/creche', nom: 'Réservations', icone: 'boite' },
@@ -110,9 +116,10 @@ export function EspaceStructure() {
     ] },
   ]
   return (
-    <Shell titre="Structure d'accueil" teinte="orange" groupes={groupes}>
+    <Shell titre={creche ? 'Crèche' : "Structure d'accueil"} teinte="orange" groupes={groupes}>
       <Routes>
-        <Route index element={<AccueilStructure />} />
+        <Route index element={<AccueilStructure creche={creche} />} />
+        <Route path="mallette" element={<CrecheMallette />} />
         <Route path="demandes" element={<Structure vue="demandes" />} />
         <Route path="creche" element={<CrecheGestion />} />
         <Route path="fiche" element={<Structure vue="fiche" />} />
@@ -132,6 +139,7 @@ export function EspaceDecideur() {
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
       { to: '/carte/ruptures', nom: 'Ruptures de parcours', icone: 'graphe' },
       { to: '/carte/filles', nom: 'Filles et jeunes mères', icone: 'bouclier' },
+      { to: '/carte/gestion', nom: 'Comptes et crèches', icone: 'cle' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
   ]
@@ -144,6 +152,7 @@ export function EspaceDecideur() {
         <Route path="actes" element={<Carte vue="actes" />} />
         <Route path="ruptures" element={<Carte vue="ruptures" />} />
         <Route path="filles" element={<Carte vue="filles" />} />
+        <Route path="gestion" element={<Carte vue="gestion" />} />
         <Route path="*" element={<Navigate to="/carte" replace />} />
       </Routes>
     </Shell>
@@ -156,7 +165,7 @@ export function EspaceAdmin() {
       { to: '/admin', nom: 'Tableau de bord', icone: 'accueil', fin: true },
       { to: '/admin/cles', nom: 'Clés USB', icone: 'cle' },
       { to: '/admin/horloge', nom: 'Horloge', icone: 'horloge' },
-      { to: '/admin/acces', nom: 'Comptes', icone: 'bouclier' },
+      { to: '/admin/acces', nom: 'Responsables régionaux', icone: 'bouclier' },
       { to: '/admin/langues', nom: 'Messages et langues', icone: 'livre' },
       { to: '/admin/securite', nom: 'Cybersécurité', icone: 'bouclier' },
     ] },

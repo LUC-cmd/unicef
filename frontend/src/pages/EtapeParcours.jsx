@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { ETAPES_PARCOURS, etapeParCode } from '../lib/etapes.js'
+import { ETAPES_PARCOURS, SOURCE_BRIEFING, etapeParCode } from '../lib/etapes.js'
 import { DOMAINES, MATRICE } from './Parcours.jsx'
 import IconeEtape from '../components/IconeEtape.jsx'
 
@@ -9,7 +9,7 @@ const FL = <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><p
 export default function EtapeParcours() {
   const { etape } = useParams()
   const e = etapeParCode(etape)
-  useEffect(() => { document.querySelector('.rail-etapes a.actif')?.scrollIntoView({ inline: 'center', block: 'nearest' }) }, [etape])
+  useEffect(() => { const a = document.querySelector('.rail-etapes a.actif'); const r = a?.parentElement; if (r) r.scrollLeft = a.offsetLeft - (r.clientWidth - a.offsetWidth) / 2 }, [etape])
   if (!e) return <Navigate to="/parcours" replace />
   const i = ETAPES_PARCOURS.indexOf(e)
   const prec = ETAPES_PARCOURS[i - 1]
@@ -38,6 +38,16 @@ export default function EtapeParcours() {
       </header>
 
       <main className="interieur etape-corps">
+        <section aria-labelledby="t-innov">
+          <h2 id="t-innov" className="titre-section">Le problème, ce que Fil d'Or invente, qui en profite</h2>
+          <div className="trois-cartes">
+            <article className="carte-etape"><h3>Le problème</h3><p>{e.probleme}</p></article>
+            <article className="carte-etape carte-innov"><h3>Ce que Fil d'Or invente</h3><p>{e.innovation}</p></article>
+            <article className="carte-etape"><h3>Qui en profite</h3><p>{e.aide}</p></article>
+          </div>
+          <p className="petit">Chiffres : {SOURCE_BRIEFING}.</p>
+        </section>
+
         <section aria-labelledby="t-qui">
           <h2 id="t-qui" className="titre-section">Qui voit quoi</h2>
           <div className="trois-cartes">

@@ -4,6 +4,8 @@ import { IconeAgent, IconeBouclier, IconeCarnet, IconeZone } from '../components
 import { useAuth } from '../lib/contexte.jsx'
 
 import { MDP_DEMO } from '../lib/config.js'
+import { api, definirSecretFamille } from '../lib/api.js'
+import { ecrireCompte } from '../lib/famille.js'
 import { ZONES } from '../lib/format.js'
 
 function IconeCroix() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V8l8-5 8 5v13zM12 9v6M9 12h6" /></svg> }
@@ -13,6 +15,8 @@ const COMPTES = [
   { id: 'agent.vo', role: 'Agent de santé', lieu: 'Vo, zone rurale', detail: 'Visite les familles, saisit les données de santé, inscrit les nouveaux-nés, suit les vaccinations.', cible: '/agent', Icone: IconeAgent },
   { id: 'mairie', role: "Agent d'état civil", lieu: 'Mairie', detail: 'Enregistre les déclarations de naissance, délivre les actes de naissance.', cible: '/mairie', Icone: IconeCarnet },
   { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel de vaccination, d’orientation vers les services, met à jour ses horaires.', cible: '/structure', Icone: IconeCroix },
+  { id: 'creche.golfe', role: 'Crèche', lieu: 'Crèche communautaire du Golfe', detail: 'Valide les réservations des familles, voit les enfants présents, tient ses horaires et sa capacité, et trouve sa mallette : jeux par âge, menu, hygiène, signes d’alerte.', cible: '/structure', Icone: IconeCroix },
+  { id: 'famille', role: 'Famille', lieu: 'Famille de démonstration', detail: 'Ce que voit une maman : le fil d’or de ses enfants, ses rappels, les crèches proches, le dossier de naissance. Aucun mot de passe : on entre directement.', cible: '/famille', Icone: IconeCarnet, famille: true },
   { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Voir la carte des zones oubliées, décider où envoyer une équipe en priorité.', cible: '/carte', Icone: IconeZone },
   { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Gère les comptes, les messages, les clés USB, fait avancer le temps pour tester.', cible: '/admin', Icone: IconeReglage },
 ]
@@ -35,6 +39,16 @@ export default function Connexion() {
     setUsername(c.id)
     setMdp(MDP_DEMO)
     setErreur('')
+  }
+
+  async function entrerFamille() {
+    setErreur(''); setEnCours(true)
+    try {
+      definirSecretFamille('')
+      await api.post('/api/public/famille/connexion', { telephone: '90000001', codeFamille: 'F-0001' })
+      ecrireCompte({ telephone: '90000001', codeFamille: 'F-0001', secret: 'demo' })
+      navigate('/famille', { replace: true })
+    } catch (err) { setErreur(err.message) } finally { setEnCours(false) }
   }
 
   async function envoyerFormulaire(e) {
@@ -91,8 +105,9 @@ export default function Connexion() {
             ))}
           </div>
           {compte && <p className="cx-detail" key={compte.id}>{compte.detail}</p>}
+          {compte?.famille && <button type="button" className="bouton cx-envoi" disabled={enCours} onClick={entrerFamille}>{enCours ? 'Ouverture…' : 'Voir l’espace famille'}</button>}
 
-          <form className="cx-form" onSubmit={envoyerFormulaire}>
+          <form className="cx-form" onSubmit={envoyerFormulaire} style={compte?.famille ? { display: 'none' } : undefined}>
             {erreur && <p className="erreur" role="alert">{erreur}</p>}
             <label>Identifiant
               <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required placeholder="ex. agent.vo" />

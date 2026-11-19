@@ -73,8 +73,8 @@ public class ComptesController {
 
     @PostMapping("/comptes")
     ResponseEntity<Map<String, Object>> creer(@Valid @RequestBody NouveauCompte c) {
-        if (!ROLES.contains(c.role())) {
-            return erreur("Rôle inconnu.");
+        if (!"DECIDEUR".equals(c.role())) {
+            return erreur("L'administrateur crée les responsables régionaux. Chaque responsable régional crée ensuite les agents, états civils, centres de santé et crèches de sa région.");
         }
         if (comptes.existe(c.username())) {
             return erreur("Cet identifiant existe déjà.");
