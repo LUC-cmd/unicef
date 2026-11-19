@@ -138,6 +138,48 @@ export const KIT_ACCOUCHEMENT = [
   'Le numéro de l\'agent de santé et du taxi/moto',
 ]
 
+/** Postures douces qui aident le bébé à se placer, à partir du 7ᵉ mois.
+ *  IMPORTANT : ce sont des postures de confort, jamais des manœuvres. On n'appuie jamais sur le ventre
+ *  et on ne cherche jamais à « retourner » le bébé à la main : c'est le centre de santé qui vérifie la
+ *  position et décide. Toute fiche reste à valider par des professionnels (sage-femme, CPN). */
+export const POSITIONS_BEBE = [
+  {
+    picto: '🧎🏽‍♀️',
+    titre: 'Le balancier à quatre pattes',
+    quand: 'À partir du 7ᵉ mois, 5 à 10 minutes, 2 fois par jour',
+    consigne: 'À quatre pattes, avancez doucement les hanches d’avant en arrière, le dos plat, en respirant. Ce balancement soulage le dos et laisse de la place au bébé.',
+    materiel: 'un pagne plié sous les genoux',
+    video: null,
+  },
+  {
+    picto: '🪑',
+    titre: 'Assise penchée en avant',
+    quand: 'Quand vous êtes fatiguée, quelques minutes',
+    consigne: 'Assise sur une chaise, genoux écartés, penchez le buste vers l’avant en soufflant, les bras posés sur les genoux. Le ventre se libère, le bébé a plus de place.',
+    materiel: 'une chaise stable',
+    video: null,
+  },
+  {
+    picto: '🧘🏽‍♀️',
+    titre: 'Accroupie appuyée',
+    quand: 'À partir du 8ᵉ mois, si c’est confortable',
+    consigne: 'Accroupie, dos appuyé contre un mur, genoux ouverts : tenez quelques secondes puis relevez-vous lentement en vous aidant des mains. Le bassin s’ouvre et prépare la naissance.',
+    materiel: 'un mur et un accompagnant',
+    video: null,
+  },
+  {
+    picto: '🌙',
+    titre: 'Sur le côté gauche',
+    quand: 'Pour dormir et se reposer',
+    consigne: 'Allongée sur le côté gauche, un pagne roulé entre les genoux : le sang circule mieux vers le bébé et le dos est soulagé.',
+    materiel: 'un pagne roulé',
+    video: null,
+  },
+]
+
+/** La phrase de prudence qui accompagne toujours ces postures. */
+export const PRUDENCE_POSITIONS = 'Ces postures sont douces et ne remplacent pas le centre de santé. N’appuyez jamais sur le ventre et ne cherchez jamais à retourner le bébé vous-même : c’est la sage-femme qui vérifie la position et décide. Si le bébé bouge moins, si vous saignez ou si vous perdez de l’eau, allez au centre tout de suite.'
+
 /** Accompagne la maman enceinte suivie par un agent : le mois calculé d'après le terme prévu. */
 export function moisActuel(dateTermePrevue, aujourdhui) {
   if (!dateTermePrevue) return null

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { KIT_ACCOUCHEMENT, MOIS_GROSSESSE, SIGNES_ALERTE_GROSSESSE, moisActuel } from './grossesse.js'
+import { KIT_ACCOUCHEMENT, MOIS_GROSSESSE, POSITIONS_BEBE, PRUDENCE_POSITIONS, SIGNES_ALERTE_GROSSESSE, moisActuel } from './grossesse.js'
 
 describe('MOIS_GROSSESSE', () => {
   it('couvre les 9 mois dans l\'ordre', () => {
@@ -37,6 +37,22 @@ describe('signes d\'alerte et kit', () => {
     expect(texte).toContain('savon')
     expect(texte).toContain('gants')
     expect(texte).toContain('carnet de CPN')
+  })
+})
+
+describe('positions du bébé (7e-9e mois)', () => {
+  it('propose au moins 4 postures douces, chacune avec consigne et emplacement vidéo', () => {
+    expect(POSITIONS_BEBE.length).toBeGreaterThanOrEqual(4)
+    for (const p of POSITIONS_BEBE) {
+      expect(p.titre).toBeTruthy()
+      expect(p.consigne.length).toBeGreaterThan(20)
+      expect(p.video).toBe(null)
+    }
+  })
+
+  it('la prudence est toujours écrite : jamais de manœuvre sur le ventre', () => {
+    expect(PRUDENCE_POSITIONS).toContain('N’appuyez jamais sur le ventre')
+    expect(PRUDENCE_POSITIONS).toContain('centre de santé')
   })
 })
 

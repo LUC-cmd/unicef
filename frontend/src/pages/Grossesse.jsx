@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import VideoFiche from '../components/VideoFiche.jsx'
-import { KIT_ACCOUCHEMENT, MOIS_GROSSESSE, SIGNES_ALERTE_GROSSESSE } from '../lib/grossesse.js'
+import { KIT_ACCOUCHEMENT, MOIS_GROSSESSE, POSITIONS_BEBE, PRUDENCE_POSITIONS, SIGNES_ALERTE_GROSSESSE } from '../lib/grossesse.js'
 
 /** La grossesse, mois par mois : rendez-vous CPN, exercices illustrés (avec emplacements vidéo),
  *  signes d'alerte et kit d'accouchement. À informer et orienter, jamais à diagnostiquer :
@@ -50,12 +50,32 @@ export default function Grossesse() {
                   <p className="petit">{e.consigne}</p>
                   {e.materiel && <p className="petit"><em>Matériel : {e.materiel}.</em></p>}
                 </div>
-                <VideoFiche titre={`Vidéo : ${e.titre}`} video={fiche.video} consigne={e.consigne} materiel={e.materiel} />
+                <VideoFiche titre={`Vidéo : ${e.titre}`} video={e.video ?? fiche.video} consigne={e.consigne} materiel={e.materiel} />
               </div>
             ))}
           </div>
 
           <p className="carte attention sans-marge">💡 <b>Conseil du mois :</b> {fiche.conseil}</p>
+        </section>
+
+        <section className="carte" aria-labelledby="t-positions">
+          <h2 id="t-positions">🧘🏽‍♀️ Aider bébé à bien se placer</h2>
+          <p className="petit">À partir du 7ᵉ mois, ces postures douces donnent de la place au bébé et soulagent le dos. Ce ne sont pas des soins : le centre vérifie la position à chaque CPN.</p>
+          <div className="exercices-grille">
+            {POSITIONS_BEBE.map((p) => (
+              <div className="exercice" key={p.titre}>
+                <div className="exercice-texte">
+                  <span className="gros-emoji" aria-hidden="true">{p.picto}</span>
+                  <b>{p.titre}</b>
+                  <p className="petit"><em>{p.quand}.</em></p>
+                  <p className="petit">{p.consigne}</p>
+                  {p.materiel && <p className="petit"><em>Matériel : {p.materiel}.</em></p>}
+                </div>
+                <VideoFiche titre={`Vidéo : ${p.titre}`} video={p.video} consigne={p.consigne} materiel={p.materiel} />
+              </div>
+            ))}
+          </div>
+          <p className="carte attention sans-marge">⚠️ {PRUDENCE_POSITIONS}</p>
         </section>
 
         <section className="carte" aria-labelledby="t-alerte">

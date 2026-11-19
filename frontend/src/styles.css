@@ -1524,6 +1524,36 @@ td.vide { text-align: center; color: var(--texte-doux); padding: 1.6rem; }
 .localisation-fiche label { font-weight: 600; font-size: .9rem; }
 .localisation-fiche input[type='number'] { max-width: 9rem; }
 
+/* ===== Chansons et petits films ===== */
+.chansons { margin: 1.2rem 0 1.6rem; }
+.chansons-choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .6rem; margin: .8rem 0 1rem; }
+.chanson-carte { display: grid; gap: .15rem; text-align: left; background: #fff; border: 2px solid var(--bord); border-radius: 14px; padding: .7rem .9rem; cursor: pointer; color: var(--texte); font: inherit; }
+.chanson-carte:hover { border-color: var(--cyan-fonce); }
+.chanson-carte.active { border-color: var(--cyan-fonce); background: var(--ciel); box-shadow: 0 4px 14px rgba(19, 147, 199, .16); }
+.chanson-carte b { font-size: .95rem; line-height: 1.25; }
+.chanson-carte small { color: var(--texte-doux); font-size: .78rem; }
+.chanson-icone { font-size: 1.5rem; }
+.chanson-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.chanson-paroles { background: #fff; border: 1.5px solid var(--bord); border-radius: 14px; padding: .9rem 1.1rem; }
+.chanson-paroles h3 { margin: 0 0 .4rem; }
+.chanson-paroles p { margin: .2rem 0; font-size: 1.02rem; }
+.chanson-langues { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; }
+.chanson-interaction { margin-top: 1rem; }
+.puzzle-grille { display: grid; gap: .4rem; }
+.puzzle-grille.alphabet { grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); }
+.puzzle-grille.nombres { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); }
+.puzzle-chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+.lettre-bouton, .nombre-bouton { display: grid; gap: .1rem; background: #fff; border: 2px solid var(--bord); border-radius: 12px; padding: .45rem .4rem; cursor: pointer; font: inherit; color: var(--texte); }
+.lettre-bouton:hover, .nombre-bouton:hover { border-color: var(--cyan-fonce); background: var(--ciel); }
+.lettre-bouton b, .nombre-bouton b { font-size: 1.2rem; line-height: 1; }
+.lettre-bouton small { font-size: .68rem; color: var(--texte-doux); overflow: hidden; text-overflow: ellipsis; }
+.nombre-bouton small { color: var(--cyan-fonce); letter-spacing: .05em; }
+.couleur-bouton { display: inline-flex; align-items: center; gap: .4rem; background: #fff; border: 2px solid var(--bord); border-radius: 999px; padding: .45rem .85rem; cursor: pointer; font: inherit; color: var(--texte); }
+.couleur-bouton:hover { border-color: var(--cyan-fonce); }
+.pastille-couleur { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--bord-fort); display: inline-block; }
+.dernier-dit { min-height: 1.6rem; font-size: 1.05rem; color: var(--cyan-fonce); margin: .5rem 0 0; }
+@media (max-width: 720px) { .chanson-detail { grid-template-columns: 1fr; } }
+
 /* ===== Connexion : choix d'espace puis formulaire ===== */
 .connexion-page { max-width: 600px; padding-top: 2rem; }
 .connexion-centre { margin-bottom: 1.5rem; }

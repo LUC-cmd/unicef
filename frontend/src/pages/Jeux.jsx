@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
+import Chansons from '../components/Chansons.jsx'
 import VideoFiche from '../components/VideoFiche.jsx'
 import { videoDe } from '../lib/videosEveil.js'
 
@@ -559,6 +560,7 @@ export default function Jeux() {
 
         {!jeu && (
           <>
+            <Chansons />
             <div className="jeux-catalogue">
               {JEUX.map((j) => (
                 <Link key={j.id} to={`/jeux/${j.id}`} className="jeu-carte">
