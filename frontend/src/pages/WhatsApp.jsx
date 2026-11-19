@@ -8,7 +8,7 @@ const EXEMPLES = [
   'Mon enfant a des convulsions',
 ]
 
-const BIENVENUE = "Bonjour 👋 Je suis l'assistant Fil d'Or. Posez une question sur la santé de votre enfant : vaccins, nutrition, naissance, développement. Je réponds avec les contenus validés, sans voir aucun dossier."
+const BIENVENUE = "Bonjour, je suis l'assistant Fil d'Or. Posez une question sur la santé de votre enfant : vaccins, nutrition, naissance, développement. Je réponds avec les contenus validés, sans voir aucun dossier."
 
 /** Conversation style WhatsApp branchée sur le service assistant — même API que la page Assistant. */
 export default function WhatsApp() {

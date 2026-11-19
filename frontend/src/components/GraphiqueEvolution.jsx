@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Picto from './Picto.jsx'
 
 /**
  * Graphique SVG pur d'évolution temporelle de l'indice d'oubli sur 4 semaines.
@@ -85,7 +86,7 @@ export default function GraphiqueEvolution({ zone, titre }) {
         }}
       >
         <p style={{ fontWeight: 600, color: '#4a5568', margin: '0 0 0.35rem 0' }}>
-          📈 Évolution temporelle de l'indice
+          <Picto nom="courbe" /> Évolution temporelle de l'indice
         </p>
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#718096' }}>
           Données insuffisantes pour tracer l'évolution (au moins 2 semaines enregistrées nécessaires).
@@ -367,9 +368,9 @@ export default function GraphiqueEvolution({ zone, titre }) {
       </svg>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', fontSize: '0.78rem', color: '#718096' }}>
-        <span>🟢 0 : Très bien suivi</span>
+        <span><i className="pastille-etat bonne" /> 0 : Très bien suivi</span>
         <span style={{ color: '#e2231a', fontWeight: 'bold' }}>-- Seuil d'alerte : 60</span>
-        <span>🔴 100 : Zone oubliée</span>
+        <span><i className="pastille-etat mauvaise" /> 100 : Zone oubliée</span>
       </div>
     </div>
   )

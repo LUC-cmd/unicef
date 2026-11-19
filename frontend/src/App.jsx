@@ -1,5 +1,6 @@
 import BandeauAndroid from './components/BandeauAndroid.jsx'
 import MenuProfil from './components/MenuProfil.jsx'
+import { Notifications } from './components/Shell.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth, useReseau } from './lib/contexte.jsx'
@@ -106,6 +107,21 @@ export default function App() {
 
   useEffect(() => demarrerAnimations(), [])
 
+  // Le fil d'or du haut de page se remplit au fil de la lecture.
+  useEffect(() => {
+    let image = 0
+    const maj = () => {
+      image = 0
+      const h = document.documentElement
+      const total = h.scrollHeight - h.clientHeight
+      h.style.setProperty('--progres', total > 0 ? String(Math.min(1, h.scrollTop / total)) : '0')
+    }
+    const surDefilement = () => { if (!image) image = requestAnimationFrame(maj) }
+    window.addEventListener('scroll', surDefilement, { passive: true })
+    maj()
+    return () => { window.removeEventListener('scroll', surDefilement); cancelAnimationFrame(image) }
+  }, [])
+
   // Un seul menu déroulant ouvert à la fois ; un clic ailleurs le referme.
   useEffect(() => {
     const fermer = (e) => document.querySelectorAll('.menu-deroulant[open]').forEach((d) => { if (!d.contains(e.target)) d.removeAttribute('open') })
@@ -129,6 +145,7 @@ export default function App() {
   return (
     <div className="coque">
       {intro && <Suspense fallback={null}><IntroRegion onFin={finIntro} /></Suspense>}
+      <div className="progres-fil no-print" aria-hidden="true" />
       <a className="lien-evitement" href="#contenu">Aller au contenu</a>
       <BandeauAndroid />
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}${dansEspace ? ' espace' : ''}`}>
@@ -140,6 +157,14 @@ export default function App() {
               {!session && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
               {session && dansEspace && <Link className="bouton-entete principal" to="/">Accueil</Link>}
+              {session && dansEspace && (
+                <>
+                  <Notifications role={session.role} />
+                  <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
+                    <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+                  </span>
+                </>
+              )}
               {session && <MenuProfil />}
             </div>
             <button className="menu-bouton" aria-label="Menu" aria-expanded={menuOuvert} aria-controls="navigation" onClick={() => setMenuOuvert((o) => !o)}>

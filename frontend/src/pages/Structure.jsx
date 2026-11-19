@@ -7,6 +7,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import { Squelette } from '../components/Chargement.jsx'
 import { Anneau } from '../components/Graphiques.jsx'
 import { Link } from 'react-router-dom'
+import Picto from '../components/Picto.jsx'
 
 const REPONSES = [['RDV_PROPOSE', 'Proposer un rendez-vous'], ['PAS_DE_PLACE', 'Pas de place'], ['AUTRE_STRUCTURE', 'Conseiller une autre structure']]
 
@@ -135,7 +136,7 @@ export default function Structure({ vue = 'demandes' }) {
                 <div className="ligne-age">
                   <label>Latitude <input type="number" step="0.000001" min="5.9" max="11.4" value={maStructure.latitude ?? ''} onChange={(e) => maj({ latitude: e.target.value })} /></label>
                   <label>Longitude <input type="number" step="0.000001" min="0" max="2" value={maStructure.longitude ?? ''} onChange={(e) => maj({ longitude: e.target.value })} /></label>
-                  <button type="button" className="bouton secondaire" onClick={prendreMaPosition}>📍 Prendre ma position ici</button>
+                  <button type="button" className="bouton secondaire" onClick={prendreMaPosition}><Picto nom="pin" /> Prendre ma position ici</button>
                 </div>
                 {maStructure.latitude != null && maStructure.longitude != null && (
                   <p className="petit"><a href={lienCarte(Number(maStructure.latitude), Number(maStructure.longitude))} target="_blank" rel="noreferrer">Vérifier ce point sur la carte</a></p>

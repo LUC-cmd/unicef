@@ -3,6 +3,7 @@ import { api } from '../lib/api.js'
 import { LIBELLE_TYPE_STRUCTURE, ZONES, formaterDate } from '../lib/format.js'
 import Bandeau from '../components/Bandeau.jsx'
 import { distanceKm, formaterKm, lienCarte, lienItineraire, positionUneFois } from '../lib/geo.js'
+import Picto from '../components/Picto.jsx'
 
 /** Annuaire public des structures : informations sur les structures, jamais sur les familles.
  *  Avec la localisation du téléphone, la famille voit les structures les plus proches et peut
@@ -60,7 +61,7 @@ export default function Annuaire() {
         </label>
         <label className="case"><input type="checkbox" checked={besoins} onChange={(e) => setBesoins(e.target.checked)} /> Accueille les enfants à besoins spécifiques</label>
         <button type="button" className={`bouton secondaire petit-bouton${maPosition ? ' actif' : ''}`} onClick={meLocaliser} disabled={demandePosition}>
-          {demandePosition ? '📍 Localisation…' : maPosition ? '📍 Position activée' : '📍 Autour de moi'}
+          <Picto nom="pin" /> {demandePosition ? 'Localisation…' : maPosition ? 'Position activée' : 'Autour de moi'}
         </button>
       </div>
       {maPosition && <p className="petit">Liste triée de la plus proche à la plus éloignée. La position a servi une fois, sur cet appareil : elle n'a été envoyée à aucun serveur.</p>}
@@ -72,12 +73,12 @@ export default function Annuaire() {
             <p className="petit">{LIBELLE_TYPE_STRUCTURE[s.type]} · {s.zone}{s.km != null && <> · <b>{formaterKm(s.km)}</b></>}</p>
             <h2>{s.nom}</h2>
             <p>{s.services}</p>
-            <p className="petit">🕘 {s.horaires || 'Horaires non renseignés'}<br />☎ {s.telephone || 'Numéro non renseigné'}</p>
+            <p className="petit"><Picto nom="horloge" /> {s.horaires || 'Horaires non renseignés'}<br /><Picto nom="telephone" /> {s.telephone || 'Numéro non renseigné'}</p>
             {s.besoinsSpecifiques && <p><span className="pastille normal">Accueille les besoins spécifiques</span></p>}
             {s.latitude != null && s.longitude != null && (
               <p className="deux-boutons">
-                <a className="bouton petit-bouton" href={lienItineraire(s.latitude, s.longitude)} target="_blank" rel="noreferrer">🧭 Suivre la route</a>
-                <a className="bouton secondaire petit-bouton" href={lienCarte(s.latitude, s.longitude)} target="_blank" rel="noreferrer">🗺️ Voir sur la carte</a>
+                <a className="bouton petit-bouton" href={lienItineraire(s.latitude, s.longitude)} target="_blank" rel="noreferrer"><Picto nom="route" /> Suivre la route</a>
+                <a className="bouton secondaire petit-bouton" href={lienCarte(s.latitude, s.longitude)} target="_blank" rel="noreferrer"><Picto nom="carte" /> Voir sur la carte</a>
               </p>
             )}
             <p className="petit">Mis à jour le {formaterDate(s.miseAJourLe)}</p>

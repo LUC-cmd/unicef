@@ -4,6 +4,7 @@ import { lireCompte } from '../lib/famille.js'
 import Bandeau from '../components/Bandeau.jsx'
 import { api } from '../lib/api.js'
 import { lienCarte, lienItineraire } from '../lib/geo.js'
+import Picto from '../components/Picto.jsx'
 
 const JOURS_NOM = { LUN: 'lundi', MAR: 'mardi', MER: 'mercredi', JEU: 'jeudi', VEN: 'vendredi', SAM: 'samedi', DIM: 'dimanche' }
 const FORMULES = [['JOURNEE', 'Journée'], ['MATIN', 'Matin'], ['APRES_MIDI', 'Après-midi']]
@@ -78,8 +79,8 @@ function Reservation({ compte }) {
               </dl>
               {x.latitude != null && x.longitude != null && (
                 <p className="deux-boutons">
-                  <a className="bouton secondaire petit-bouton" href={lienItineraire(x.latitude, x.longitude)} target="_blank" rel="noreferrer">🧭 M'y rendre</a>
-                  <a className="bouton secondaire petit-bouton" href={lienCarte(x.latitude, x.longitude)} target="_blank" rel="noreferrer">🗺️ Voir la carte</a>
+                  <a className="bouton secondaire petit-bouton" href={lienItineraire(x.latitude, x.longitude)} target="_blank" rel="noreferrer"><Picto nom="route" /> M'y rendre</a>
+                  <a className="bouton secondaire petit-bouton" href={lienCarte(x.latitude, x.longitude)} target="_blank" rel="noreferrer"><Picto nom="carte" /> Voir la carte</a>
                 </p>
               )}
               <button className="bouton" onClick={() => ouvrir(x)}>{choix === x.code ? 'Crèche choisie' : 'Réserver des jours ici'}</button>

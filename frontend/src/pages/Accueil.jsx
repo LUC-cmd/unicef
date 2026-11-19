@@ -7,12 +7,30 @@ import ParcoursCartes from '../components/ParcoursCartes.jsx'
 import { MereEtEnfant } from '../components/Illustrations.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
+const TRACES_ETAPE = {
+  Grossesse: 'M12 21s-7-4.6-9.2-9A5.3 5.3 0 0 1 12 6.5 5.3 5.3 0 0 1 21.2 12C19 16.4 12 21 12 21z',
+  Naissance: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6',
+  '0 à 2 ans': 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM9 12l2 2 4-4',
+  '5 ans': 'M3 9l9-5 9 5-9 5zM7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5',
+}
 const ETAPES = [
   ['Grossesse', 'Rendez-vous prénataux et signes de danger'],
   ['Naissance', "Déclaration à l'état civil, gratuite sous 45 jours"],
   ['0 à 2 ans', 'Vaccins rappelés par SMS, visite si silence'],
   ['5 ans', 'Nutrition, jeux d’éveil, entrée au préscolaire'],
 ]
+
+/** Le titre arrive mot par mot ; « fil » est souligné d'un trait d'or qui se trace. */
+function TitreAnime() {
+  const mots = ['Ne', 'perdons', 'le', 'fil', "d'aucun", 'enfant.']
+  return (
+    <h1 id="titre-accueil" className="titre-mots">
+      {mots.map((m, i) => (
+        <span key={m} className={`mot${m === 'fil' ? ' mot-fil' : ''}`} style={{ '--i': i }}>{m}</span>
+      ))}
+    </h1>
+  )
+}
 
 /** Plan du site : chaque page a un rôle précis, rien n'est caché. */
 const PLAN = [
@@ -50,7 +68,7 @@ export default function Accueil() {
           <div className="heros-grille">
             <div>
               <span className="mention-concours">Hack4Children Togo 2026</span> <span className="mention-concours region">{LIBELLE_REGION[regionDeploiement()]}</span>
-              <h1 id="titre-accueil">Ne perdons le fil d'aucun enfant.</h1>
+              <TitreAnime />
               <p className="chapeau-heros">
                 Fil d'Or suit chaque enfant du premier rendez-vous de grossesse jusqu'à 5 ans, avec ou sans téléphone,
                 avec ou sans réseau. Quand une famille ne répond plus, le système va la chercher.
@@ -64,12 +82,12 @@ export default function Accueil() {
             <figure className="sms-demo" style={{ margin: 0 }} aria-label="Exemple de SMS reçu par une famille">
               <div className="en-tete"><span>Fil d'Or</span><span>SMS</span></div>
               <div className="fil-sms">
-                <div className="bulle recue">
+                <div className="bulle recue sms-seq" style={{ '--s': 0 }}>
                   Rappel : un rendez-vous de vaccination approche, jeudi au centre de santé. Répondez OK pour confirmer.
                   <small>Jeudi 7 h 30</small>
                 </div>
-                <div className="bulle envoyee">OK<small>Jeudi 7 h 42</small></div>
-                <div className="bulle recue">
+                <div className="bulle envoyee sms-seq" style={{ '--s': 1 }}>OK<small>Jeudi 7 h 42</small></div>
+                <div className="bulle recue sms-seq" style={{ '--s': 2 }}>
                   Merci, rendez-vous noté. Jeu du jour : cacher un objet sous un tissu et le faire chercher.
                   <small>Jeudi 7 h 42</small>
                 </div>
@@ -80,7 +98,10 @@ export default function Accueil() {
 
           <ol className="fil-vie" aria-label="Le fil, de la grossesse à cinq ans">
             {ETAPES.map(([titre, detail]) => (
-              <li key={titre}><strong>{titre}</strong><span>{detail}</span></li>
+              <li key={titre} style={{ '--k': ETAPES.findIndex((e) => e[0] === titre) }}>
+                <i className="fil-puce"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={TRACES_ETAPE[titre]} /></svg></i>
+                <strong>{titre}</strong><span>{detail}</span>
+              </li>
             ))}
           </ol>
         </div>

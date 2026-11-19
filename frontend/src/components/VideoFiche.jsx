@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Picto from './Picto.jsx'
 
 /** Emplacement d'une vidéo éducative. Si le fichier existe (déclaré dans lib/videosEveil.js),
  *  on affiche un lecteur ; sinon une fiche « vidéo à venir » avec la consigne de tournage.
@@ -15,7 +16,7 @@ export default function VideoFiche({ titre, video, consigne, materiel }) {
   }
   return (
     <figure className="video-fiche a-venir">
-      <span className="video-cadre" aria-hidden="true">🎥</span>
+      <span className="video-cadre" aria-hidden="true"><Picto nom="video" /></span>
       <figcaption>
         <b>{titre}</b>
         {consigne && <p className="petit">{consigne}</p>}

@@ -4,6 +4,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import { api } from '../lib/api.js'
 import { lienCarte } from '../lib/geo.js'
 import { afficherNotification } from '../lib/notifier.js'
+import Picto from '../components/Picto.jsx'
 
 const FORMULE = { JOURNEE: 'Journée', MATIN: 'Matin', APRES_MIDI: 'Après-midi' }
 const iso = (d) => d.toISOString().slice(0, 10)
@@ -76,7 +77,7 @@ export default function CrecheTableau() {
 
         {creche?.latitude != null && creche?.longitude != null && (
           <div className="alerte-acte" role="status">
-            📍 Les familles trouvent la crèche sur la carte et suivent la route jusqu'ici (zone {creche.zone}).
+            <Picto nom="pin" /> Les familles trouvent la crèche sur la carte et suivent la route jusqu'ici (zone {creche.zone}).
             {' '}
             <a className="bouton clair petit-bouton" href={lienCarte(creche.latitude, creche.longitude)} target="_blank" rel="noreferrer">Voir la position</a>
           </div>
@@ -92,7 +93,7 @@ export default function CrecheTableau() {
 
         {duJour.length > 0 && duJour.some((r) => !r.arriveeReelle) && (
           <div className="alerte-acte" role="status">
-            ⏰ {duJour.filter((r) => !r.arriveeReelle).length} enfant(s) attendu(s) pas encore arrivé(s).
+            <Picto nom="horloge" /> {duJour.filter((r) => !r.arriveeReelle).length} enfant(s) attendu(s) pas encore arrivé(s).
             Si l'heure d'arrivée est passée, prévenez la famille et l'agent de santé par le code enfant.
           </div>
         )}
@@ -151,7 +152,7 @@ export default function CrecheTableau() {
         </section>
 
         <section className="carte" aria-labelledby="t-eveil">
-          <h2 id="t-eveil">🎲 L'éveil à la crèche</h2>
+          <h2 id="t-eveil"><Picto nom="de" /> L'éveil à la crèche</h2>
           <p>
             Le jeu du jour (par âge) est le même que celui des familles : les enfants retrouvent à la crèche le
             jeu que la maman fait à la maison. Regardez le jeu du jour de chaque enfant, proposez-le aux présents.

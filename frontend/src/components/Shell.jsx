@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { api } from '../lib/api.js'
-import { useAuth, useReseau } from '../lib/contexte.jsx'
+import { useAuth } from '../lib/contexte.jsx'
 import { lireFile, nombreEnAttente } from '../lib/offline.js'
 import Avatar from './Avatar.jsx'
 
@@ -78,7 +78,7 @@ async function chargerNotifications(role) {
   return []
 }
 
-function Notifications({ role }) {
+export function Notifications({ role }) {
   const [ouvert, setOuvert] = useState(false)
   const [items, setItems] = useState([])
   const bloc = useRef(null)
@@ -128,7 +128,6 @@ function Notifications({ role }) {
  */
 export default function Shell({ titre, teinte = 'cyan', groupes, children }) {
   const { session } = useAuth()
-  const { enLigne } = useReseau()
   const lieu = useLocation()
   const [ouvert, setOuvert] = useState(false)
   const tous = groupes.flatMap((g) => g.liens)
@@ -159,20 +158,9 @@ export default function Shell({ titre, teinte = 'cyan', groupes, children }) {
       </aside>
 
       <div className="shell-corps">
-        <div className="shell-barre">
-          <div className="shell-barre-gauche">
-            <img src="/logo-fildor.png" alt="Fil d'Or" height="32" onError={(e) => e.target.style.display = 'none'} />
-            <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
-            <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
-          </div>
-          <div className="shell-barre-droite">
-            <Notifications role={session?.role} />
-            <span className={`shell-reseau ${enLigne ? 'en' : 'hors'}`} role="status">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
-            <span className="shell-user">
-              <Avatar username={session?.username} nom={session?.nomComplet || titre} taille={30} />
-              <span className="shell-user-texte"><b>{session?.nomComplet}</b><small>{titre}</small></span>
-            </span>
-          </div>
+        <div className="shell-barre shell-barre-mobile">
+          <button className="shell-hamburger" type="button" aria-expanded={ouvert} onClick={() => setOuvert((o) => !o)}>Menu</button>
+          <p className="shell-fil"><span>{titre}</span><span aria-hidden="true"> › </span><b>{actif?.nom ?? ''}</b></p>
         </div>
         <ContexteShell.Provider value={true}>
           <div className="shell-contenu">{children}</div>

@@ -33,15 +33,15 @@ export const COULEURS = [
 ]
 
 export const CORPS = [
-  ['la tête', '🙂'], ['les épaules', '🙆🏽'], ['les genoux', '🦵🏽'], ['les pieds', '🦶🏽'],
-  ['les mains', '👐🏽'], ['le ventre', '🫄🏽'],
+  ['la tête', 'corps-tete'], ['les épaules', 'corps-epaules'], ['les genoux', 'corps-genou'], ['les pieds', 'corps-pied'],
+  ['les mains', 'corps-main'], ['le ventre', 'corps-ventre'],
 ]
 
 export const CHANSONS = [
   {
     id: 'alphabet',
     titre: "L'alphabet en chantant",
-    icone: '🔤',
+    icone: 'lettres',
     duree: '1 min 45',
     interaction: 'alphabet',
     age: '3 à 5 ans',
@@ -58,7 +58,7 @@ export const CHANSONS = [
   {
     id: 'nombres',
     titre: 'Compter jusqu’à dix en chantant',
-    icone: '🔢',
+    icone: 'chiffres',
     duree: '1 min 30',
     interaction: 'nombres',
     age: '2 à 5 ans',
@@ -74,7 +74,7 @@ export const CHANSONS = [
   {
     id: 'jours',
     titre: 'Les jours de la semaine',
-    icone: '📅',
+    icone: 'calendrier',
     duree: '1 min 20',
     interaction: 'jours',
     age: '3 à 5 ans',
@@ -89,7 +89,7 @@ export const CHANSONS = [
   {
     id: 'mois',
     titre: 'Les douze mois de l’année',
-    icone: '🗓️',
+    icone: 'calendrier',
     duree: '1 min 50',
     interaction: 'mois',
     age: '4 à 5 ans',
@@ -105,7 +105,7 @@ export const CHANSONS = [
   {
     id: 'couleurs',
     titre: 'Les couleurs autour de moi',
-    icone: '🎨',
+    icone: 'palette',
     duree: '1 min 15',
     interaction: 'couleurs',
     age: '2 à 4 ans',
@@ -121,7 +121,7 @@ export const CHANSONS = [
   {
     id: 'corps',
     titre: 'Tête, épaules, genoux, pieds',
-    icone: '🕺🏽',
+    icone: 'danse',
     duree: '1 min 10',
     interaction: 'corps',
     age: '2 à 4 ans',

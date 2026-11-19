@@ -4,6 +4,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Chansons from '../components/Chansons.jsx'
 import VideoFiche from '../components/VideoFiche.jsx'
 import { videoDe } from '../lib/videosEveil.js'
+import Picto, { LIBELLES } from '../components/Picto.jsx'
 
 /* ---------- utilitaires ---------- */
 
@@ -216,12 +217,12 @@ function Quiz({ fabrique, finMessage, contexte }) {
 /* ---------- 1. Compte avec moi ---------- */
 
 const OBJETS = [
-  ['🥭', 'mangue', 'mangues'],
-  ['🍌', 'banane', 'bananes'],
-  ['🥚', 'œuf', 'œufs'],
-  ['🐟', 'poisson', 'poissons'],
-  ['🍊', 'orange', 'oranges'],
-  ['🌽', 'épi de maïs', 'épis de maïs'],
+  ['mangue', 'mangue', 'mangues'],
+  ['banane', 'banane', 'bananes'],
+  ['oeuf', 'œuf', 'œufs'],
+  ['poisson', 'poisson', 'poissons'],
+  ['orange', 'orange', 'oranges'],
+  ['mais', 'épi de maïs', 'épis de maïs'],
 ]
 
 function fabriquerCompte(rang) {
@@ -233,7 +234,7 @@ function fabriquerCompte(rang) {
   return {
     consigne: `Combien y a-t-il de ${n > 1 ? plusieurs : un} ?`,
     voix: `Combien y a-t-il de ${n > 1 ? plusieurs : un} ?`,
-    visuel: <div className="jeu-objets" aria-label={`${n} ${n > 1 ? plusieurs : un}`}>{Array.from({ length: n }, (_, i) => <span key={i}>{emoji}</span>)}</div>,
+    visuel: <div className="jeu-objets" aria-label={`${n} ${n > 1 ? plusieurs : un}`}>{Array.from({ length: n }, (_, i) => <span key={i}><Picto nom={emoji} /></span>)}</div>,
     choix,
     bonne: n,
     felicitation: `Bravo ! Il y a ${n} ${n > 1 ? plusieurs : un}.`,
@@ -318,7 +319,7 @@ function fabriquerTaille() {
     choix: ids.map((id, i) => ({
       id,
       aria: id === 'g' ? 'grand' : 'petit',
-      contenu: <span style={{ fontSize: `${tailles[i]}px`, lineHeight: 1 }}>{emoji}</span>,
+      contenu: <span style={{ fontSize: `${tailles[i]}px`, lineHeight: 1 }}><Picto nom={emoji} /></span>,
     })),
     bonne: grand ? 'g' : 'p',
     felicitation: `Bravo ! Tu as touché ${mot}.`,
@@ -328,19 +329,19 @@ function fabriquerTaille() {
 /* ---------- 5. Mon assiette ---------- */
 
 const BONS = [
-  ['🍠', 'les ignames'],
-  ['🌽', 'le maïs'],
-  ['🫘', 'les haricots'],
-  ['🐟', 'le poisson'],
-  ['🥚', 'les œufs'],
-  ['🥭', 'les mangues'],
-  ['🍌', 'les bananes'],
-  ['🥜', 'les arachides'],
+  ['igname', 'les ignames'],
+  ['mais', 'le maïs'],
+  ['haricots', 'les haricots'],
+  ['poisson', 'le poisson'],
+  ['oeuf', 'les œufs'],
+  ['mangue', 'les mangues'],
+  ['banane', 'les bananes'],
+  ['arachide', 'les arachides'],
 ]
 const SUCRES = [
-  ['🍬', 'les bonbons'],
-  ['🍭', 'les sucettes'],
-  ['🥤', 'la boisson sucrée'],
+  ['bonbon', 'les bonbons'],
+  ['sucette', 'les sucettes'],
+  ['boisson', 'la boisson sucrée'],
 ]
 
 function fabriquerAssiette() {
@@ -356,7 +357,7 @@ function fabriquerAssiette() {
       aria: n,
       contenu: (
         <>
-          <span className="gros-emoji">{e}</span>
+          <span className="gros-emoji"><Picto nom={e} /></span>
           <span className="etiquette-couleur">{n}</span>
         </>
       ),
@@ -368,7 +369,7 @@ function fabriquerAssiette() {
 
 /* ---------- 6. Mémoire des animaux ---------- */
 
-const ANIMAUX = ['🐓', '🐐', '🐄', '🐖', '🐟', '🐒', '🐢', '🦜']
+const ANIMAUX = ['coq', 'chevre', 'vache', 'cochon', 'poisson', 'singe', 'tortue', 'perroquet']
 
 function Memoire({ contexte }) {
   const creer = () => melanger([...ANIMAUX.slice(0, 6), ...ANIMAUX.slice(0, 6)].map((a, i) => ({ id: i, animal: a })))
@@ -425,9 +426,9 @@ function Memoire({ contexte }) {
               key={c.id}
               className={`carte-memoire ${visible ? 'visible' : ''} ${trouvees.includes(c.id) ? 'trouvee' : ''}`}
               onClick={() => retourner(c)}
-              aria-label={visible ? c.animal : 'Carte cachée'}
+              aria-label={visible ? LIBELLES[c.animal] : 'Carte cachée'}
             >
-              <span>{visible ? c.animal : '?'}</span>
+              <span>{visible ? <Picto nom={c.animal} /> : '?'}</span>
             </button>
           )
         })}
@@ -456,10 +457,10 @@ function Memoire({ contexte }) {
 /* ---------- 7. Les mains propres ---------- */
 
 const GESTES = [
-  { id: 1, emoji: '💧', texte: 'Je mouille mes mains' },
-  { id: 2, emoji: '🧼', texte: 'Je mets du savon' },
-  { id: 3, emoji: '👐', texte: 'Je frotte bien' },
-  { id: 4, emoji: '🧻', texte: 'Je rince et je sèche' },
+  { id: 1, emoji: 'eau', texte: 'Je mouille mes mains' },
+  { id: 2, emoji: 'savon', texte: 'Je mets du savon' },
+  { id: 3, emoji: 'mains', texte: 'Je frotte bien' },
+  { id: 4, emoji: 'serviette', texte: 'Je rince et je sèche' },
 ]
 
 function MainsPropres({ contexte }) {
@@ -504,7 +505,7 @@ function MainsPropres({ contexte }) {
           return (
             <button type="button" key={g.id} className={`geste ${rang ? 'fait' : ''}`} onClick={() => toucher(g)} aria-label={g.texte}>
               {rang > 0 && <span className="geste-rang">{rang}</span>}
-              <span className="gros-emoji">{g.emoji}</span>
+              <span className="gros-emoji"><Picto nom={g.emoji} /></span>
               <span className="etiquette-couleur">{g.texte}</span>
             </button>
           )
@@ -532,12 +533,12 @@ function MainsPropres({ contexte }) {
 /* ---------- 8. Les opposés ---------- */
 
 const OPPOSES = [
-  { motA: 'grand', emojiA: '🐘', motB: 'petit', emojiB: '🐜' },
-  { motA: 'chaud', emojiA: '🔥', motB: 'froid', emojiB: '❄️' },
-  { motA: 'jour', emojiA: '☀️', motB: 'nuit', emojiB: '🌙' },
-  { motA: 'haut', emojiA: '⬆️', motB: 'bas', emojiB: '⬇️' },
-  { motA: 'mouillé', emojiA: '🌧️', motB: 'sec', emojiB: '🏜️' },
-  { motA: 'rapide', emojiA: '🐆', motB: 'lent', emojiB: '🐢' },
+  { motA: 'grand', emojiA: 'elephant', motB: 'petit', emojiB: 'fourmi' },
+  { motA: 'chaud', emojiA: 'flamme', motB: 'froid', emojiB: 'flocon' },
+  { motA: 'jour', emojiA: 'soleil', motB: 'nuit', emojiB: 'nuit' },
+  { motA: 'haut', emojiA: 'haut', motB: 'bas', emojiB: 'bas' },
+  { motA: 'mouillé', emojiA: 'pluie', motB: 'sec', emojiB: 'sec' },
+  { motA: 'rapide', emojiA: 'guepard', motB: 'lent', emojiB: 'tortue' },
 ]
 
 function fabriquerOppose() {
@@ -567,7 +568,7 @@ function fabriquerOppose() {
     voix: `Quel est le contraire de ${motDepart} ?`,
     visuel: (
       <div style={{ textAlign: 'center', margin: '0.4rem 0' }}>
-        <span style={{ fontSize: '3rem', display: 'block' }}>{emojiDepart}</span>
+        <span style={{ fontSize: '3rem', display: 'block' }}><Picto nom={emojiDepart} /></span>
         <b style={{ fontSize: '1.2rem', color: '#16325c' }}>{motDepart.toUpperCase()}</b>
       </div>
     ),
@@ -576,7 +577,7 @@ function fabriquerOppose() {
       aria: opt.mot,
       contenu: (
         <>
-          <span className="gros-emoji">{opt.emoji}</span>
+          <span className="gros-emoji"><Picto nom={opt.emoji} /></span>
           <span className="etiquette-couleur">{opt.mot}</span>
         </>
       ),
@@ -589,12 +590,12 @@ function fabriquerOppose() {
 /* ---------- 9. Le corps humain ---------- */
 
 const PARTIES_CORPS = [
-  { id: 'tete', nom: 'la tête', emoji: '🧒' },
-  { id: 'main', nom: 'la main', emoji: '✋' },
-  { id: 'pied', nom: 'le pied', emoji: '🦶' },
-  { id: 'ventre', nom: 'le ventre', emoji: '🫄' },
-  { id: 'genou', nom: 'le genou', emoji: '🦵' },
-  { id: 'oeil', nom: "l'œil", emoji: '👁️' },
+  { id: 'tete', nom: 'la tête', emoji: 'corps-tete' },
+  { id: 'main', nom: 'la main', emoji: 'corps-main' },
+  { id: 'pied', nom: 'le pied', emoji: 'corps-pied' },
+  { id: 'ventre', nom: 'le ventre', emoji: 'corps-ventre' },
+  { id: 'genou', nom: 'le genou', emoji: 'corps-genou' },
+  { id: 'oeil', nom: "l'œil", emoji: 'corps-oeil' },
 ]
 
 function fabriquerCorps() {
@@ -609,7 +610,7 @@ function fabriquerCorps() {
       aria: p.nom,
       contenu: (
         <>
-          <span className="gros-emoji">{p.emoji}</span>
+          <span className="gros-emoji"><Picto nom={p.emoji} /></span>
           <span className="etiquette-couleur">{p.nom}</span>
         </>
       ),
@@ -622,12 +623,12 @@ function fabriquerCorps() {
 /* ---------- 10. Les sons de la ferme ---------- */
 
 const SONS_FERME = [
-  { id: 'coq', animal: 'le coq', emoji: '🐓', criTexte: 'Cocorico !', criVoix: 'cocorico' },
-  { id: 'chevre', animal: 'la chèvre', emoji: '🐐', criTexte: 'Bêê !', criVoix: 'bêê' },
-  { id: 'vache', animal: 'la vache', emoji: '🐄', criTexte: 'Meuh !', criVoix: 'meuh' },
-  { id: 'cochon', animal: 'le cochon', emoji: '🐖', criTexte: 'Groin groin !', criVoix: 'groin groin' },
-  { id: 'chat', animal: 'le chat', emoji: '🐱', criTexte: 'Miaou !', criVoix: 'miaou' },
-  { id: 'chien', animal: 'le chien', emoji: '🐶', criTexte: 'Ouaf ouaf !', criVoix: 'ouaf ouaf' },
+  { id: 'coq', animal: 'le coq', emoji: 'coq', criTexte: 'Cocorico !', criVoix: 'cocorico' },
+  { id: 'chevre', animal: 'la chèvre', emoji: 'chevre', criTexte: 'Bêê !', criVoix: 'bêê' },
+  { id: 'vache', animal: 'la vache', emoji: 'vache', criTexte: 'Meuh !', criVoix: 'meuh' },
+  { id: 'cochon', animal: 'le cochon', emoji: 'cochon', criTexte: 'Groin groin !', criVoix: 'groin groin' },
+  { id: 'chat', animal: 'le chat', emoji: 'chat', criTexte: 'Miaou !', criVoix: 'miaou' },
+  { id: 'chien', animal: 'le chien', emoji: 'chien', criTexte: 'Ouaf ouaf !', criVoix: 'ouaf ouaf' },
 ]
 
 function fabriquerSon() {
@@ -646,7 +647,7 @@ function fabriquerSon() {
       aria: a.animal,
       contenu: (
         <>
-          <span className="gros-emoji">{a.emoji}</span>
+          <span className="gros-emoji"><Picto nom={a.emoji} /></span>
           <span className="etiquette-couleur">{a.animal}</span>
         </>
       ),
@@ -659,16 +660,16 @@ function fabriquerSon() {
 /* ---------- catalogue ---------- */
 
 const JEUX = [
-  { id: 'compter', titre: 'Compte avec moi', age: '2 à 4 ans', icone: '🥭', texte: 'Compter des mangues, des œufs, des poissons.', fin: 'Tu sais bien compter.', fabrique: fabriquerCompte },
-  { id: 'couleurs', titre: 'Touche la couleur', age: '2 à 4 ans', icone: '🎨', texte: 'Reconnaître le rouge, le bleu, le jaune…', fin: 'Tu connais les couleurs.', fabrique: fabriquerCouleur },
-  { id: 'formes', titre: 'Les formes', age: '3 à 5 ans', icone: '🔺', texte: 'Trouver le cercle, le carré, le triangle.', fin: 'Tu reconnais les formes.', fabrique: fabriquerForme },
-  { id: 'taille', titre: 'Grand ou petit', age: '2 à 3 ans', icone: '🐘', texte: 'Montrer le plus grand, le plus petit.', fin: 'Tu vois bien les tailles.', fabrique: fabriquerTaille },
-  { id: 'assiette', titre: 'Mon assiette', age: '3 à 5 ans', icone: '🍠', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
-  { id: 'memoire', titre: 'Les animaux jumeaux', age: '3 à 5 ans', icone: '🐓', texte: 'Retrouver les paires d’animaux de la ferme.', memoire: true },
-  { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', icone: '🧼', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
-  { id: 'opposes', titre: 'Les opposés', age: '2 à 4 ans', icone: '↔️', texte: 'Trouver le contraire : grand et petit, chaud et froid…', fin: 'Tu connais bien les contraires.', fabrique: fabriquerOppose },
-  { id: 'corps', titre: 'Le corps humain', age: '3 à 5 ans', icone: '🧒', texte: 'Montrer où est la tête, la main, le pied, le ventre…', fin: 'Tu connais bien ton corps.', fabrique: fabriquerCorps },
-  { id: 'sons', titre: 'Les sons de la ferme', age: '2 à 4 ans', icone: '🐔', texte: 'Écouter et reconnaître les bruits des animaux.', fin: 'Tu reconnais tous les animaux.', fabrique: fabriquerSon },
+  { id: 'compter', titre: 'Compte avec moi', age: '2 à 4 ans', icone: 'mangue', texte: 'Compter des mangues, des œufs, des poissons.', fin: 'Tu sais bien compter.', fabrique: fabriquerCompte },
+  { id: 'couleurs', titre: 'Touche la couleur', age: '2 à 4 ans', icone: 'palette', texte: 'Reconnaître le rouge, le bleu, le jaune…', fin: 'Tu connais les couleurs.', fabrique: fabriquerCouleur },
+  { id: 'formes', titre: 'Les formes', age: '3 à 5 ans', icone: 'triangle', texte: 'Trouver le cercle, le carré, le triangle.', fin: 'Tu reconnais les formes.', fabrique: fabriquerForme },
+  { id: 'taille', titre: 'Grand ou petit', age: '2 à 3 ans', icone: 'elephant', texte: 'Montrer le plus grand, le plus petit.', fin: 'Tu vois bien les tailles.', fabrique: fabriquerTaille },
+  { id: 'assiette', titre: 'Mon assiette', age: '3 à 5 ans', icone: 'igname', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
+  { id: 'memoire', titre: 'Les animaux jumeaux', age: '3 à 5 ans', icone: 'coq', texte: 'Retrouver les paires d’animaux de la ferme.', memoire: true },
+  { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', icone: 'savon', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
+  { id: 'opposes', titre: 'Les opposés', age: '2 à 4 ans', icone: 'opposes', texte: 'Trouver le contraire : grand et petit, chaud et froid…', fin: 'Tu connais bien les contraires.', fabrique: fabriquerOppose },
+  { id: 'corps', titre: 'Le corps humain', age: '3 à 5 ans', icone: 'corps-tete', texte: 'Montrer où est la tête, la main, le pied, le ventre…', fin: 'Tu connais bien ton corps.', fabrique: fabriquerCorps },
+  { id: 'sons', titre: 'Les sons de la ferme', age: '2 à 4 ans', icone: 'coq', texte: 'Écouter et reconnaître les bruits des animaux.', fin: 'Tu reconnais tous les animaux.', fabrique: fabriquerSon },
 ]
 
 /* ---------- page ---------- */
@@ -764,7 +765,7 @@ export default function Jeux() {
             <div className="jeux-catalogue">
               {JEUX.map((j) => (
                 <Link key={j.id} to={`/jeux/${j.id}`} className="jeu-carte">
-                  <span className="jeu-icone" aria-hidden="true">{j.icone}</span>
+                  <span className="jeu-icone" aria-hidden="true"><Picto nom={j.icone} /></span>
                   <span className="jeu-texte">
                     <b>{j.titre}</b>
                     <span>{j.texte}</span>

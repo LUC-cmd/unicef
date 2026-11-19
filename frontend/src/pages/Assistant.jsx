@@ -31,7 +31,7 @@ export default function Assistant() {
   const [erreur, setErreur] = useState('')
   const [attente, setAttente] = useState(false)
   const [toastSms, setToastSms] = useState('')
-  const chatFinRef = useRef(null)
+  const zoneRef = useRef(null)
 
   const [messages, setMessages] = useState([
     {
@@ -44,8 +44,11 @@ export default function Assistant() {
     },
   ])
 
+  // On fait défiler seulement la zone de discussion (jamais toute la page) : la réponse reste visible.
   useEffect(() => {
-    chatFinRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const z = zoneRef.current
+    if (!z || (messages.length < 2 && !attente)) return
+    z.scrollTo({ top: z.scrollHeight, behavior: 'smooth' })
   }, [messages, attente])
 
   function declencherSms(texte) {
@@ -78,7 +81,7 @@ export default function Assistant() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q, langue }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(20000),
       })
       const donnees = await r.json().catch(() => null)
       if (!r.ok) throw new Error(donnees?.detail || 'Le service assistant ne répond pas.')
@@ -106,7 +109,12 @@ export default function Assistant() {
 
       setMessages((prev) => [...prev, assistantMsg])
     } catch (err) {
-      setErreur(err.name === 'TimeoutError' ? 'Le service assistant ne répond pas.' : err.message)
+      const texte = err.name === 'TimeoutError' || err.name === 'TypeError'
+        ? 'Le service assistant ne répond pas pour le moment. Réessayez dans un instant. Si c\'est urgent, allez au centre de santé le plus proche.'
+        : err.message
+      setMessages((prev) => [...prev, {
+        id: `e-${Date.now()}`, role: 'assistant', texte, date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }])
     } finally {
       setAttente(false)
     }
@@ -180,6 +188,11 @@ export default function Assistant() {
                 </div>
               </div>
 
+              {langue !== 'fr' && (
+                <p style={{ margin: 0, padding: '0.5rem 1rem', background: '#fffaf0', color: '#7b341e', fontSize: '0.82rem', borderBottom: '1px solid #fbd38d' }}>
+                  Les réponses en éwé, kabyè et tem arrivent avec les enregistrements des locuteurs. Pour l'instant, la réponse est en français.
+                </p>
+              )}
               {/* Toast de notification SMS simulé */}
               {toastSms && (
                 <div
@@ -204,6 +217,8 @@ export default function Assistant() {
 
               {/* Zone de défilement des messages */}
               <div
+                ref={zoneRef}
+                aria-live="polite"
                 style={{
                   padding: '1.15rem',
                   minHeight: '380px',
@@ -389,7 +404,6 @@ export default function Assistant() {
                   </div>
                 )}
 
-                <div ref={chatFinRef} />
               </div>
 
               {/* Suggestions cliquables */}
@@ -469,7 +483,6 @@ export default function Assistant() {
               </form>
             </div>
 
-            {erreur && <p className="erreur" role="alert" style={{ marginTop: '0.8rem' }}>{erreur}</p>}
           </div>
 
           <aside className="assistant-cote" aria-label="Limites de l'assistant">

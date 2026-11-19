@@ -20,6 +20,7 @@ import Proches from '../components/Proches.jsx'
 import RetraitConsentement from '../components/RetraitConsentement.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GuideRole from '../components/GuideRole.jsx'
+import Picto from '../components/Picto.jsx'
 
 const CLE_LISTE = 'fildor.cache.visites'
 const CLE_FICHE = (code) => `fildor.cache.fiche.${code}`
@@ -165,7 +166,7 @@ export default function Agent({ vue = 'visites' }) {
         {retours}
         {alertesActives.length > 0 && (
           <section className="carte alerte-urgence">
-            <h2>⚠ {alertesActives.length} alerte(s) urgence</h2>
+            <h2><Picto nom="alerte" /> {alertesActives.length} alerte(s) urgence</h2>
             <p className="petit">Envoyée(s) par le code *789*3# ou le bouton « urgence » du téléphone. Vérifiez l'enfant sur place, puis changez le statut.</p>
             <ul className="liste-visites">
               {alertesActives.map((a) => (
@@ -415,7 +416,7 @@ function Fiche({ code, enLigne, onChange }) {
       {fiche.statut === 'GROSSESSE' && (
         <>
           <p className="petit">
-            👩🏽‍🤝‍👩🏽 Avez-vous montré à la maman la page{' '}
+            <Picto nom="famille" /> Avez-vous montré à la maman la page{' '}
             <Link to="/grossesse">« Ma grossesse, mois par mois »</Link> ? Rendez-vous CPN, exercices doux
             et signes d'alerte, à lire avec elle — ou à imprimer.
           </p>
@@ -575,7 +576,7 @@ function Naissance({ fiche, onChange }) {
         <p className="petit">Fil d'Or ne garde aucun nom par défaut. La famille choisit ce qu'elle souhaite communiquer ; rien n'est envoyé sans son accord.</p>
         {prenatale && (
           <p className="carte attention sans-marge petit">
-            📋 {prenatale.accordMere || prenatale.accordPere
+            <Picto nom="fiche" /> {prenatale.accordMere || prenatale.accordPere
               ? 'Des noms ont été pris pendant la grossesse (CPN) et sont repris ci-dessous : confirmez-les avec la famille.'
               : 'Une fiche prénatale existe mais sans accord pour les noms : rien n\'est pré-rempli, demandez à la famille.'}
             {prenatale.pieceDisponible && ` Pièce d'identité enregistrée : ${prenatale.pieceType.toLowerCase().replace('_', ' ')}.`}

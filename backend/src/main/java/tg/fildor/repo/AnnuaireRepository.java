@@ -37,11 +37,16 @@ public class AnnuaireRepository {
         this.jdbc = jdbc;
     }
 
+    private static Double decimal(java.sql.ResultSet rs, String col) throws java.sql.SQLException {
+        java.math.BigDecimal v = rs.getBigDecimal(col);
+        return v == null ? null : v.doubleValue();
+    }
+
     private static StructureDto structure(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
         return new StructureDto(rs.getString("code"), rs.getString("type"), rs.getString("nom"), rs.getString("zone"),
                 rs.getString("telephone"), rs.getString("horaires"), rs.getString("services"),
                 rs.getBoolean("besoins_specifiques"), rs.getBoolean("actif"),
-                rs.getObject("latitude", Double.class), rs.getObject("longitude", Double.class),
+                decimal(rs, "latitude"), decimal(rs, "longitude"),
                 Lignes.horodatage(rs, "mis_a_jour_le"));
     }
 

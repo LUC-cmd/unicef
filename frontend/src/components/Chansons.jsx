@@ -3,6 +3,7 @@ import VideoFiche from './VideoFiche.jsx'
 import {
   ALPHABET, CHANSONS, COULEURS, CORPS, JOURS, LANGUES_FILMS, MOIS, NOMBRES, filmDe,
 } from '../lib/chansons.js'
+import Picto from './Picto.jsx'
 
 const VOIX_POSSIBLE = typeof window !== 'undefined' && 'speechSynthesis' in window
 
@@ -41,7 +42,7 @@ export default function Chansons() {
 
   return (
     <section className="chansons" aria-labelledby="t-chansons">
-      <h2 id="t-chansons" className="titre-section">🎵 Chansons et petits films</h2>
+      <h2 id="t-chansons" className="titre-section"><Picto nom="musique" /> Chansons et petits films</h2>
       <p className="chapeau">
         Des petits films d’une à deux minutes pour chanter l’alphabet, les nombres, les jours et les mois.
         Un adulte reste à côté ; on touche les lettres et les nombres pour les entendre.
@@ -51,7 +52,7 @@ export default function Chansons() {
         {CHANSONS.map((c) => (
           <button key={c.id} type="button" className={`chanson-carte${c.id === choisie ? ' active' : ''}`}
             aria-pressed={c.id === choisie} onClick={() => setChoisie(c.id)}>
-            <span className="chanson-icone" aria-hidden="true">{c.icone}</span>
+            <span className="chanson-icone" aria-hidden="true"><Picto nom={c.icone} /></span>
             <b>{c.titre}</b>
             <small>{c.duree} · {c.age}</small>
           </button>
@@ -142,14 +143,14 @@ export default function Chansons() {
           <div className="puzzle-chips" role="group" aria-label="Les parties du corps">
             {CORPS.map(([nom, emoji]) => (
               <button key={nom} type="button" className="puce" onClick={() => toucher(nom)}>
-                <span aria-hidden="true">{emoji}</span> {nom}
+                <Picto nom={emoji} /> {nom}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      <p className="dernier-dit" aria-live="polite">{dernier && <>🔊 <b>{dernier}</b></>}</p>
+      <p className="dernier-dit" aria-live="polite">{dernier && <><Picto nom="son" /> <b>{dernier}</b></>}</p>
     </section>
   )
 }

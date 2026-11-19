@@ -3,7 +3,7 @@ import { JEUX_ATTENDUS, videoDe } from './videosEveil.js'
 
 describe('videosEveil', () => {
   it('chaque jeu a une entrée (vidéo à venir ou fichier déclaré)', () => {
-    expect(JEUX_ATTENDUS).toEqual(['compter', 'couleurs', 'formes', 'taille', 'assiette', 'memoire', 'mains'])
+    expect(JEUX_ATTENDUS).toEqual(['compter', 'couleurs', 'formes', 'taille', 'assiette', 'memoire', 'mains', 'opposes', 'corps', 'sons'])
   })
 
   it('sans vidéo déclarée, la page affiche la fiche et pas un lecteur vide', () => {

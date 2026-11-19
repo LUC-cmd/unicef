@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import VideoFiche from '../components/VideoFiche.jsx'
 import { KIT_ACCOUCHEMENT, MOIS_GROSSESSE, POSITIONS_BEBE, PRUDENCE_POSITIONS, SIGNES_ALERTE_GROSSESSE } from '../lib/grossesse.js'
+import Picto from '../components/Picto.jsx'
 
 /** La grossesse, mois par mois : rendez-vous CPN, exercices illustrés (avec emplacements vidéo),
  *  signes d'alerte et kit d'accouchement. À informer et orienter, jamais à diagnostiquer :
@@ -36,8 +37,8 @@ export default function Grossesse() {
 
         <section className="carte grossesse-fiche" aria-live="polite">
           <h2 className="sans-marge">{fiche.titre}</h2>
-          <p className="gros">👶 {fiche.bebe}</p>
-          <p className="gros">🏥 <b>Le rendez-vous :</b> {fiche.rdv}</p>
+          <p className="gros"><Picto nom="bebe" /> {fiche.bebe}</p>
+          <p className="gros"><Picto nom="hopital" /> <b>Le rendez-vous :</b> {fiche.rdv}</p>
 
           <h3>Les exercices de ce mois</h3>
           <p className="petit">Mouvements doux, arrêtez si ça tire. Ce ne sont pas des soins : en cas de doute, demandez au centre de santé.</p>
@@ -45,7 +46,7 @@ export default function Grossesse() {
             {fiche.exercices.map((e) => (
               <div className="exercice" key={e.titre}>
                 <div className="exercice-texte">
-                  <span className="gros-emoji" aria-hidden="true">{e.picto}</span>
+                  <span className="gros-emoji" aria-hidden="true"><Picto nom={e.picto} /></span>
                   <b>{e.titre}</b>
                   <p className="petit">{e.consigne}</p>
                   {e.materiel && <p className="petit"><em>Matériel : {e.materiel}.</em></p>}
@@ -55,17 +56,17 @@ export default function Grossesse() {
             ))}
           </div>
 
-          <p className="carte attention sans-marge">💡 <b>Conseil du mois :</b> {fiche.conseil}</p>
+          <p className="carte attention sans-marge"><Picto nom="conseil" /> <b>Conseil du mois :</b> {fiche.conseil}</p>
         </section>
 
         <section className="carte" aria-labelledby="t-positions">
-          <h2 id="t-positions">🧘🏽‍♀️ Aider bébé à bien se placer</h2>
+          <h2 id="t-positions"><Picto nom="yoga" /> Aider bébé à bien se placer</h2>
           <p className="petit">À partir du 7ᵉ mois, ces postures douces donnent de la place au bébé et soulagent le dos. Ce ne sont pas des soins : le centre vérifie la position à chaque CPN.</p>
           <div className="exercices-grille">
             {POSITIONS_BEBE.map((p) => (
               <div className="exercice" key={p.titre}>
                 <div className="exercice-texte">
-                  <span className="gros-emoji" aria-hidden="true">{p.picto}</span>
+                  <span className="gros-emoji" aria-hidden="true"><Picto nom={p.picto} /></span>
                   <b>{p.titre}</b>
                   <p className="petit"><em>{p.quand}.</em></p>
                   <p className="petit">{p.consigne}</p>
@@ -75,18 +76,18 @@ export default function Grossesse() {
               </div>
             ))}
           </div>
-          <p className="carte attention sans-marge">⚠️ {PRUDENCE_POSITIONS}</p>
+          <p className="carte attention sans-marge"><Picto nom="alerte" /> {PRUDENCE_POSITIONS}</p>
         </section>
 
         <section className="carte" aria-labelledby="t-alerte">
-          <h2 id="t-alerte">🚑 Allez au centre de santé TOUT DE SUITE si…</h2>
+          <h2 id="t-alerte"><Picto nom="ambulance" /> Allez au centre de santé TOUT DE SUITE si…</h2>
           <ul className="liste-points">
-            {SIGNES_ALERTE_GROSSESSE.map(([p, t]) => <li key={t} className="gros"><span aria-hidden="true">{p}</span> {t}</li>)}
+            {SIGNES_ALERTE_GROSSESSE.map(([p, t]) => <li key={t} className="gros signe-alerte"><span className="signe-picto" aria-hidden="true"><Picto nom={p} /></span> {t}</li>)}
           </ul>
         </section>
 
         <section className="carte" aria-labelledby="t-kit">
-          <h2 id="t-kit">🧺 Le kit d'accouchement (prêt dès le 7ᵉ mois)</h2>
+          <h2 id="t-kit"><Picto nom="panier" /> Le kit d'accouchement (prêt dès le 7ᵉ mois)</h2>
           <ul className="liste-coches">
             {KIT_ACCOUCHEMENT.map((t) => <li key={t}>{t}</li>)}
           </ul>
