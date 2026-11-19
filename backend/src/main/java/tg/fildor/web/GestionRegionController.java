@@ -83,8 +83,9 @@ public class GestionRegionController {
         String zone = vide(c.codeZone());
         String structure = vide(c.codeStructure());
         if ("STRUCTURE".equals(c.role())) {
-            boolean ok = structure != null && comptes.structures().stream()
-                    .anyMatch(s -> s.code().equals(structure) && region.equals(s.region()));
+            final String codeStructure = structure;
+            boolean ok = codeStructure != null && comptes.structures().stream()
+                    .anyMatch(s -> s.code().equals(codeStructure) && region.equals(s.region()));
             if (!ok) {
                 return erreur("Choisissez une structure de votre région.");
             }
