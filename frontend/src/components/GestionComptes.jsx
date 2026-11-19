@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { Squelette } from './Chargement.jsx'
+import GestionCreches from './GestionCreches.jsx'
 
 const ROLES = [
   { code: 'AGENT', nom: 'Agent de santé', aide: 'Inscrit les familles et suit les enfants d’une préfecture, même sans réseau.', rattache: 'prefecture' },
@@ -169,9 +170,10 @@ function FormulaireStructure({ geo, apres }) {
   return (
     <form className="carte formulaire-compte" onSubmit={envoyer} noValidate>
       <h2>Ajouter une structure</h2>
+      <p className="petit">Pour une crèche, utilisez l’onglet « Crèches » : il demande aussi les conditions d’accueil.</p>
       <div className="champs">
         <label className="champ"><span className="champ-titre">Type</span>
-          <select value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+          <select value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPES).filter(([k]) => k !== 'CRECHE').map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
         <label className="champ"><span className="champ-titre">Préfecture</span>
           <select value={zone} onChange={(e) => setZone(e.target.value)}>
             <option value="">Choisir…</option>
@@ -225,6 +227,7 @@ export default function GestionComptes() {
       <div className="onglets-pro" role="tablist" aria-label="Comptes et structures">
         <button role="tab" aria-selected={onglet === 'comptes'} className={onglet === 'comptes' ? 'actif' : ''} onClick={() => setOnglet('comptes')}>Comptes ({comptes?.length ?? 0})</button>
         <button role="tab" aria-selected={onglet === 'structures'} className={onglet === 'structures' ? 'actif' : ''} onClick={() => setOnglet('structures')}>Structures ({structures.length})</button>
+        <button role="tab" aria-selected={onglet === 'creches'} className={onglet === 'creches' ? 'actif' : ''} onClick={() => setOnglet('creches')}>Crèches ({structures.filter((x) => x.type === 'CRECHE').length})</button>
       </div>
       {mdp && <MotDePasse info={mdp} fermer={() => setMdp(null)} />}
 
@@ -259,6 +262,8 @@ export default function GestionComptes() {
           </section>
           <FormulaireCompte geo={geo} structures={structures} apres={(info) => { setMdp(info); charger() }} />
         </>
+      ) : onglet === 'creches' ? (
+        <GestionCreches geo={geo} apres={(info) => { if (info) setMdp(info); charger() }} />
       ) : (
         <>
           <section className="carte">

@@ -34,7 +34,7 @@ export default function Fragiles() {
         </div>
         <section className="carte">
           <h3>Et les bracelets connectés ?</h3>
-          <p>Au centre de santé, des bracelets peuvent suivre les nouveau-nés fragiles. Fil d'Or n'a pas besoin du bracelet pour fonctionner : l'agent note la visite, le poids et le signe de danger. Une mesure venue d'un bracelet suivrait le même chemin que cette saisie.</p>
+          <p>Au centre de santé, des bracelets peuvent suivre les nouveau-nés fragiles. Fil d'Or n'a pas besoin du bracelet pour fonctionner : l'agent note la visite, le poids et le signe de danger. Sur la fiche d'un nouveau-né de moins d'un mois, l'agent note la température et le pouls lus sur le bracelet. Si une valeur sort des repères, Fil d'Or dit d'orienter le bébé vers le centre de santé le jour même. Plus tard, le bracelet pourra envoyer ses mesures lui-même, par le même chemin.</p>
         </section>
       </main>
     </>

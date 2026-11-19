@@ -41,7 +41,8 @@ public class InscriptionService {
             @Pattern(regexp = "F|M") String sexe,
             List<Integer> etapesFaites,
             Integer consultationsFaites,
-            @Valid Parents parents) {
+            @Valid Parents parents,
+            @Pattern(regexp = "ETABLI|RETIRE") String acteExistant) {
     }
 
     /** Identité prise aux consultations prénatales. Chaque nom, chaque information n'est gardé qu'avec l'accord de la personne. */
@@ -260,7 +261,7 @@ public class InscriptionService {
         }
         boolean ne = "ENFANT".equals(e.statut());
         long enfantId = repo.creerEnfant(familleId, code, e.statut(), ne ? e.dateNaissance() : null,
-                ne ? null : e.dateTermePrevue(), e.sexe());
+                ne ? null : e.dateTermePrevue(), e.sexe(), ne ? e.acteExistant() : null);
         List<PlanRendezVous.Prevu> plan = ne
                 ? PlanRendezVous.vaccins(e.dateNaissance(), etapesValides(e.etapesFaites()), aujourdhui)
                 : PlanRendezVous.prenatal(e.dateTermePrevue(),

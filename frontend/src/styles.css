@@ -1882,3 +1882,133 @@ h2 > .picto { color: #0b86b8; }
 .chargement-zone p, .chargement-plein p { margin: 0; }
 @keyframes chargeur-tour { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .chargeur-fil { animation-duration: 4s; } }
+.entete-liste { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; margin-bottom: .6rem; }
+.entete-liste h2 { margin: 0; }
+.formulaire-compte h3 { margin: 1.1rem 0 .4rem; font-size: 1.05rem; color: #0d3b66; }
+.jours-creche { display: flex; flex-wrap: wrap; gap: .4rem 1rem; border: 0; padding: 0; margin: .4rem 0 .8rem; }
+.jours-creche .case { display: inline-flex; }
+
+/* Carnet de suivi : une feuille A4 par enfant */
+.cn-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; max-width: 794px; margin: 0 auto 1rem; }
+.cn-feuille { position: relative; max-width: 794px; margin: 0 auto 1.5rem; padding: 26px 30px 22px; background: #fff; border: 1px solid #cfdde8; border-radius: 6px; box-shadow: 0 10px 30px rgba(13, 59, 102, .12); color: #1b2733; font-size: .95rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.cn-feuille::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 7px; border-radius: 6px 6px 0 0; background: linear-gradient(90deg, #1cabe2, #f2b705); }
+.cn-feuille h2 { margin: 1rem 0 .4rem; font-size: 1.02rem; color: #0d3b66; border-bottom: 2px solid #f2b705; padding-bottom: .2rem; display: inline-block; }
+.cn-tete { display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; padding-bottom: .8rem; border-bottom: 1px solid #d7e3ec; }
+.cn-tete img { border-radius: 50%; }
+.cn-titre h1 { margin: 0; font-size: 1.6rem; color: #0d3b66; line-height: 1.1; }
+.cn-titre p { margin: .15rem 0 0; color: #4a5b6b; font-size: .9rem; }
+.cn-codes { margin: 0; display: grid; gap: .35rem; text-align: right; }
+.cn-codes div { border: 1.5px solid #0d3b66; border-radius: 8px; padding: .25rem .7rem; }
+.cn-codes dt { font-size: .68rem; color: #4a5b6b; text-transform: none; }
+.cn-codes dd { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: .08em; color: #0d3b66; }
+.cn-identite { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; margin: .9rem 0 .6rem; }
+.cn-identite div { background: #eef7fc; border-radius: 8px; padding: .45rem .7rem; display: grid; }
+.cn-identite span { font-size: .72rem; color: #4a5b6b; }
+.cn-identite b { font-size: 1.02rem; color: #0d3b66; }
+.cn-prochain, .cn-alerte { display: flex; gap: .8rem; align-items: center; border-radius: 10px; padding: .6rem .9rem; margin: .6rem 0; }
+.cn-prochain { background: #fff6d6; border: 1.5px solid #f2b705; }
+.cn-prochain div { display: grid; }
+.cn-prochain small { color: #7a5a00; font-weight: 600; }
+.cn-prochain b { font-size: 1.25rem; color: #0d3b66; }
+.cn-alerte { background: #fdecea; border: 1.5px solid #c0392b; margin-top: .9rem; }
+.cn-alerte p { margin: 0; }
+.cn-icone { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 1.5rem; color: #0b86b8; box-shadow: inset 0 0 0 1.5px currentColor; }
+.cn-alerte .cn-icone { color: #c0392b; }
+.cn-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.cn-table th { text-align: left; background: #0d3b66; color: #fff; padding: .35rem .6rem; font-size: .78rem; font-weight: 600; }
+.cn-table td { padding: .38rem .6rem; border-bottom: 1px solid #d7e3ec; vertical-align: middle; }
+.cn-table tr.fait td { background: #f1f9f3; }
+.cn-date { white-space: nowrap; font-weight: 700; width: 108px; }
+.cn-type { display: inline-flex; align-items: center; gap: .35rem; font-weight: 700; color: #0d3b66; }
+.cn-type .picto { font-size: 1.2rem; color: #0b86b8; }
+.cn-lib { color: #4a5b6b; font-size: .86rem; }
+.cn-case { width: 62px; text-align: center; }
+.cn-boite { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 2px solid #0d3b66; border-radius: 5px; background: #fff; vertical-align: middle; }
+.cn-boite.coche { background: #1f8f4e; border-color: #1f8f4e; color: #fff; font-size: 1rem; }
+.cn-mesures td { height: 2.1rem; border: 1px solid #b9ccdb; }
+.cn-ruban { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin-top: .5rem; font-size: .86rem; }
+.cn-ruban span { display: inline-flex; align-items: center; gap: .4rem; }
+.cn-ruban i { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+.cn-ruban .vert i { background: #2e9e57; } .cn-ruban .jaune i { background: #f2b705; } .cn-ruban .rouge i { background: #d64533; }
+.cn-aide { margin: .2rem 0 .5rem; color: #4a5b6b; font-size: .88rem; }
+.cn-jour { width: 54px; font-weight: 700; color: #0d3b66; }
+.cn-jeux td { padding: .3rem .6rem; }
+.cn-jeune { background: #f3effb; border-radius: 8px; padding: .5rem .8rem; margin: .6rem 0; font-size: .9rem; }
+.cn-pied { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: .8rem; border-top: 1px solid #d7e3ec; }
+.cn-qr { padding: 6px; border: 1.5px solid #0d3b66; border-radius: 8px; background: #fff; line-height: 0; }
+.cn-qr-texte p { margin: .2rem 0 0; font-size: .82rem; color: #4a5b6b; }
+.cn-qr-texte .cn-mentions { font-size: .74rem; }
+@media (max-width: 640px) { .cn-feuille { padding: 20px 14px; } .cn-tete { grid-template-columns: auto 1fr; } .cn-codes { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; text-align: left; } }
+@media print {
+  @page { size: A4; margin: 9mm; }
+  .cn-feuille { max-width: none; margin: 0; padding: 4mm 2mm 0; border: 0; border-radius: 0; box-shadow: none; font-size: 9.6pt; break-after: page; break-inside: avoid; }
+  .cn-feuille:last-of-type { break-after: auto; }
+  .cn-feuille::before { border-radius: 0; }
+  .cn-table td { padding: .22rem .5rem; }
+  .cn-mesures td { height: 1.55rem; }
+}
+.cn-verso { margin-top: .4rem; }
+.cn-rappel-verso { margin: 1.1rem 0 0; padding: .35rem .7rem; background: #eef7fc; border-radius: 6px; color: #4a5b6b; font-size: .78rem; border-top: 2px dashed #b9ccdb; }
+@media print {
+  .cn-verso { break-before: page; margin-top: 0; }
+  .cn-rappel-verso { margin: 0 0 .6rem; border-top: 0; }
+  .cn-feuille { break-after: auto; }
+  .cn-feuille + .cn-feuille { break-before: page; }
+}
+
+/* Acte de naissance déjà existant */
+.acte-existant { border: 1px solid var(--bordure, #d9d2c3); border-radius: 12px; padding: .75rem 1rem; margin: 1rem 0; }
+.acte-existant legend { font-weight: 700; padding: 0 .4rem; }
+.acte-existant .case { display: flex; gap: .6rem; align-items: flex-start; padding: .35rem 0; }
+.acte-existant small { display: block; color: #6b6558; }
+.decl-acte { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+
+/* Bracelet du nouveau-né */
+.bracelet-form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin: .75rem 0; }
+.bracelet-form .champ { flex: 1 1 9rem; }
+.bracelet-etat { border-left: 4px solid #3f8f5b; background: #f1f8f3; padding: .6rem .9rem; border-radius: 8px; margin: .5rem 0; }
+.bracelet-etat ul { margin: .3rem 0 0 1.1rem; padding: 0; }
+.bracelet-etat.niveau-a_controler { border-color: #c98a1b; background: #fdf6e7; }
+.bracelet-etat.niveau-urgent { border-color: #b3382c; background: #fbeceb; }
+.bracelet-table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .9rem; }
+.bracelet-table th, .bracelet-table td { text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #e6e0d2; }
+
+/* Ouverture : fond clair, fil d'or entre les six étapes */
+.intro-fil { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; text-align: center;
+  background: radial-gradient(ellipse at 50% 35%, #fffdf6 0%, #f7f3e8 70%); color: #12304f; transition: opacity .45s ease; }
+.intro-fil.sortie { opacity: 0; pointer-events: none; }
+.intro-centre { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; max-width: 46rem; }
+.intro-logo { position: relative; width: 120px; height: 120px; display: grid; place-items: center; }
+.intro-logo svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.intro-logo circle { fill: none; stroke: #e0a100; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 352; stroke-dashoffset: 352; animation: intro-trace 1.2s .1s ease-out forwards; }
+.intro-logo img { border-radius: 50%; opacity: 0; animation: intro-apparait .6s .45s ease-out forwards; }
+.intro-centre h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin: 1rem 0 .1rem; opacity: 0; animation: intro-apparait .6s .8s ease-out forwards; }
+.intro-ligne { margin: 0; font-size: 1.1rem; color: #4a5d70; opacity: 0; animation: intro-apparait .6s 1s ease-out forwards; }
+.intro-etapes { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.6rem; margin: 2rem 0 0; padding: 0; position: relative; }
+.intro-etapes li { position: relative; display: flex; flex-direction: column; align-items: center; gap: .45rem; font-size: .88rem; font-weight: 600; min-width: 5.2rem;
+  opacity: 0; animation: intro-apparait .45s calc(1.4s + var(--i) * .26s) ease-out forwards; }
+.intro-etapes li span { width: 14px; height: 14px; border-radius: 50%; background: #e0a100; box-shadow: 0 0 0 4px #fbe9b4; }
+.intro-etapes li + li::before { content: ''; position: absolute; top: 6px; right: calc(50% + 7px); width: calc(100% + 1.6rem - 14px); height: 2px; background: #e0a100; transform-origin: right;
+  animation: intro-fil .35s calc(1.4s + var(--i) * .26s) ease-out both; }
+.intro-pied { margin: 1.8rem 0 0; font-size: .85rem; color: #6b7a89; opacity: 0; animation: intro-apparait .5s 3s ease-out forwards; }
+.intro-passer { position: absolute; right: 1.2rem; bottom: 1.2rem; background: #fff; border: 1px solid #cfc7b3; border-radius: 999px; padding: .55rem 1.2rem; font-weight: 600; color: #12304f; cursor: pointer; }
+.intro-passer:hover { background: #fff7de; }
+@keyframes intro-trace { to { stroke-dashoffset: 0; } }
+@keyframes intro-apparait { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes intro-fil { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (max-width: 640px) { .intro-etapes { gap: .8rem 1rem; } .intro-etapes li + li::before { display: none; } }
+@media (prefers-reduced-motion: reduce) { .intro-logo circle, .intro-logo img, .intro-centre h1, .intro-ligne, .intro-etapes li, .intro-pied, .intro-etapes li::before { animation: none !important; opacity: 1; stroke-dashoffset: 0; } }
+
+/* Filles et jeunes mères */
+.filles-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; margin: 1rem 0; }
+.filles-tuile { display: flex; flex-direction: column; gap: .2rem; background: #fdf4f7; border: 1px solid #f0d3de; border-radius: 12px; padding: .9rem 1rem; }
+.filles-tuile b { font-size: 1.9rem; color: #8a2a52; line-height: 1.1; }
+.filles-tuile .filles-titre { font-weight: 700; }
+.filles-tuile small { color: #5f5a63; }
+.filles-ico { color: #b0386b; width: 26px; height: 26px; }
+.filles-parite { display: grid; gap: .6rem; margin: .5rem 0; }
+.filles-parite > div { display: grid; grid-template-columns: 9rem 1fr 3.2rem; gap: .7rem; align-items: center; }
+.filles-parite .barre { background: #eee9f0; border-radius: 6px; height: 14px; overflow: hidden; }
+.filles-parite .barre i { display: block; height: 100%; border-radius: 6px; }
+.filles-parite .fille { background: #b0386b; }
+.filles-parite .garcon { background: #2f5fa8; }

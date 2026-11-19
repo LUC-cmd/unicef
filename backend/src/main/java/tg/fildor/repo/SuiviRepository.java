@@ -42,7 +42,8 @@ public class SuiviRepository {
                          WHERE r.enfant_id = e.id AND ra.statut = 'SANS_REPONSE' AND r.statut = 'MANQUE') AS rappels_sans_reponse,
                        (SELECT v.muac_mm FROM visite v WHERE v.enfant_id = e.id AND v.muac_mm IS NOT NULL
                          ORDER BY v.date_visite DESC, v.id DESC LIMIT 1) AS dernier_muac_mm,
-                       (SELECT d.statut FROM declaration_naissance d WHERE d.enfant_id = e.id) AS statut_declaration,
+                       COALESCE((SELECT d.statut FROM declaration_naissance d WHERE d.enfant_id = e.id),
+                                CASE WHEN e.acte_externe IS NOT NULL THEN 'VALIDEE' END) AS statut_declaration,
                        (SELECT min(r.date_prevue) FROM rendez_vous r WHERE r.enfant_id = e.id
                          AND r.statut = 'PLANIFIE' AND r.date_prevue >= CAST(:today AS DATE)) AS prochain_rdv
                 FROM enfant e

@@ -63,12 +63,12 @@ public class InscriptionRepository {
     }
 
     public long creerEnfant(long familleId, String code, String statut, LocalDate naissance, LocalDate terme,
-                            String sexe) {
+                            String sexe, String acteExistant) {
         return jdbc.sql("""
-                INSERT INTO enfant (famille_id, code_enfant, statut, date_naissance, date_terme_prevue, sexe)
-                VALUES (:f, :code, :statut, :naissance, :terme, :sexe) RETURNING id""")
+                INSERT INTO enfant (famille_id, code_enfant, statut, date_naissance, date_terme_prevue, sexe, acte_externe)
+                VALUES (:f, :code, :statut, :naissance, :terme, :sexe, :acte) RETURNING id""")
                 .param("f", familleId).param("code", code).param("statut", statut)
-                .param("naissance", naissance).param("terme", terme).param("sexe", sexe)
+                .param("naissance", naissance).param("terme", terme).param("sexe", sexe).param("acte", acteExistant)
                 .query(Long.class).single();
     }
 

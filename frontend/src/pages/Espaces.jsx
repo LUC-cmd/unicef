@@ -131,6 +131,7 @@ export function EspaceDecideur() {
       { to: '/carte/carte', nom: 'Carte des zones', icone: 'carte' },
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
       { to: '/carte/ruptures', nom: 'Ruptures de parcours', icone: 'graphe' },
+      { to: '/carte/filles', nom: 'Filles et jeunes mères', icone: 'bouclier' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
   ]
@@ -142,6 +143,7 @@ export function EspaceDecideur() {
         <Route path="zones" element={<Carte vue="zones" />} />
         <Route path="actes" element={<Carte vue="actes" />} />
         <Route path="ruptures" element={<Carte vue="ruptures" />} />
+        <Route path="filles" element={<Carte vue="filles" />} />
         <Route path="*" element={<Navigate to="/carte" replace />} />
       </Routes>
     </Shell>

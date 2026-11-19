@@ -34,7 +34,7 @@ export default function DeclarationFamille({ compte, profil }) {
     [compte.telephone, compte.codeFamille])
   useEffect(() => { charger() }, [charger])
 
-  const choix = (profil?.enfants || []).filter((e) => !liste.some((l) => l.codeEnfant === e.codeEnfant && l.statut !== 'REFUSE'))
+  const choix = (profil?.enfants || []).filter((e) => !e.acte && !liste.some((l) => l.codeEnfant === e.codeEnfant && l.statut !== 'REFUSE'))
 
   async function envoyer(e) {
     e.preventDefault()
@@ -71,6 +71,10 @@ export default function DeclarationFamille({ compte, profil }) {
           ))}
         </ul>
       )}
+
+      {(profil?.enfants || []).filter((e) => e.acte).map((e) => (
+        <p key={e.codeEnfant} className="decl-acte"><Picto nom="valide" /> <b>Enfant {e.codeEnfant}</b> : {e.acte === 'RETIRE' ? "l'acte de naissance est déjà en votre possession. Il n'y a rien à déclarer." : "l'acte de naissance est établi. Pensez à aller le retirer à la mairie."}</p>
+      ))}
 
       {!ouvert && <button className="bouton" onClick={() => setOuvert(true)} disabled={choix.length === 0}>{choix.length === 0 ? 'Aucun enfant à déclarer' : 'Déclarer une naissance'}</button>}
 

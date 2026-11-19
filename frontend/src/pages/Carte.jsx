@@ -7,6 +7,7 @@ import { COULEURS, TuileChiffre } from '../components/Courbes.jsx'
 import CarteTogo from '../components/CarteTogo.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 import RupturesParcours from '../components/RupturesParcours.jsx'
+import FillesImpact from '../components/FillesImpact.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GraphiqueEvolution from '../components/GraphiqueEvolution.jsx'
 import AlertesZones from '../components/AlertesZones.jsx'
@@ -265,6 +266,16 @@ export default function Carte({ vue = 'carte' }) {
     )
   }
 
+  if (vue === 'filles') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Responsable régional" titre="Filles et jeunes mères">
+          Où sont les jeunes mères et les filles suivies, et si elles sont suivies aussi bien que les garçons.
+        </Bandeau>
+        <FillesImpact />
+      </main>
+    )
+  }
   if (vue === 'ruptures') {
     return (
       <main className="page">

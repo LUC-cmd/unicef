@@ -23,7 +23,7 @@ import tg.fildor.service.CrecheService.CrecheDto;
 @Service
 public class FamilleCompteService {
 
-    public record EnfantVu(String codeEnfant, String statut, Integer ageMois, LocalDate termePrevu) {
+    public record EnfantVu(String codeEnfant, String statut, Integer ageMois, LocalDate termePrevu, String acte) {
     }
 
     public record FamilleProfil(String codeFamille, String zoneCode, String zone, int enfantsDeclares,
@@ -56,7 +56,7 @@ public class FamilleCompteService {
                 Period p = Period.between(e.naissance(), auj);
                 age = p.getYears() * 12 + p.getMonths();
             }
-            return new EnfantVu(e.code(), e.statut(), age, e.terme());
+            return new EnfantVu(e.code(), e.statut(), age, e.terme(), e.acte());
         }).toList();
         return new FamilleProfil(f.codeFamille(), z.code(), z.nom(), repo.enfantsDeclares(f.familleId()),
                 (int) enfants.stream().filter(e -> "ENFANT".equals(e.statut())).count(), enfants);

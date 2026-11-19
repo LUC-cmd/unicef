@@ -18,6 +18,9 @@ import Eveil from '../components/Eveil.jsx'
 import Orienter from '../components/Orienter.jsx'
 import Proches from '../components/Proches.jsx'
 import RetraitConsentement from '../components/RetraitConsentement.jsx'
+import ReinitialiserSecret from '../components/ReinitialiserSecret.jsx'
+import ActeExistant from '../components/ActeExistant.jsx'
+import Bracelet from '../components/Bracelet.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GuideRole from '../components/GuideRole.jsx'
 import Picto from '../components/Picto.jsx'
@@ -404,6 +407,8 @@ function Fiche({ code, enLigne, onChange }) {
       <p><Link to={`/carnet/${fiche.codeFamille}`}>Imprimer le carnet illustré de la famille</Link></p>
       <p><Link to={fiche.statut === 'ENFANT' && fiche.dateNaissance ? `/agent/acte?naissance=${fiche.dateNaissance}` : '/agent/acte'}>Aider la famille à obtenir l'acte de naissance</Link></p>
 
+      {fiche.statut === 'ENFANT' && <ActeExistant code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} />}
+
       <h3>Rendez-vous</h3>
       <ul className="rdvs">
         {fiche.rendezVous.map((r) => (
@@ -427,11 +432,13 @@ function Fiche({ code, enLigne, onChange }) {
       {fiche.statut === 'ENFANT' && <Naissance fiche={fiche} onChange={onChange} />}
       <ParcoursEnfant code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} />
       {fiche.statut === 'ENFANT' && <NouveauNe code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} ageMois={ageEnMois(fiche.dateNaissance)} />}
+      {fiche.statut === 'ENFANT' && ageEnMois(fiche.dateNaissance) < 1 && <Bracelet code={fiche.codeEnfant} enLigne={enLigne && !depuisCache} />}
       {fiche.statut === 'ENFANT' && <Developpement code={fiche.codeEnfant} ageMois={ageEnMois(fiche.dateNaissance)} />}
       {fiche.statut === 'ENFANT' && <Eveil eveil={fiche.eveil} aujourdhui={aujourdhuiIso()} />}
       <Saisie fiche={fiche} onChange={onChange} />
       <Orienter codeFamille={fiche.codeFamille} demandes={fiche.demandes} enLigne={enLigne && !depuisCache} onChange={rafraichir} />
       <Proches codeFamille={fiche.codeFamille} enLigne={enLigne && !depuisCache} />
+      <ReinitialiserSecret codeFamille={fiche.codeFamille} enLigne={enLigne && !depuisCache} />
       <RetraitConsentement codeFamille={fiche.codeFamille} enLigne={enLigne && !depuisCache} onFait={onChange} />
 
       {fiche.visites.length > 0 && (

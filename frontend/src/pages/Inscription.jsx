@@ -11,7 +11,7 @@ import { ajouterInscription, nouvelUuid } from '../lib/offline.js'
 import Bandeau from '../components/Bandeau.jsx'
 import ApercuMessage from '../components/ApercuMessage.jsx'
 
-const enfantVide = () => ({ cle: nouvelUuid(), statut: 'ENFANT', dateNaissance: '', dateTermePrevue: '', sexe: '', etapesFaites: [], consultationsFaites: 0, parents: parentsVides() })
+const enfantVide = () => ({ cle: nouvelUuid(), statut: 'ENFANT', dateNaissance: '', dateTermePrevue: '', sexe: '', acteExistant: '', etapesFaites: [], consultationsFaites: 0, parents: parentsVides() })
 const parentsVides = () => ({ mereNom: '', conjointNom: '', pieceType: '', pieceNumero: '', nationaliteMere: '', nationaliteConjoint: '', accordMere: false, accordConjoint: false })
 const PIECES = [['CARTE_ELECTEUR', 'Carte d’électeur'], ['CNI', 'Carte nationale d’identité'], ['PASSEPORT', 'Passeport'], ['CARTE_SANTE', 'Carte de consultation'], ['AUCUNE', 'Aucune pièce']]
 const NATIONALITES = ['Togolaise', 'Béninoise', 'Ghanéenne', 'Burkinabè', 'Nigériane', 'Ivoirienne', 'Autre']
@@ -72,7 +72,7 @@ export default function Inscription() {
       consentement: true,
       mereAdolescente,
       enfants: enfants.map((e) => (e.statut === 'ENFANT'
-        ? { statut: 'ENFANT', dateNaissance: e.dateNaissance, sexe: e.sexe || null, etapesFaites: e.etapesFaites }
+        ? { statut: 'ENFANT', dateNaissance: e.dateNaissance, sexe: e.sexe || null, acteExistant: e.acteExistant || null, etapesFaites: e.etapesFaites }
         : { statut: 'GROSSESSE', dateTermePrevue: e.dateTermePrevue, sexe: null, consultationsFaites: Number(e.consultationsFaites),
             parents: (e.parents.accordMere || e.parents.accordConjoint) ? {
               mereNom: e.parents.accordMere ? e.parents.mereNom.trim() || null : null,
@@ -259,7 +259,14 @@ export default function Inscription() {
                         </label>
                       ))}
                     </div>
-                    <p className="petit">Pas d'acte de naissance ? <Link to="/agent/acte">Voir comment l'obtenir</Link>.</p>
+                    <label className="champ"><span className="champ-titre">Acte de naissance</span>
+                      <select value={e.acteExistant} onChange={(ev) => majEnfant(e.cle, { acteExistant: ev.target.value })}>
+                        <option value="">Pas d'acte, ou on ne sait pas</option>
+                        <option value="ETABLI">Acte établi, pas encore retiré à la mairie</option>
+                        <option value="RETIRE">Acte retiré, la famille l'a en main</option>
+                      </select>
+                      <span className="champ-aide">Si l'acte existe déjà, Fil d'Or ne relance pas la famille pour la déclaration.</span></label>
+                    {!e.acteExistant && <p className="petit">Pas d'acte de naissance ? <Link to="/agent/acte">Voir comment l'obtenir</Link>.</p>}
                   </div>
                 )}
               </div>

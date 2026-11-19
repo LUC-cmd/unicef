@@ -42,7 +42,9 @@ public class ParcoursConnecteRepository {
                   (SELECT count(*) FROM activite_eveil a WHERE a.enfant_id = e.id) AS eveil,
                   (SELECT count(*) FROM visite v WHERE v.enfant_id = e.id) AS visites,
                   (SELECT v.muac_mm FROM visite v WHERE v.enfant_id = e.id AND v.muac_mm IS NOT NULL ORDER BY v.date_visite DESC LIMIT 1) AS muac,
-                  d.statut AS decl, (d.acte_retire_le IS NOT NULL) AS retire, d.acte_pret_le::date AS pret,
+                  COALESCE(d.statut, CASE WHEN e.acte_externe IS NOT NULL THEN 'VALIDEE' END) AS decl,
+                  (d.acte_retire_le IS NOT NULL OR e.acte_externe = 'RETIRE') AS retire,
+                  COALESCE(d.acte_pret_le::date, CASE WHEN e.acte_externe = 'ETABLI' THEN e.date_naissance END) AS pret,
                   e.prescolaire_le, e.poids_naissance_g,
                   EXISTS (SELECT 1 FROM visite v WHERE v.enfant_id = e.id AND e.date_naissance IS NOT NULL
                           AND v.date_visite <= e.date_naissance + 7) AS sem1
@@ -87,8 +89,8 @@ public class ParcoursConnecteRepository {
                 SELECT z.nom AS zone,
                   (SELECT count(*) FROM famille f WHERE f.zone_id = z.id AND f.consentement) AS familles,
                   count(*) FILTER (WHERE e.statut = 'GROSSESSE' AND e.date_terme_prevue < CAST(:auj AS DATE) - 30) AS gsn,
-                  count(*) FILTER (WHERE e.statut = 'ENFANT' AND e.date_naissance < CAST(:auj AS DATE) - 45 AND d.id IS NULL) AS nsd,
-                  count(*) FILTER (WHERE d.statut = 'VALIDEE' AND d.acte_pret_le IS NOT NULL AND d.acte_retire_le IS NULL) AS anr,
+                  count(*) FILTER (WHERE e.statut = 'ENFANT' AND e.date_naissance < CAST(:auj AS DATE) - 45 AND d.id IS NULL AND e.acte_externe IS NULL) AS nsd,
+                  count(*) FILTER (WHERE (d.statut = 'VALIDEE' AND d.acte_pret_le IS NOT NULL AND d.acte_retire_le IS NULL) OR e.acte_externe = 'ETABLI') AS anr,
                   count(*) FILTER (WHERE e.statut = 'ENFANT' AND e.date_naissance <= CAST(:auj AS DATE) - 180 AND e.date_naissance > CAST(:auj AS DATE) - 1095
                        AND EXISTS (SELECT 1 FROM rendez_vous r WHERE r.enfant_id = e.id AND r.type = 'VACCIN' AND r.statut = 'REALISE')
                        AND NOT EXISTS (SELECT 1 FROM activite_eveil a WHERE a.enfant_id = e.id)) AS vse,

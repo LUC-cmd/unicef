@@ -13,7 +13,7 @@ public class FamilleCompteRepository {
     public record ZonePoint(long id, String code, String nom, double lat, double lon) {
     }
 
-    public record EnfantLigne(String code, String statut, LocalDate naissance, LocalDate terme) {
+    public record EnfantLigne(String code, String statut, LocalDate naissance, LocalDate terme, String acte) {
     }
 
     private final JdbcClient jdbc;
@@ -42,12 +42,12 @@ public class FamilleCompteRepository {
 
     public List<EnfantLigne> enfants(long familleId) {
         return jdbc.sql("""
-                SELECT code_enfant, statut, date_naissance, date_terme_prevue FROM enfant
+                SELECT code_enfant, statut, date_naissance, date_terme_prevue, acte_externe FROM enfant
                 WHERE famille_id = :f ORDER BY id""")
                 .param("f", familleId)
                 .query((rs, n) -> new EnfantLigne(rs.getString("code_enfant"), rs.getString("statut"),
                         rs.getObject("date_naissance", LocalDate.class),
-                        rs.getObject("date_terme_prevue", LocalDate.class)))
+                        rs.getObject("date_terme_prevue", LocalDate.class), rs.getString("acte_externe")))
                 .list();
     }
 
