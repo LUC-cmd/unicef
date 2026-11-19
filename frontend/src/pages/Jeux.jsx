@@ -72,6 +72,53 @@ function sonner(type) {
 
 const MANCHES = 5
 
+/* ---------- confettis animés pour la victoire ---------- */
+
+function Confettis() {
+  const couleurs = ['#e2231a', '#ffc20e', '#00833d', '#1cabe2', '#f26a21', '#6a1e74', '#e91e63']
+  const morceaux = useMemo(
+    () =>
+      Array.from({ length: 36 }, (_, i) => ({
+        id: i,
+        left: `${(i * 2.7 + 1).toFixed(1)}%`,
+        delay: `${(Math.random() * 1.5).toFixed(2)}s`,
+        duree: `${(1.8 + Math.random() * 1.4).toFixed(2)}s`,
+        couleur: couleurs[i % couleurs.length],
+        taille: `${7 + (i % 6)}px`,
+        forme: i % 3 === 0 ? '50%' : i % 3 === 1 ? '0%' : '3px',
+      })),
+    [],
+  )
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '80px', pointerEvents: 'none', overflow: 'hidden' }} aria-hidden="true">
+      <style>{`
+        @keyframes chuteConfetti {
+          0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(140px) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100%' }}>
+        {morceaux.map((m) => (
+          <span
+            key={m.id}
+            style={{
+              position: 'absolute',
+              left: m.left,
+              top: 0,
+              width: m.taille,
+              height: m.taille,
+              backgroundColor: m.couleur,
+              borderRadius: m.forme,
+              animation: `chuteConfetti ${m.duree} ease-out ${m.delay} infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ---------- jeu à questions : le même moteur pour plusieurs jeux ---------- */
 
 function Quiz({ fabrique, finMessage, contexte }) {
@@ -123,6 +170,7 @@ function Quiz({ fabrique, finMessage, contexte }) {
   if (fini) {
     return (
       <div className="jeu-fin" role="status">
+        <Confettis />
         <div className="jeu-fin-etoiles" aria-hidden="true">★ ★ ★ ★ ★</div>
         <h2>Bravo, tu as fini !</h2>
         <p>{finMessage}</p>
@@ -433,7 +481,6 @@ function MainsPropres({ contexte }) {
       contexte.parler(g.texte)
       if (suite.length === GESTES.length) {
         contexte.gagner()
-        contexte.gagner()
         setTimeout(() => contexte.parler('Bravo ! Tes mains sont propres.'), 900)
       }
     } else {
@@ -482,6 +529,133 @@ function MainsPropres({ contexte }) {
   )
 }
 
+/* ---------- 8. Les opposés ---------- */
+
+const OPPOSES = [
+  { motA: 'grand', emojiA: '🐘', motB: 'petit', emojiB: '🐜' },
+  { motA: 'chaud', emojiA: '🔥', motB: 'froid', emojiB: '❄️' },
+  { motA: 'jour', emojiA: '☀️', motB: 'nuit', emojiB: '🌙' },
+  { motA: 'haut', emojiA: '⬆️', motB: 'bas', emojiB: '⬇️' },
+  { motA: 'mouillé', emojiA: '🌧️', motB: 'sec', emojiB: '🏜️' },
+  { motA: 'rapide', emojiA: '🐆', motB: 'lent', emojiB: '🐢' },
+]
+
+function fabriquerOppose() {
+  const paire = tirer(OPPOSES)
+  const sensDirect = Math.random() < 0.5
+  const motDepart = sensDirect ? paire.motA : paire.motB
+  const emojiDepart = sensDirect ? paire.emojiA : paire.emojiB
+  const motCible = sensDirect ? paire.motB : paire.motA
+  const emojiCible = sensDirect ? paire.emojiB : paire.emojiA
+
+  const autresPaires = OPPOSES.filter((p) => p !== paire)
+  const distracteurs = melanger(autresPaires).slice(0, 2).map((p) => {
+    const prendreA = Math.random() < 0.5
+    return {
+      mot: prendreA ? p.motA : p.motB,
+      emoji: prendreA ? p.emojiA : p.emojiB,
+    }
+  })
+
+  const options = melanger([
+    { mot: motCible, emoji: emojiCible, correct: true },
+    ...distracteurs.map((d) => ({ mot: d.mot, emoji: d.emoji, correct: false })),
+  ])
+
+  return {
+    consigne: `Quel est le contraire de « ${motDepart} » ?`,
+    voix: `Quel est le contraire de ${motDepart} ?`,
+    visuel: (
+      <div style={{ textAlign: 'center', margin: '0.4rem 0' }}>
+        <span style={{ fontSize: '3rem', display: 'block' }}>{emojiDepart}</span>
+        <b style={{ fontSize: '1.2rem', color: '#16325c' }}>{motDepart.toUpperCase()}</b>
+      </div>
+    ),
+    choix: options.map((opt) => ({
+      id: opt.mot,
+      aria: opt.mot,
+      contenu: (
+        <>
+          <span className="gros-emoji">{opt.emoji}</span>
+          <span className="etiquette-couleur">{opt.mot}</span>
+        </>
+      ),
+    })),
+    bonne: motCible,
+    felicitation: `Bravo ! Le contraire de ${motDepart}, c'est bien ${motCible}.`,
+  }
+}
+
+/* ---------- 9. Le corps humain ---------- */
+
+const PARTIES_CORPS = [
+  { id: 'tete', nom: 'la tête', emoji: '🧒' },
+  { id: 'main', nom: 'la main', emoji: '✋' },
+  { id: 'pied', nom: 'le pied', emoji: '🦶' },
+  { id: 'ventre', nom: 'le ventre', emoji: '🫄' },
+  { id: 'genou', nom: 'le genou', emoji: '🦵' },
+  { id: 'oeil', nom: "l'œil", emoji: '👁️' },
+]
+
+function fabriquerCorps() {
+  const trois = melanger(PARTIES_CORPS).slice(0, 3)
+  const cible = tirer(trois)
+  return {
+    consigne: `Montre où est ${cible.nom}.`,
+    voix: `Montre où est ${cible.nom}`,
+    visuel: null,
+    choix: trois.map((p) => ({
+      id: p.id,
+      aria: p.nom,
+      contenu: (
+        <>
+          <span className="gros-emoji">{p.emoji}</span>
+          <span className="etiquette-couleur">{p.nom}</span>
+        </>
+      ),
+    })),
+    bonne: cible.id,
+    felicitation: `Bravo ! C'est bien ${cible.nom}.`,
+  }
+}
+
+/* ---------- 10. Les sons de la ferme ---------- */
+
+const SONS_FERME = [
+  { id: 'coq', animal: 'le coq', emoji: '🐓', criTexte: 'Cocorico !', criVoix: 'cocorico' },
+  { id: 'chevre', animal: 'la chèvre', emoji: '🐐', criTexte: 'Bêê !', criVoix: 'bêê' },
+  { id: 'vache', animal: 'la vache', emoji: '🐄', criTexte: 'Meuh !', criVoix: 'meuh' },
+  { id: 'cochon', animal: 'le cochon', emoji: '🐖', criTexte: 'Groin groin !', criVoix: 'groin groin' },
+  { id: 'chat', animal: 'le chat', emoji: '🐱', criTexte: 'Miaou !', criVoix: 'miaou' },
+  { id: 'chien', animal: 'le chien', emoji: '🐶', criTexte: 'Ouaf ouaf !', criVoix: 'ouaf ouaf' },
+]
+
+function fabriquerSon() {
+  const trois = melanger(SONS_FERME).slice(0, 3)
+  const cible = tirer(trois)
+  return {
+    consigne: `Quel animal fait « ${cible.criTexte} » ?`,
+    voix: `Quel animal fait ${cible.criVoix} ?`,
+    visuel: (
+      <div style={{ textAlign: 'center', margin: '0.4rem 0' }}>
+        <p style={{ margin: '0.3rem 0', fontWeight: 'bold', fontSize: '1.2rem', color: '#16325c' }}>« {cible.criTexte} »</p>
+      </div>
+    ),
+    choix: trois.map((a) => ({
+      id: a.id,
+      aria: a.animal,
+      contenu: (
+        <>
+          <span className="gros-emoji">{a.emoji}</span>
+          <span className="etiquette-couleur">{a.animal}</span>
+        </>
+      ),
+    })),
+    bonne: cible.id,
+    felicitation: `Bravo ! C'est ${cible.animal} qui fait ${cible.criTexte}`,
+  }
+}
+
 /* ---------- catalogue ---------- */
 
 const JEUX = [
@@ -492,6 +666,9 @@ const JEUX = [
   { id: 'assiette', titre: 'Mon assiette', age: '3 à 5 ans', icone: '🍠', texte: 'Choisir ce qui aide à bien grandir.', fin: 'Tu choisis bien ton repas.', fabrique: fabriquerAssiette },
   { id: 'memoire', titre: 'Les animaux jumeaux', age: '3 à 5 ans', icone: '🐓', texte: 'Retrouver les paires d’animaux de la ferme.', memoire: true },
   { id: 'mains', titre: 'Les mains propres', age: '3 à 5 ans', icone: '🧼', texte: 'Remettre dans l’ordre les gestes pour se laver les mains.', mains: true },
+  { id: 'opposes', titre: 'Les opposés', age: '2 à 4 ans', icone: '↔️', texte: 'Trouver le contraire : grand et petit, chaud et froid…', fin: 'Tu connais bien les contraires.', fabrique: fabriquerOppose },
+  { id: 'corps', titre: 'Le corps humain', age: '3 à 5 ans', icone: '🧒', texte: 'Montrer où est la tête, la main, le pied, le ventre…', fin: 'Tu connais bien ton corps.', fabrique: fabriquerCorps },
+  { id: 'sons', titre: 'Les sons de la ferme', age: '2 à 4 ans', icone: '🐔', texte: 'Écouter et reconnaître les bruits des animaux.', fin: 'Tu reconnais tous les animaux.', fabrique: fabriquerSon },
 ]
 
 /* ---------- page ---------- */
@@ -530,14 +707,37 @@ export default function Jeux() {
 
   const quitter = useCallback(() => VOIX_POSSIBLE && window.speechSynthesis.cancel(), [])
 
+  const niveauInfo = useMemo(() => {
+    if (etoiles < 10) return { nom: 'Débutant', badge: 'Niveau Débutant', fond: '#e6f4ea', texte: '#137333' }
+    if (etoiles <= 50) return { nom: 'Explorateur', badge: 'Niveau Explorateur', fond: '#fef7e0', texte: '#b06000' }
+    return { nom: 'Champion', badge: 'Niveau Champion', fond: '#fce8e6', texte: '#c5221f' }
+  }, [etoiles])
+
   return (
     <>
       <Bandeau
         surtitre="Pour les enfants de 2 à 5 ans"
         titre={jeu ? jeu.titre : 'Les jeux de Fil d’Or'}
         actions={
-          <div className={`etoiles ${nouvelle ? 'nouvelle' : ''}`} aria-live="polite">
-            <span aria-hidden="true">★</span> <b>{etoiles}</b> étoile{etoiles > 1 ? 's' : ''}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '1rem',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                backgroundColor: niveauInfo.fond,
+                color: niveauInfo.texte,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              }}
+              title={`Niveau : ${niveauInfo.nom}`}
+            >
+              {niveauInfo.badge}
+            </span>
+            <div className={`etoiles ${nouvelle ? 'nouvelle' : ''}`} aria-live="polite">
+              <span aria-hidden="true">★</span> <b>{etoiles}</b> étoile{etoiles > 1 ? 's' : ''}
+            </div>
           </div>
         }
       >

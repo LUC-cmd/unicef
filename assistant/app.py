@@ -21,6 +21,12 @@ def sante():
     return {"statut": "ok", "service": "assistant", "contenus": len(CORPUS)}
 
 
+@app.get("/sujets")
+def sujets():
+    return [{"sujet": doc["sujet"], "titre": doc["titre"]} for doc in CORPUS]
+
+
 @app.post("/questions")
 def question(demande: Question):
     return repondre(demande.question, CORPUS)
+

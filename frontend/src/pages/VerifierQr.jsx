@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { api } from '../lib/api.js'
 import { lireEntree, lireSuivi } from '../lib/qrSuivi.js'
 import { formaterDate } from '../lib/format.js'
+import LecteurQr from '../components/LecteurQr.jsx'
 
 const PICTO_RDV = { VACCIN: '💉', CONSULTATION_PRENATALE: '🤰', PESEE: '⚖️', NUTRITION: '🥣' }
 
@@ -11,50 +12,7 @@ export default function VerifierQr() {
   const [jeton, setJeton] = useState('')
   const [resultat, setResultat] = useState(null)
   const [enCours, setEnCours] = useState(false)
-  const [peutScanner, setPeutScanner] = useState(false)
   const [scanOuvert, setScanOuvert] = useState(false)
-  const [erreurCam, setErreurCam] = useState('')
-  const videoRef = useRef(null)
-  const fluxRef = useRef(null)
-  const boucleRef = useRef(null)
-
-  useEffect(() => {
-    setPeutScanner('BarcodeDetector' in window)
-    return () => arreterFlux()
-  }, [])
-
-  function arreterFlux() {
-    if (boucleRef.current) { clearInterval(boucleRef.current); boucleRef.current = null }
-    if (fluxRef.current) { fluxRef.current.getTracks().forEach((t) => t.stop()); fluxRef.current = null }
-    setScanOuvert(false)
-  }
-
-  async function demarrerScan() {
-    setErreurCam(''); setResultat(null)
-    try {
-      const flux = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      fluxRef.current = flux
-      setScanOuvert(true)
-      const video = videoRef.current
-      video.srcObject = flux
-      await video.play()
-      const detecteur = new window.BarcodeDetector({ formats: ['qr_code'] })
-      boucleRef.current = setInterval(async () => {
-        const v = videoRef.current
-        if (!v || v.readyState < 2) return
-        try {
-          const codes = await detecteur.detect(v)
-          if (codes.length && codes[0].rawValue) {
-            arreterFlux()
-            verifier(codes[0].rawValue)
-          }
-        } catch { /* image suivante */ }
-      }, 350)
-    } catch {
-      setErreurCam('Caméra indisponible : collez le code à la main.')
-      setScanOuvert(false)
-    }
-  }
 
   async function verifier(texte) {
     const code = String(texte ?? jeton).trim()
@@ -82,16 +40,23 @@ export default function VerifierQr() {
           modifié. Aucun nom n'y figure — seulement les codes.
         </p>
 
-        {peutScanner && !scanOuvert && (
-          <button className="bouton" onClick={demarrerScan}>📷 Scanner le code avec la caméra</button>
+        {!scanOuvert && (
+          <button className="bouton" type="button" onClick={() => setScanOuvert(true)}>
+            📷 Scanner le code avec la caméra
+          </button>
         )}
+
         {scanOuvert && (
-          <div>
-            <video ref={videoRef} className="scan-video" playsInline muted aria-label="Caméra de lecture du code" />
-            <button className="bouton secondaire" onClick={arreterFlux}>Arrêter le scan</button>
-          </div>
+          <LecteurQr
+            titre="Scanner le carnet papier"
+            onScan={(code) => {
+              setScanOuvert(false)
+              setJeton(code)
+              verifier(code)
+            }}
+            onFermer={() => setScanOuvert(false)}
+          />
         )}
-        {erreurCam && <p className="petit">{erreurCam}</p>}
 
         <label htmlFor="zone-jeton" className="petit">Ou collez le contenu du code :</label>
         <textarea id="zone-jeton" rows={4} value={jeton} onChange={(e) => setJeton(e.target.value)}

@@ -20,13 +20,23 @@ function lire(texte) {
 const LIBELLE_MESSAGE = {
   RAPPEL: 'Rappel de rendez-vous',
   JEU: "Jeu de la semaine",
-  REPONSE_STRUCTURE: 'Réponse d’une structure',
+  REPONSE_STRUCTURE: 'Réponse d\u2019une structure',
   RAPPEL_GENERAL: 'Rappel général',
   NAISSANCE: 'Avis de la mairie',
 }
 
 const ONGLETS_FAMILLE = [['appel', 'Appeler'], ['ussd', 'USSD'], ['sms', 'Messages'], ['jeu', 'Jeu du jour'], ['structures', 'Structures'], ['manque', 'Appel manqué']]
 const ONGLETS_PROCHE = [['sms', 'Messages'], ['appel', 'Appeler']]
+
+/* Numéros de démonstration pré-remplis pour un accès rapide */
+const NUMEROS_DEMO = [
+  { numero: '90000001', label: 'Famille 1', type: 'FAMILLE' },
+  { numero: '90000002', label: 'Famille 2', type: 'FAMILLE' },
+  { numero: '90000010', label: 'Famille 10', type: 'FAMILLE' },
+  { numero: '90000045', label: 'Famille 45', type: 'FAMILLE' },
+  { numero: '91000001', label: 'Proche (père)', type: 'PROCHE' },
+  { numero: '91000046', label: 'Proche (grand-parent)', type: 'PROCHE' },
+]
 
 export default function Telephone() {
   const [numero, setNumero] = useState('90000001')
@@ -50,11 +60,18 @@ export default function Telephone() {
   // Qui est ce numéro ? Famille, proche, ou inconnu : le téléphone s'adapte.
   useEffect(() => {
     setProfil(null)
+    setErreur('')
     if (chiffres.length < 8) return undefined
     const t = setTimeout(() => {
       api.post('/api/public/profil', { telephone: numero })
-        .then(setProfil)
-        .catch((e) => setProfil({ profil: !e.statut || e.statut >= 500 ? 'HORS_LIGNE' : 'INCONNU' }))
+        .then((p) => {
+          setProfil(p)
+          setErreur('')
+        })
+        .catch((e) => {
+          setProfil({ profil: !e.statut || e.statut >= 500 ? 'HORS_LIGNE' : 'INCONNU' })
+          if (e.statut === 0) setErreur('Le serveur ne répond pas. Lancez le backend avec : cd backend && mvn spring-boot:run')
+        })
     }, 350)
     return () => clearTimeout(t)
   }, [numero, chiffres.length])
@@ -101,19 +118,62 @@ export default function Telephone() {
     setUrgenceEnvoyee(true)
   })
 
+  /* Indicateur visuel du statut du profil */
+  const profilIndicateur = (() => {
+    if (chiffres.length < 8) return { couleur: '#888', texte: 'Tapez un numéro à 8 chiffres.' }
+    if (!profil) return { couleur: '#1cabe2', texte: 'Vérification du numéro…' }
+    if (profil.profil === 'FAMILLE') return { couleur: '#00833d', texte: 'Famille suivie par Fil d\'Or.' }
+    if (profil.profil === 'PROCHE') return { couleur: '#374ea2', texte: `Proche (${LIBELLE_ROLE_PROCHE[profil.roleProche] ?? 'proche'}) : rappels généraux seulement.` }
+    if (profil.profil === 'INCONNU') return { couleur: '#e2231a', texte: 'Numéro non enregistré. Essayez un numéro ci-dessous.' }
+    if (profil.profil === 'HORS_LIGNE') return { couleur: '#f26a21', texte: 'Le serveur ne répond pas. Lancez le backend.' }
+    return { couleur: '#888', texte: 'Statut inconnu.' }
+  })()
+
   return (
     <>
     <Bandeau surtitre="Porte 1" titre="Simulateur de téléphone">
-      Un téléphone basique suffit, sans data. Familles : <b>90000001</b> à <b>90000045</b>. Proches : <b>91000001</b>, <b>91000002</b>, <b>91000046</b>.
+      Un téléphone basique suffit, sans data. Choisissez un numéro de test ci-dessous pour essayer.
     </Bandeau>
     <main className="page">
 
       <div className="telephone-cadre">
         <div className="telephone" role="group" aria-label="Téléphone simulé">
+
+          {/* Numéros de démo rapides */}
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '12px 16px',
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            borderBottom: '1px solid #dee2e6', borderRadius: '12px 12px 0 0'
+          }}>
+            <span style={{ width: '100%', fontSize: '12px', fontWeight: 600, color: '#495057', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Numéros de test rapide
+            </span>
+            {NUMEROS_DEMO.map((d) => (
+              <button
+                key={d.numero}
+                type="button"
+                onClick={() => { setNumero(d.numero); setMessage(null); setErreur(''); setInfo(''); setUrgenceEnvoyee(false) }}
+                style={{
+                  padding: '4px 10px', borderRadius: '20px', border: 'none', fontSize: '12px',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  background: numero === d.numero
+                    ? (d.type === 'FAMILLE' ? 'linear-gradient(135deg, #00833d, #00a84f)' : 'linear-gradient(135deg, #374ea2, #5b73c4)')
+                    : '#fff',
+                  color: numero === d.numero ? '#fff' : '#333',
+                  boxShadow: numero === d.numero ? '0 2px 8px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.1)',
+                  fontWeight: numero === d.numero ? 600 : 400,
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+
           <div className="ecran-numero">
             <label>
               Votre numéro
-              <input value={numero} onChange={(e) => setNumero(e.target.value)} inputMode="numeric" maxLength={16} />
+              <input value={numero} onChange={(e) => setNumero(e.target.value)} inputMode="numeric" maxLength={16}
+                style={{ fontWeight: 600, fontSize: '18px', letterSpacing: '1px' }} />
             </label>
             <label>
               Langue
@@ -123,13 +183,15 @@ export default function Telephone() {
               </select>
             </label>
           </div>
-          <p className="profil" role="status">
-            {chiffres.length < 8 && 'Tapez un numéro à 8 chiffres.'}
-            {profil?.profil === 'FAMILLE' && 'Numéro d’une famille suivie.'}
-            {profil?.profil === 'PROCHE' && `Proche (${LIBELLE_ROLE_PROCHE[profil.roleProche] ?? 'proche'}) : rappels généraux seulement.`}
-            {profil?.profil === 'INCONNU' && 'Numéro inconnu de Fil d’Or.'}
-            {profil?.profil === 'HORS_LIGNE' && 'Le serveur ne répond pas. Relancez l’API pour entendre les messages.'}
-          </p>
+
+          {/* Indicateur de profil amélioré */}
+          <div className="profil" role="status" style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px',
+            background: `${profilIndicateur.couleur}10`, borderLeft: `3px solid ${profilIndicateur.couleur}`,
+            borderRadius: '0 8px 8px 0', margin: '8px 12px',
+          }}>
+            <span style={{ color: profilIndicateur.couleur, fontWeight: 500, fontSize: '14px' }}>{profilIndicateur.texte}</span>
+          </div>
 
           <div className="onglets defilant" role="tablist">
             {onglets.map(([id, nom]) => (
@@ -144,7 +206,7 @@ export default function Telephone() {
                 <p className="petit">« Pour un sujet, appuyez sur sa touche. »</p>
                 <div className="touches">
                   {SUJETS.map((s, i) => (
-                    <button key={s} disabled={attente} onClick={() => ecouter(s)} className={s === 'DANGER' ? 'danger' : ''}>
+                    <button key={s} disabled={attente || !profil || profil.profil === 'INCONNU'} onClick={() => ecouter(s)} className={s === 'DANGER' ? 'danger' : ''}>
                       <b>{i + 1}</b> {LIBELLE_SUJET[s]}
                     </button>
                   ))}
@@ -166,8 +228,12 @@ export default function Telephone() {
                   </div>
                 </div>
                 {message && (
-                  <div className="message-vocal" aria-live="polite">
-                    <h3>🔊 {message.titre}</h3>
+                  <div className="message-vocal" aria-live="polite" style={{
+                    background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                    borderRadius: '12px', padding: '16px', marginTop: '12px',
+                    borderLeft: '4px solid #1cabe2'
+                  }}>
+                    <h3>{message.titre}</h3>
                     <p>{message.texte}</p>
                     {message.avertissement && <p className="avertissement">{message.avertissement}</p>}
                     {message.aValider && <p className="petit">Contenu à valider par un professionnel de santé avant tout usage réel.</p>}
@@ -187,7 +253,7 @@ export default function Telephone() {
                       <p>{s.message}</p>
                       <p className="petit">
                         {formaterDate(s.envoyeLe)}
-                        {s.type === 'RAPPEL' && (s.statut === 'ACQUITTE' ? ' · Confirmé ✓' : s.statut === 'SANS_REPONSE' ? ' · Sans réponse : un agent passera' : ' · En attente de réponse')}
+                        {s.type === 'RAPPEL' && (s.statut === 'ACQUITTE' ? ' · Confirmé' : s.statut === 'SANS_REPONSE' ? ' · Sans réponse : un agent passera' : ' · En attente de réponse')}
                       </p>
                       {s.type === 'RAPPEL' && s.statut !== 'ACQUITTE' && !proche && (
                         <button className="bouton petit-bouton" disabled={attente} onClick={() => repondreOk(s.id)}>Répondre OK</button>
@@ -206,13 +272,13 @@ export default function Telephone() {
                     <p className="petit">Enfant {j.codeEnfant} · {j.ageMois} mois</p>
                     {j.jeuDuJour ? (
                       <>
-                        <h3>🎲 {j.jeuDuJour.titre}</h3>
+                        <h3>{j.jeuDuJour.titre}</h3>
                         <p>{j.jeuDuJour.consigne}</p>
                         <p className="petit">Matériel : {j.jeuDuJour.materiel}</p>
-                        <button className="lien" onClick={() => lire(`${j.jeuDuJour.titre}. ${j.jeuDuJour.consigne}`)}>🔊 Écouter</button>{' '}
+                        <button className="lien" onClick={() => lire(`${j.jeuDuJour.titre}. ${j.jeuDuJour.consigne}`)}>Écouter</button>{' '}
                         {j.faitAujourdhui
-                          ? <span className="succes">Fait aujourd'hui ✓</span>
-                          : <button className="bouton petit-bouton" disabled={attente} onClick={() => jeuFait(j.codeEnfant)}>On l'a fait ✓</button>}
+                          ? <span className="succes">Fait aujourd'hui</span>
+                          : <button className="bouton petit-bouton" disabled={attente} onClick={() => jeuFait(j.codeEnfant)}>On l'a fait</button>}
                       </>
                     ) : <p className="petit">Pas de jeu pour cet âge.</p>}
                   </div>
@@ -262,6 +328,15 @@ export default function Telephone() {
             <li>Aucun appel n'est enregistré. Les messages informent et orientent, sans diagnostic.</li>
             <li>Éwé, kabyè, tem : voix à enregistrer avec des locuteurs natifs. En attendant, le message est lu en français et le dit.</li>
           </ul>
+          <div style={{
+            marginTop: '16px', padding: '12px', background: 'linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%)',
+            borderRadius: '8px', border: '1px solid #ffc107'
+          }}>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: 500 }}>
+              <b>Astuce :</b> Cliquez sur les numéros en haut du téléphone pour changer de profil rapidement.
+              Les boutons vocaux fonctionnent avec le haut-parleur de votre appareil.
+            </p>
+          </div>
         </aside>
       </div>
     </main>

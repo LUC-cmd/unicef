@@ -3,54 +3,189 @@
     "sujet": "GROSSESSE",
     "titre": "Pendant la grossesse",
     "texte": "Allez à la consultation prénatale dès que possible, puis à chaque rendez-vous. Mangez varié, buvez de l'eau propre et dormez sous une moustiquaire. En cas de saignement, de forte douleur, de fièvre ou si le bébé bouge moins, allez tout de suite au centre de santé.",
-    "mots": ["grossesse", "enceinte", "prenatal", "prenatale", "bebe", "moustiquaire", "consultation"]
+    "mots": ["grossesse", "enceinte", "prenatal", "prenatale", "bebe", "moustiquaire", "consultation"],
+    "mots_ewe": ["fofo", "nyɔnu", "nyonu", "vidzidzi", "efo", "dada", "no", "fukpekpe"],
+    "mots_kabye": ["hɔɔ", "hoo", "ahɔcaɣʋ", "ahocagu", "abalʋtʋ", "doo", "lʋlʋʋ"],
+    "mots_tem": ["abooru", "abor", "lʋlʋ", "lulu", "naa", "alaafia", "bii"]
   },
   {
     "sujet": "NOUVEAU_NE",
     "titre": "Le nouveau-né",
     "texte": "Gardez bébé au chaud, peau contre peau. Lavez-vous les mains avant de le toucher et gardez le cordon propre et sec. Présentez-le au centre de santé pour ses vaccins de naissance. S'il ne tète plus, a de la fièvre ou respire vite, allez tout de suite au centre de santé.",
-    "mots": ["nouveau", "ne", "cordon", "peau", "naissance", "chaud"]
+    "mots": ["nouveau", "ne", "cordon", "peau", "naissance", "chaud"],
+    "mots_ewe": ["vidzĩ", "vidzi", "devi", "axɔlu", "axolu", "ka", "dzo", "yeye"],
+    "mots_kabye": ["pɩɣa", "piga", "biya", "kɩfala", "kifala", "hekaɣ", "tɔnʋʋ", "tonuu"],
+    "mots_tem": ["bii", "kɩfalɔ", "kifalo", "kɩpalo", "celi", "lum", "lúm"]
   },
   {
     "sujet": "ALLAITEMENT",
     "titre": "L'allaitement",
     "texte": "Jusqu'à 6 mois, le lait de la mère suffit : ni eau, ni autre aliment. Donnez le sein à la demande, de jour comme de nuit. Si vous avez mal ou si vous avez des questions, parlez-en à l'agent de santé.",
-    "mots": ["allaitement", "sein", "lait", "teter", "tete", "six", "mois"]
+    "mots": ["allaitement", "sein", "lait", "teter", "tete", "six", "mois"],
+    "mots_ewe": ["nono", "no", "nana", "nozi", "devi", "tsi", "anyi"],
+    "mots_kabye": ["hɩlɩm", "hilim", "haʋ", "hau", "biya", "doo", "calɩm"],
+    "mots_tem": ["bisi", "hawa", "hɩlɩm", "naŋ", "naa", "bii"]
   },
   {
     "sujet": "VACCINS",
     "titre": "Les vaccins",
     "texte": "Les vaccins protègent votre enfant de maladies graves. Apportez le carnet à chaque rendez-vous. Si un vaccin a été manqué, allez au centre de santé : il n'est pas trop tard, on reprend là où on s'est arrêté.",
-    "mots": ["vaccin", "vaccins", "injection", "carnet", "rappel", "penta", "rougeole"]
+    "mots": ["vaccin", "vaccins", "injection", "carnet", "rappel", "penta", "rougeole"],
+    "mots_ewe": ["abui", "abuidodo", "atike", "dovoɖo", "dovodo", "agbalẽ"],
+    "mots_kabye": ["tɔtʋ", "totu", "kɔyɛ", "koye", "kɔsɩ", "kosi", "hɛzʋʋ", "takayaɣ"],
+    "mots_tem": ["pɔbʋ", "pobu", "tɔtʋ", "kɔyɩ", "koyi", "sɔla", "takada"]
   },
   {
     "sujet": "NUTRITION",
     "titre": "Bien nourrir son enfant",
     "texte": "À partir de 6 mois, continuez l'allaitement et ajoutez des bouillies enrichies, des légumes, des fruits, des œufs, du poisson ou des légumineuses, en petites quantités, plusieurs fois par jour. Le ruban de l'agent permet de repérer tôt un enfant qui maigrit.",
-    "mots": ["nourrir", "nutrition", "bouillie", "manger", "aliment", "repas", "maigrit", "ruban", "fruit", "poisson"]
+    "mots": ["nourrir", "nutrition", "bouillie", "manger", "aliment", "repas", "maigrit", "ruban", "fruit", "poisson"],
+    "mots_ewe": ["nuɖuɖu", "nududu", "dzogbɔ", "dzogbo", "mɔlu", "devi", "lĩ", "tsitsi"],
+    "mots_kabye": ["tɔɔnasɩ", "toonasɩ", "cɔlɩkɩŋ", "coliking", "tɔɔʋ", "biya", "kulum"],
+    "mots_tem": ["tɔɔna", "toona", "kɔnkɔ", "konko", "dɩtɔɔ", "bii", "alaafia"]
   },
   {
     "sujet": "HYGIENE",
     "titre": "L'hygiène",
     "texte": "Lavez-vous les mains à l'eau et au savon avant de préparer les repas, avant de donner à manger et après les toilettes. Utilisez de l'eau propre et gardez-la couverte.",
-    "mots": ["hygiene", "mains", "savon", "eau", "toilette", "propre"]
+    "mots": ["hygiene", "mains", "savon", "eau", "toilette", "propre"],
+    "mots_ewe": ["asiklɔklɔ", "asikloklo", "tsi", "sabun", "kɔkɔe", "kokoe", "lele"],
+    "mots_kabye": ["nesi", "sɔʋ", "sou", "lɩm", "lim", "saabu", "nyaalɩm", "nyaalim"],
+    "mots_tem": ["nisa", "sɔbʋ", "sobu", "lúm", "lum", "saabu", "nyaalɩm"]
   },
   {
     "sujet": "NAISSANCE",
     "titre": "Déclarer la naissance",
     "texte": "Déclarez la naissance dans les 45 jours : c'est gratuit. Après ce délai, il faut un jugement supplétif qui coûte 6 000 francs CFA. L'agent de santé peut lancer la déclaration avec vous.",
-    "mots": ["declarer", "declaration", "acte", "mairie", "etat", "civil", "45", "6000", "gratuit"]
+    "mots": ["declarer", "declaration", "acte", "mairie", "etat", "civil", "45", "6000", "gratuit"],
+    "mots_ewe": ["vidzidzi", "agbalẽ", "agbale", "dzi", "dzigbógbó", "ŋkɔ", "nko"],
+    "mots_kabye": ["lʋlʋʋ", "luluu", "takayaɣ", "takayag", "pɩɣa", "biya", "hɩɖɛ"],
+    "mots_tem": ["lʋlʋ", "lulu", "takada", "bii", "naa", "hɩɖɛ"]
   },
   {
     "sujet": "EVEIL",
     "titre": "Un jeu par jour",
     "texte": "Parlez à votre enfant, chantez, racontez des histoires. Jouez avec ce que vous avez à la maison : comptez des graines, empilez des fruits, cachez un objet sous un tissu. Dix minutes par jour suffisent.",
-    "mots": ["jeu", "jouer", "histoire", "chanter", "chanson", "eveil", "graine", "prescolaire"]
+    "mots": ["jeu", "jouer", "histoire", "chanter", "chanson", "eveil", "graine", "prescolaire"],
+    "mots_ewe": ["fefe", "hadzidzi", "xotutu", "devi", "kpekpe", "dzidzo"],
+    "mots_kabye": ["aleɣya", "alegya", "wentu", "leleŋ", "leleng", "biya", "ceeʋ"],
+    "mots_tem": ["sooma", "wɛɛŋ", "weeng", "yem", "alewa", "bii"]
   },
   {
     "sujet": "DANGER",
     "titre": "Signes de danger",
     "texte": "Ceci n'est pas un diagnostic. Allez tout de suite au centre de santé le plus proche si l'enfant ne boit ou ne tète plus, vomit tout, a des convulsions, est très faible ou difficile à réveiller, respire difficilement, ou s'il a de la fièvre et moins de 2 mois. Pour une femme enceinte : saignement, fièvre, forte douleur ou maux de tête avec vue trouble.",
-    "mots": ["danger", "urgence", "convulsion", "vomit", "fievre", "saignement", "respiration", "faible"]
+    "mots": ["danger", "urgence", "convulsion", "vomit", "fievre", "saignement", "respiration", "faible"],
+    "mots_ewe": ["afɔku", "afoku", "dɔlele", "sesẽ", "sese", "vɔvɔ̃", "azɔ̃", "azon"],
+    "mots_kabye": ["kɩdɛkɛdɩm", "kidekedim", "sɔndʋ", "sondu", "kʋdɔŋ", "kudong", "miŋ", "katɛ"],
+    "mots_tem": ["kɔɔndɩ", "koondi", "sɔɔndʋ", "soondu", "kɩdɛkɛdɩm", "gaasɩ"]
+  },
+  {
+    "sujet": "PALUDISME",
+    "titre": "Le paludisme (malaria)",
+    "texte": "Le paludisme donne une forte fièvre, des frissons, des maux de tête, des vomissements et une grande fatigue. Dès l'apparition de la fièvre, amenez rapidement l'enfant au centre de santé pour faire un test rapide (TDR) et recevoir un traitement efficace (CTA). Ne donnez pas d'aspirine. Pour prévenir le paludisme, faites dormir toute la famille chaque nuit sous une moustiquaire imprégnée et éliminez les eaux stagnantes autour de la maison.",
+    "mots": ["paludisme", "malaria", "moustique", "moustiquaire", "fievre", "frissons", "cta", "tdr", "goutte", "impregnee", "chaleur"],
+    "mots_ewe": ["atikesu", "atikésu", "asra", "mulyi", "muzɔ̃", "muzon", "dzo", "devi"],
+    "mots_kabye": ["sibru", "cɩbrʋʋ", "cibrwu", "asra", "kʋdɔŋ", "kudong", "miŋ", "biya"],
+    "mots_tem": ["sibru", "asra", "tim", "fitiɖi", "alafia", "dzo", "bii"]
+  },
+  {
+    "sujet": "DIARRHEE",
+    "titre": "La diarrhée et la déshydratation",
+    "texte": "La diarrhée entraîne une perte rapide d'eau et de sels minéraux. Donnez immédiatement une solution de réhydratation orale (SRO) préparée avec de l'eau propre, associée à du zinc pendant 10 jours. Continuez l'allaitement et les repas habituels. Allez d'urgence au centre de santé si l'enfant a du sang dans les selles, vomit tout, a les yeux enfoncés, ne peut plus boire ou si la diarrhée dure plus de 2 jours.",
+    "mots": ["diarrhee", "sro", "sel", "rehydratation", "zinc", "selles", "liquide", "deshydratation", "boire", "soif", "ventre"],
+    "mots_ewe": ["adudo", "dɔmevuvu", "domevuvu", "dɔmedu", "domedu", "dɔmeɖuɖu", "tsi", "devi"],
+    "mots_kabye": ["hɩlɩʋ", "hiliu", "lotu", "suluʋ", "suluu", "hɔɔ", "lɩm", "lim", "biya"],
+    "mots_tem": ["lotu", "sulu", "dɔmɛ", "dome", "luu", "lúm", "lum", "bii"]
+  },
+  {
+    "sujet": "FIEVRE",
+    "titre": "La fièvre chez l'enfant",
+    "texte": "Mesurez la température avec un thermomètre sous l'aisselle : il y a fièvre à partir de 38°C. Déshabillez l'enfant, faites-le boire souvent de l'eau propre et épongez son front et son corps avec un linge imbibé d'eau tiède (jamais glacée). Donnez du paracétamol pédiatrique en respectant le poids de l'enfant et un intervalle de 6 heures. Si la fièvre persiste plus de 48 heures, si l'enfant a moins de 2 mois ou s'il convulse, allez immédiatement au centre de santé.",
+    "mots": ["fievre", "temperature", "thermometre", "paracetamol", "eponger", "chaleur", "chaud", "38", "sirop", "degre"],
+    "mots_ewe": ["azɔ̃", "azon", "dzo", "dzodzo", "ŋutilɔ", "ngutilo", "veve", "devi"],
+    "mots_kabye": ["miŋ", "ming", "tɔnʋʋ", "tonuu", "yuŋ", "yung", "fitiɖi", "kɔyɛ", "biya"],
+    "mots_tem": ["dzo", "miŋ", "waza", "tɔnʋʋ", "tonuu", "kɔyɩ", "koyi", "bii"]
+  },
+  {
+    "sujet": "DERMATOLOGIE",
+    "titre": "Soins de la peau et éruptions",
+    "texte": "Pour le nouveau-né, nettoyez la peau délicatement à l'eau tiède et au savon doux, sans frotter, et gardez les plis bien secs. La gale provoque de fortes démangeaisons, surtout la nuit : il faut traiter l'enfant et toute la famille en même temps, et laver les vêtements à l'eau bouillante. Pour la teigne ou des boutons infectés, ne grattez pas et montrez l'enfant à l'agent de santé pour une crème ou un traitement adapté.",
+    "mots": ["peau", "gale", "teigne", "bouton", "boutons", "eruption", "demangeaison", "gratte", "croute", "dermatologie", "plis"],
+    "mots_ewe": ["kpotoli", "agbale", "babala", "aveve", "tugba", "dɔlele", "devi"],
+    "mots_kabye": ["tɔnʋʋ", "tonuu", "kpaa", "kankaŋ", "kankang", "cɩŋgɩlɩŋ", "kpɛlaŋ", "biya"],
+    "mots_tem": ["kankaŋ", "kankang", "tɔn", "kpaa", "gba", "alaafia", "bii"]
+  },
+  {
+    "sujet": "DEVELOPPEMENT",
+    "titre": "Le développement et les jalons moteurs",
+    "texte": "Chaque enfant grandit à son rythme, mais les jalons clés sont : tenir la tête droite vers 3 mois, s'asseoir sans appui vers 6 à 8 mois, se mettre debout et marcher vers 12 à 15 mois, et dire ses premiers mots vers 1 an. Stimulez votre bébé en lui parlant, en lui souriant, en chantant et en le posant sur le ventre lorsqu'il est éveillé. Consultez l'agent de santé s'il ne tient pas sa tête à 5 mois ou ne réagit pas aux bruits et aux sourires.",
+    "mots": ["developpement", "moteur", "tete", "asseoir", "marcher", "parler", "debout", "pas", "etape", "stimulation", "motricite"],
+    "mots_ewe": ["zɔzɔ", "zozo", "nuƒofo", "nu fofo", "anyinɔnɔ", "anyinono", "taɖede", "ŋgɔyiyi", "devi"],
+    "mots_kabye": ["ñɔʋ", "nyou", "caɣʋ", "cagu", "wobu", "yɔɔdʋʋ", "yooduu", "tɔnʋʋ", "biya"],
+    "mots_tem": ["dowo", "caa", "yɔɔdʋ", "yoodu", "kpaʋ", "kpau", "sooma", "bii"]
+  },
+  {
+    "sujet": "SANTE_MENTALE",
+    "titre": "Santé mentale et bien-être de la mère",
+    "texte": "Après l'accouchement, beaucoup de mères connaissent le « baby blues » (pleurs, fatigue passagère). Mais si la tristesse, l'angoisse intense, l'épuisement ou le sentiment de ne pas aimer son bébé durent plus de deux semaines, il peut s'agir d'une dépression post-partum. Ce n'est pas une faiblesse ni une honte : la mère a besoin de repos, du soutien bienveillant de sa famille et d'une écoute au centre de santé ou auprès d'un travailleur social.",
+    "mots": ["mentale", "tristesse", "pleurer", "deprime", "depression", "post-partum", "baby", "blues", "epuisement", "soutien", "angoisse", "mere"],
+    "mots_ewe": ["tamesusu", "blanuledzro", "konyifafa", "susu", "dada", "no", "fukpekpe"],
+    "mots_kabye": ["laŋwɛɛkɩm", "langweekim", "lɩmaɣza", "limagza", "feyisi", "laŋhɛzɩyɛ", "doo", "ma"],
+    "mots_tem": ["laŋwɛɛkɩm", "langweekim", "lɩmaɣza", "yɛɛyɩ", "laŋhɛzɩyɛ", "naa", "alaafia"]
+  },
+  {
+    "sujet": "CONTRACEPTION",
+    "titre": "Espacement des naissances et planification familiale",
+    "texte": "Attendre au moins 2 ans entre deux grossesses permet à la mère de reprendre des forces et à l'enfant de bien grandir. Plusieurs méthodes sûres et gratuites ou peu coûteuses existent au centre de santé : l'allaitement exclusif les 6 premiers mois (méthode MAMA), les préservatifs, les pilules, les injections trimestrielles, les implants sous-cutanés ou le stérilet (DIU). Discutez-en en couple avec la sage-femme ou l'agent de santé pour choisir la méthode qui vous convient.",
+    "mots": ["contraception", "espacement", "naissance", "planning", "preservatif", "pilule", "implant", "sterilet", "injection", "diu", "grossesse"],
+    "mots_ewe": ["vidzidzi", "ɖoɖo", "dodo", "ɖeɖiɖeme", "dedideme", "atike", "vidoɖo", "nyɔnu"],
+    "mots_kabye": ["lʋlʋʋ", "luluu", "kpaʋ", "kpau", "haɖɛ", "hade", "kɔyɛ", "caɣʋ", "doo"],
+    "mots_tem": ["lʋlʋ", "lulu", "fɔbʋ", "fobu", "alafia", "kɔyɩ", "kpaʋ", "naa"]
+  },
+  {
+    "sujet": "VIOLENCES",
+    "titre": "Protection de l'enfant et lutte contre les violences",
+    "texte": "Chaque enfant a droit à la sécurité, à la tendresse et au respect. Les châtiments corporels, les violences sexuelles, le travail précoce ou la négligence grave nuisent gravement à sa santé et à son avenir. Ne secouez jamais un bébé, cela peut causer des lésions au cerveau. En cas de maltraitance constatée ou suspectée, alertez le centre médico-social, le chef de village, la mairie, la brigade des mineurs ou appelez le numéro d'assistance gratuit pour l'enfance (ligne 1011).",
+    "mots": ["violence", "maltraitance", "coup", "blessure", "brulure", "neglige", "proteger", "securite", "alerte", "social", "mineur", "secouer"],
+    "mots_ewe": ["ŋutasesẽ", "nutasese", "amedada", "vlododo", "devisesẽ", "afɔku", "devi"],
+    "mots_kabye": ["kazaŋga", "kazanga", "mabʋ", "mabu", "biya", "tɛyɩtʋ", "teyitu", "katɛ"],
+    "mots_tem": ["kazaŋga", "kazanga", "nimbiri", "fɔbʋ", "fobu", "sɔndʋ", "sondu", "bii"]
+  },
+  {
+    "sujet": "EAU_POTABLE",
+    "titre": "Eau potable et assainissement",
+    "texte": "Une eau souillée donne le choléra, la diarrhée et des vers intestinaux. Pour rendre l'eau potable, faites-la bouillir à gros bouillons pendant 1 minute, ou filtrez-la, ou ajoutez un produit chloré adapté (aquatabs ou javel dosée par l'agent de santé). Conservez l'eau dans un récipient propre et fermé par un couvercle. Utilisez une louche propre à long manche pour puiser sans toucher l'eau avec les mains.",
+    "mots": ["eau", "potable", "bouillir", "javel", "chlore", "filtre", "filtrer", "assainissement", "bidon", "propre", "boire", "puiser"],
+    "mots_ewe": ["tsi", "nunu", "ɖaɖa", "dada", "kɔkɔe", "kokoe", "nyuie", "lele"],
+    "mots_kabye": ["lɩm", "lim", "kɔlɔkɔlɔ", "kolokolo", "ñɔʋ", "nyou", "tɩzʋʋ", "tizuu", "kiziŋ"],
+    "mots_tem": ["lúm", "lum", "kɔlɔkɔlɔ", "kolokolo", "ñɔbʋ", "niobu", "dɩtɩzɩ", "ditizi", "alaafia"]
+  },
+  {
+    "sujet": "PREMATURE",
+    "titre": "Soins du nouveau-né prématuré",
+    "texte": "Un bébé né avant terme ou de petit poids (moins de 2,5 kg) est très fragile face au froid et aux infections. Pratiquez les soins kangourou : portez le bébé nu, simplement avec bonnet et couche, en contact peau à peau permanent contre la poitrine de la mère ou du père, sous le pagne. Donnez le lait maternel très souvent, à la cuillère s'il tète mal. Allez immédiatement au centre de santé s'il respire difficilement, devient froid ou ne s'alimente plus.",
+    "mots": ["premature", "kangourou", "couveuse", "peau", "chaud", "petit", "faible", "terme", "poids", "respiration", "poitrine"],
+    "mots_ewe": ["devi", "kpuie", "vidzĩ", "vidzi", "gbɔdzɔgbɔdzɔ", "gbodzogbodzo", "fafɛ", "dzo", "nono"],
+    "mots_kabye": ["pɩɣa", "piga", "kɩdɛkɛda", "kidekeda", "alɩwaatʋ", "kɩkɛdɩŋ", "kikeding", "hɩlɩm", "biya"],
+    "mots_tem": ["bii", "baasɛ", "baase", "kpaŋgbaŋ", "kpangbang", "alɩwaatʋ", "bisi", "lum"]
+  },
+  {
+    "sujet": "CROISSANCE",
+    "titre": "Suivi de croissance et courbe de poids",
+    "texte": "Faites peser et mesurer votre enfant chaque mois lors des séances de pesée ou de vaccination. L'agent de santé trace la courbe sur son carnet de santé. Une courbe qui monte régulièrement indique une bonne santé. Si la courbe stagne ou descend, c'est le signe d'un ralentissement de croissance ou d'une malnutrition : enrichissez ses repas (bouillies avec pâte d'arachide, œuf, poisson) et suivez les conseils de l'agent de santé pour un rattrapage rapide.",
+    "mots": ["croissance", "poids", "peser", "balance", "carnet", "courbe", "grandir", "maigrir", "retard", "rattrapage", "taille"],
+    "mots_ewe": ["tsitsi", "kpekpeme", "dodo", "devi", "ŋutilɔ", "ngutilo", "nuɖuɖu"],
+    "mots_kabye": ["paɣlʋʋ", "pagluu", "yuŋ", "yung", "tɔnʋʋ", "tonuu", "biya", "tɔɔnasɩ"],
+    "mots_tem": ["paɣlʋ", "paglu", "yuŋ", "yung", "bɩgbɩsɩ", "bigbisi", "bii", "tɔɔna"]
+  },
+  {
+    "sujet": "DENTAIRE",
+    "titre": "Santé et hygiène bucco-dentaire",
+    "texte": "Les soins dentaires commencent dès la première dent de lait vers 6 mois : nettoyez-la avec une compresse ou un linge propre et humide. Dès 1 an, brossez les dents deux fois par jour avec une brosse à dents souple et une toute petite trace de dentifrice fluoré pour enfant. Ne laissez jamais un bébé s'endormir avec un biberon d'eau sucrée ou de jus car cela entraîne des caries précoces très douloureuses. Faites contrôler les dents de votre enfant au moins une fois par an.",
+    "mots": ["dent", "dents", "dentaire", "carie", "brossage", "brosse", "fluor", "gencive", "bouche", "sourire", "lait"],
+    "mots_ewe": ["aɖu", "adu", "klɔklɔ", "kloklo", "veve", "nu", "gbégblé", "devi"],
+    "mots_kabye": ["kela", "nyaalɩm", "nyaalim", "kʋdɔŋ", "kudong", "sɔʋ", "sou", "biya"],
+    "mots_tem": ["kela", "sila", "nyaalɩm", "nyaalim", "kʋdɔŋ", "alaafia", "bii"]
   }
 ]

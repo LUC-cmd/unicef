@@ -7,6 +7,7 @@ import Accueil from './pages/Accueil.jsx'
 import Connexion from './pages/Connexion.jsx'
 import { ANCRES_PROJET } from './lib/ancres.js'
 import Chargement from './components/Chargement.jsx'
+import BarriereErreur from './components/BarriereErreur.jsx'
 import Retours from './components/Retours.jsx'
 import BarreRetour from './components/BarreRetour.jsx'
 import { demarrerAnimations } from './lib/animations.js'
@@ -37,6 +38,7 @@ const ActeNaissance = lazy(() => import('./pages/ActeNaissance.jsx'))
 const Annuaire = lazy(() => import('./pages/Annuaire.jsx'))
 const Carnet = lazy(() => import('./pages/Carnet.jsx'))
 const Preparation = lazy(() => import('./pages/Preparation.jsx'))
+const PortailFamille = lazy(() => import('./pages/PortailFamille.jsx'))
 const espace = (nom) => lazy(() => import('./pages/Espaces.jsx').then((m) => ({ default: m[nom] })))
 const EspaceAgent = espace('EspaceAgent')
 const EspaceMairie = espace('EspaceMairie')
@@ -194,6 +196,7 @@ export default function App() {
       <div className="contenu" id="contenu">
         <Retours />
         <BarreRetour />
+        <BarriereErreur>
         <Suspense fallback={<Chargement texte="Ouverture de la page…" />}>
         <div className="page-entree" key={lieu.pathname.split("/")[1] || "/"}>
         <Routes location={lieu}>
@@ -228,10 +231,12 @@ export default function App() {
           <Route path="/carte/*" element={<Protegee page="carte"><EspaceDecideur /></Protegee>} />
           <Route path="/admin/*" element={<Protegee page="admin"><EspaceAdmin /></Protegee>} />
           <Route path="/carnet/:code" element={<Protegee page="agent"><Carnet /></Protegee>} />
+          <Route path="/portail/:code" element={<PortailFamille />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </div>
         </Suspense>
+        </BarriereErreur>
       </div>
 
       <footer className={`pied no-print${dansEspace ? ' compact' : ''}`}>

@@ -153,6 +153,7 @@ export function EspaceAdmin() {
       { to: '/admin/horloge', nom: 'Horloge', icone: 'horloge' },
       { to: '/admin/acces', nom: 'Comptes', icone: 'bouclier' },
       { to: '/admin/langues', nom: 'Messages et langues', icone: 'livre' },
+      { to: '/admin/securite', nom: 'Cybersécurité', icone: 'bouclier' },
     ] },
     { titre: 'Voir comme…', liens: [
       { to: '/agent', nom: 'Agent de santé', icone: 'liste' },
@@ -168,6 +169,7 @@ export function EspaceAdmin() {
         <Route path="horloge" element={<Admin vue="horloge" />} />
         <Route path="acces" element={<Admin vue="acces" />} />
         <Route path="langues" element={<Admin vue="langues" />} />
+        <Route path="securite" element={<Admin vue="securite" />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Shell>

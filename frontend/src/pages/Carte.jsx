@@ -8,6 +8,8 @@ import CarteTogo from '../components/CarteTogo.jsx'
 import ActesSuivi from '../components/ActesSuivi.jsx'
 import RupturesParcours from '../components/RupturesParcours.jsx'
 import Bandeau from '../components/Bandeau.jsx'
+import GraphiqueEvolution from '../components/GraphiqueEvolution.jsx'
+import AlertesZones from '../components/AlertesZones.jsx'
 import { Link } from 'react-router-dom'
 
 const L = 640
@@ -58,7 +60,7 @@ export default function Carte({ vue = 'carte' }) {
             return dist < best.dist ? { zone: z, dist } : best
           }, { zone: null, dist: Infinity })
           if (proche.zone && proche.dist < 0.5) { // 0.5 degré ~ 55 km
-            setChoisi(proche.zone.code)
+            setChoisie(proche.zone.code)
           }
         },
         () => {}, // Erreur de géolocalisation : on ignore
@@ -137,6 +139,7 @@ export default function Carte({ vue = 'carte' }) {
                 </dl>
               )}
               <p className="petit">L'indice combine : rendez-vous réalisés (50 %), naissances déclarées (30 %), rappels sans réponse (20 %). Sans donnée, une zone compte comme oubliée.</p>
+              {!detail.masquee && <GraphiqueEvolution zone={detail.code} titre={`Évolution : ${detail.nom}`} />}
             </div>
           ) : (
             <div className="carte"><p>Aucune zone dans votre région pour le moment.</p></div>
@@ -226,6 +229,7 @@ export default function Carte({ vue = 'carte' }) {
           {barresJsx}
           <ActesSuivi role="DECIDEUR" />
         </div>
+        <AlertesZones zones={zones} tendances={tendances} />
         <RupturesParcours />
       </main>
     )
@@ -293,6 +297,7 @@ export default function Carte({ vue = 'carte' }) {
         {gauche}
         <section>{detailJsx}</section>
       </div>
+      <AlertesZones zones={zones} tendances={tendances} />
     </main>
   )
 }

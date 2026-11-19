@@ -11,6 +11,9 @@ const FICHIERS = {
   assiette: null,
   memoire: null,
   mains: null,
+  opposes: null,
+  corps: null,
+  sons: null,
 }
 
 export function videoDe(jeuId) {

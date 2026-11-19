@@ -1,15 +1,45 @@
 {
-  "name": "Fil d'Or",
+  "name": "Fil d'Or — Suivi de chaque enfant",
   "short_name": "Fil d'Or",
-  "description": "Suivi de chaque enfant, de la grossesse à 5 ans, avec ou sans réseau.",
+  "description": "Suivi de chaque enfant, de la grossesse à 5 ans, avec ou sans réseau. Projet UNICEF / Hack4Children — Togo.",
   "lang": "fr",
-  "start_url": "/agent",
+  "dir": "ltr",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#1cabe2",
+  "categories": ["health", "education", "government"],
   "icons": [
     { "src": "/icone-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Espace Agent de santé",
+      "short_name": "Agent",
+      "url": "/agent",
+      "description": "Accès direct au tableau de bord de l'agent de santé",
+      "icons": [{ "src": "/icons/agent.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Carte des zones",
+      "short_name": "Carte",
+      "url": "/carte/carte",
+      "description": "Vue cartographique des zones de suivi"
+    },
+    {
+      "name": "Jeux d'éveil",
+      "short_name": "Jeux",
+      "url": "/jeux",
+      "description": "Jeux éducatifs pour les enfants"
+    },
+    {
+      "name": "Assistant santé",
+      "short_name": "Assistant",
+      "url": "/assistant",
+      "description": "Questions-réponses sur la santé de l'enfant"
+    }
   ]
 }

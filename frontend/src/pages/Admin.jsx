@@ -6,6 +6,7 @@ import ModelesMessages from '../components/ModelesMessages.jsx'
 import GestionComptes from '../components/GestionComptes.jsx'
 import TableauAdmin from '../components/TableauAdmin.jsx'
 import ReceptionCles from '../components/ReceptionCles.jsx'
+import JournalAcces from '../components/JournalAcces.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 
 const SERVICES = [
@@ -133,6 +134,16 @@ export default function Admin({ vue = 'services' }) {
       <main className="page">
         <Bandeau surtitre="Administrateur" titre="Réception des clés USB">Les saisies faites sans réseau arrivent ici, puis partent dans la base.</Bandeau>
         <ReceptionCles />
+      </main>
+    )
+  }
+  if (vue === 'securite') {
+    return (
+      <main className="page">
+        <Bandeau surtitre="Administrateur" titre="Cybersécurité">
+          Journal des accès, détection d'anomalies et métriques de sécurité. Chaque consultation est tracée.
+        </Bandeau>
+        <JournalAcces />
       </main>
     )
   }

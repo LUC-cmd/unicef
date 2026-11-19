@@ -39,7 +39,7 @@ services:
   assistant:
     build: ./assistant
     ports:
-      - "8092:8090"
+      - "8092:8092"
 
   frontend:
     build: ./frontend

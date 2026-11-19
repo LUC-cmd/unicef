@@ -96,7 +96,17 @@ export default function CarteTogo({ zones = [], horsPilote = [], choisie, onChoi
         <defs>
           <filter id="lueur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation={3 * echelle} result="f" /><feMerge><feMergeNode in="f" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <pattern id="trame-togo" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#c3d8e4" /></pattern>
+          <radialGradient id="heatmap-rouge"><stop offset="0%" stopColor="#e2231a" stopOpacity="0.5" /><stop offset="100%" stopColor="#e2231a" stopOpacity="0" /></radialGradient>
+          <radialGradient id="heatmap-orange"><stop offset="0%" stopColor="#f26a21" stopOpacity="0.4" /><stop offset="100%" stopColor="#f26a21" stopOpacity="0" /></radialGradient>
+          <radialGradient id="heatmap-vert"><stop offset="0%" stopColor="#00833d" stopOpacity="0.3" /><stop offset="100%" stopColor="#00833d" stopOpacity="0" /></radialGradient>
         </defs>
+        <style>{`
+          @keyframes pulsation {
+            0%, 100% { r: 1; opacity: 0.6; }
+            50% { r: 1.8; opacity: 0.2; }
+          }
+          .zone-critique-pulse { animation: pulsation 2s ease-in-out infinite; }
+        `}</style>
         <rect x={vue[0] - 800} y={vue[1] - 800} width="2400" height="2400" fill="url(#trame-togo)" opacity="0.55" />
 
         {REGIONS.map((r) => {
@@ -135,10 +145,17 @@ export default function CarteTogo({ zones = [], horsPilote = [], choisie, onChoi
         {phase >= 4 && !region && points.map((z, i) => {
           const r = rayon(z)
           const actif = choisie === z.code
+          const critique = (z.indiceOubli ?? 0) >= 60
+          const heatR = (8 + (z.indiceOubli ?? 0) * 0.5) * echelle * 1.9
+          const heatGrad = critique ? 'url(#heatmap-rouge)' : (z.indiceOubli ?? 0) >= 35 ? 'url(#heatmap-orange)' : 'url(#heatmap-vert)'
           return (
             <g key={z.code} className="togo-zone" style={{ animationDelay: `${i * 90}ms`, transformOrigin: `${z.xy[0]}px ${z.xy[1]}px` }} tabIndex="0" role="button"
                aria-label={`${z.nom}, indice d'oubli ${z.indiceOubli ?? 'non détaillé'}`} onClick={() => onChoisir?.(z.code)}
                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onChoisir?.(z.code)}>
+              {/* Couche heatmap */}
+              <circle cx={z.xy[0]} cy={z.xy[1]} r={heatR} fill={heatGrad} style={{ pointerEvents: 'none' }} />
+              {/* Pulsation pour zones critiques */}
+              {critique && <circle cx={z.xy[0]} cy={z.xy[1]} r={r + trait(8)} fill="none" stroke="#e2231a" strokeWidth={trait(1.5)} className="zone-critique-pulse" style={{ transformOrigin: `${z.xy[0]}px ${z.xy[1]}px` }} />}
               <circle cx={z.xy[0]} cy={z.xy[1]} r={r + trait(5)} fill={couleurIndice(z.indiceOubli)} fillOpacity="0.2" />
               <circle cx={z.xy[0]} cy={z.xy[1]} r={r} fill={couleurIndice(z.indiceOubli)} stroke={actif ? '#2d2926' : '#fff'} strokeWidth={trait(actif ? 3 : 2)} strokeDasharray={z.masquee ? `${trait(4)} ${trait(3)}` : undefined} />
               <text x={z.xy[0]} y={z.xy[1] + r * 0.36} textAnchor="middle" fontSize={r * 0.95} fontWeight="700" fill="#fff" style={{ pointerEvents: 'none' }}>{z.indiceOubli ?? '?'}</text>
@@ -166,7 +183,25 @@ export default function CarteTogo({ zones = [], horsPilote = [], choisie, onChoi
           <button type="button" className="bouton secondaire petit-bouton" onClick={() => setCycle((c) => c + 1)}>Rejouer</button>
         </div>
       </div>
-      <figcaption className="petit carte-togo-source">Chaque cercle est le centre approximatif d'une zone ; son chiffre est l'indice d'oubli. Contours : <a href="https://www.amcharts.com/" target="_blank" rel="noreferrer">amCharts</a> (Natural Earth).</figcaption>
+      <figcaption className="petit carte-togo-source">
+        Chaque cercle est le centre approximatif d'une zone ; son chiffre est l'indice d'oubli. Les zones rouges pulsent. Contours : <a href="https://www.amcharts.com/" target="_blank" rel="noreferrer">amCharts</a> (Natural Earth).
+        {choisie && (() => {
+          const z = zones.find((zz) => zz.code === choisie)
+          if (!z || !z.latitude) return null
+          return (
+            <span style={{ display: 'block', marginTop: '6px' }}>
+              <a href={`https://www.openstreetmap.org/?mlat=${z.latitude}&mlon=${z.longitude}#map=13/${z.latitude}/${z.longitude}`}
+                 target="_blank" rel="noreferrer" style={{ marginRight: '12px' }}>
+                Voir sur OpenStreetMap
+              </a>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${z.latitude},${z.longitude}`}
+                 target="_blank" rel="noreferrer">
+                Itinéraire Google Maps
+              </a>
+            </span>
+          )
+        })()}
+      </figcaption>
     </figure>
   )
 }
