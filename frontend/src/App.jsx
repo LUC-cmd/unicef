@@ -25,6 +25,10 @@ const Parcours = lazy(() => import('./pages/Parcours.jsx'))
 const EtapeParcours = lazy(() => import('./pages/EtapeParcours.jsx'))
 const Famille = lazy(() => import('./pages/Famille.jsx'))
 import FamilleSousPage from './components/FamilleSousPage.jsx'
+const DeveloppementFamille = lazy(() => import('./pages/DeveloppementFamille.jsx'))
+const MesureBras = lazy(() => import('./pages/MesureBras.jsx'))
+const BienEtreMere = lazy(() => import('./pages/BienEtreMere.jsx'))
+const MessagesParles = lazy(() => import('./pages/MessagesParles.jsx'))
 const FamilleCreche = lazy(() => import('./pages/FamilleCreche.jsx'))
 const Creches = lazy(() => import('./pages/Creches.jsx'))
 const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
@@ -267,6 +271,10 @@ export default function App() {
           <Route path="/famille/jeux/:jeu" element={<FamilleSousPage><Jeux /></FamilleSousPage>} />
           <Route path="/famille/assistant" element={<FamilleSousPage><Assistant /></FamilleSousPage>} />
           <Route path="/famille/acte" element={<FamilleSousPage><ActeNaissance /></FamilleSousPage>} />
+          <Route path="/famille/developpement" element={<FamilleSousPage><DeveloppementFamille /></FamilleSousPage>} />
+          <Route path="/famille/bras" element={<FamilleSousPage><MesureBras /></FamilleSousPage>} />
+          <Route path="/famille/bien-etre" element={<FamilleSousPage><BienEtreMere /></FamilleSousPage>} />
+          <Route path="/famille/voix" element={<FamilleSousPage><MessagesParles /></FamilleSousPage>} />
           <Route path="/creches" element={<Creches />} />
           <Route path="/adolescents" element={<Adolescents />} />
           <Route path="/signalement" element={<Signalement />} />

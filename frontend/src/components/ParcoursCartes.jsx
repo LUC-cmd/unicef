@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ETAPES_PARCOURS } from '../lib/etapes.js'
 import IconeEtape from './IconeEtape.jsx'
+import { APPORTS } from '../lib/apports.js'
 
 const FL = <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4 10h11m-4-5 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
 
@@ -18,6 +19,13 @@ export default function ParcoursCartes() {
             <small>{e.age}</small>
             <h3>{e.nom}</h3>
             <p>{e.court}</p>
+            {APPORTS[e.code] && (
+              <span className="etape-apport">
+                <em>Ce que Fil d’Or apporte</em>
+                <b>{APPORTS[e.code].nouveau}</b>
+                <span className="etape-points">{APPORTS[e.code].points.map((x) => <span key={x}>{x}</span>)}</span>
+              </span>
+            )}
             <span className="etape-bouton">Ouvrir l'étape {FL}</span>
           </Link>
         </li>

@@ -18,6 +18,10 @@ import ActeNaissance from './ActeNaissance.jsx'
 import Naissance from './Naissance.jsx'
 import Fragiles from './Fragiles.jsx'
 import VerifierQr from './VerifierQr.jsx'
+import EchelleFilles from '../components/EchelleFilles.jsx'
+import Croissance from './Croissance.jsx'
+import Indicateurs from './Indicateurs.jsx'
+import Bandeau from '../components/Bandeau.jsx'
 
 /** Chaque rôle a son espace : un menu vertical, une barre en haut, et des vues qui marchent. */
 
@@ -31,6 +35,7 @@ export function EspaceAgent() {
       { to: '/agent/naissance', nom: 'Déclarer une naissance', icone: 'carnet' },
       { to: '/agent/carte', nom: 'Carnet de famille', icone: 'carnet' },
       { to: '/agent/fragiles', nom: 'Nouveau-nés fragiles', icone: 'bouclier' },
+      { to: '/agent/croissance', nom: 'Croissance des enfants', icone: 'graphe' },
       { to: '/agent/acte', nom: 'Aide : acte de naissance', icone: 'livre' },
     ] },
     { titre: 'Outils', liens: [
@@ -52,6 +57,7 @@ export function EspaceAgent() {
         <Route path="annuaire" element={<Annuaire />} />
         <Route path="acte" element={<ActeNaissance />} />
         <Route path="fragiles" element={<Fragiles />} />
+        <Route path="croissance" element={<Croissance />} />
         <Route path="verifier-qr" element={<VerifierQr />} />
         <Route path="*" element={<Navigate to="/agent" replace />} />
       </Routes>
@@ -139,6 +145,8 @@ export function EspaceDecideur() {
       { to: '/carte/zones', nom: 'Comparer les zones', icone: 'graphe' },
       { to: '/carte/ruptures', nom: 'Ruptures de parcours', icone: 'graphe' },
       { to: '/carte/filles', nom: 'Filles et jeunes mères', icone: 'bouclier' },
+      { to: '/carte/ecole', nom: 'Filles libérées pour l’école', icone: 'livre' },
+      { to: '/carte/indicateurs', nom: 'Indicateurs et export', icone: 'graphe' },
       { to: '/carte/gestion', nom: 'Comptes et crèches', icone: 'cle' },
       { to: '/carte/actes', nom: 'Actes de naissance', icone: 'livre' },
     ] },
@@ -152,6 +160,8 @@ export function EspaceDecideur() {
         <Route path="actes" element={<Carte vue="actes" />} />
         <Route path="ruptures" element={<Carte vue="ruptures" />} />
         <Route path="filles" element={<Carte vue="filles" />} />
+        <Route path="indicateurs" element={<Indicateurs />} />
+        <Route path="ecole" element={<><Bandeau surtitre="Responsable régional" titre="Filles libérées pour l’école">Ce que change une crèche fiable pour les grandes sœurs qui gardent les petits.</Bandeau><div className="page"><EchelleFilles /></div></>} />
         <Route path="gestion" element={<Carte vue="gestion" />} />
         <Route path="*" element={<Navigate to="/carte" replace />} />
       </Routes>

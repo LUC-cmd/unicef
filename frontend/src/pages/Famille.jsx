@@ -6,6 +6,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Picto from '../components/Picto.jsx'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { formaterDate } from '../lib/format.js'
+import ConseilSaison from '../components/ConseilSaison.jsx'
 import EspaceFamille from '../components/EspaceFamille.jsx'
 import FilEnfant from '../components/FilEnfant.jsx'
 import { MESSAGES_SECOURS, PROCHES_SECOURS, PROFIL_SECOURS } from '../lib/secoursFamille.js'
@@ -186,6 +187,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
         <div className="fam-contenu">
         {onglet === 'accueil' && (
           <>
+          <ConseilSaison />
           {acte && <div className="alerte-acte" role="status"><b>Bonne nouvelle : l'acte de naissance est prêt.</b> {acte.message} <Link to="/famille/acte">Voir les étapes du retrait</Link></div>}
         <div className="famille-tuiles">
           <div><b>{suivis}</b><span>enfant{suivis > 1 ? 's' : ''} suivi{suivis > 1 ? 's' : ''} par l'agent</span></div>

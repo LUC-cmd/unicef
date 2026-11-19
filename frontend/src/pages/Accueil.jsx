@@ -5,7 +5,7 @@ import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
 const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 import ParcoursCartes from '../components/ParcoursCartes.jsx'
 import FilInteractif from '../components/FilInteractif.jsx'
-import { MereEtEnfant } from '../components/Illustrations.jsx'
+import PhotoFamille from '../components/PhotoFamille.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
 const TRACES_ETAPE = {
@@ -123,7 +123,7 @@ export default function Accueil() {
 
       <section className="section blanc" aria-labelledby="titre-constat">
         <div className="interieur">
-          <div className="essai-grille"><div className="illustration-bloc"><MereEtEnfant /></div><div><h2 id="titre-constat" className="titre-section">Beaucoup d'enfants se perdent entre deux rendez-vous</h2>
+          <div className="essai-grille"><div className="illustration-bloc"><PhotoFamille /></div><div><h2 id="titre-constat" className="titre-section">Beaucoup d'enfants se perdent entre deux rendez-vous</h2>
           <p className="chapeau">Un enfant manque un vaccin ou son acte de naissance, et personne ne le voit. Voici les chiffres.</p>
           </div></div>
           <div className="chiffres">

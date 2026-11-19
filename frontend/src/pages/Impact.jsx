@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
+import EchelleFilles from '../components/EchelleFilles.jsx'
 import { ETAPES_PARCOURS, SOURCE_BRIEFING } from '../lib/etapes.js'
 
 // Ce qui est décrit existe dans le prototype et se teste avec les comptes de démonstration. Les effets sur la santé des
@@ -12,6 +13,12 @@ const PRIX = [
     ['L’acte de naissance en trois états', 'Pas d’acte, acte établi mais non retiré, acte retiré : chaque famille n’est relancée que pour ce qui lui manque.', '/acte'],
     ['Le suivi du nouveau-né fragile', 'Visites aux jours 1, 3 et 7, bracelet de température et de pouls, alerte hors des repères.', '/connexion'],
     ['La mallette de la crèche', 'Les femmes qui tiennent les crèches ont les jeux par âge, le menu local, l’hygiène, les signes d’alerte et de petites formations, au même endroit.', '/connexion'],
+    ['Le bilan de développement à la maison', 'Quatre questions par tranche d’âge, de 0 à 5 ans : la famille sait si son enfant avance bien, et l’agent de santé est prévenu si plusieurs repères manquent.', '/famille/developpement'],
+    ['La mesure du bras', 'Un ruban de couleur et une mesure en millimètres disent si un enfant de 6 mois à 5 ans manque de nourriture, et quoi faire.', '/famille/bras'],
+    ['Des messages parlés, dans la langue de la famille', 'Un relais communautaire enregistre sa voix pour chaque conseil : la mère écoute au lieu de lire.', '/famille/voix'],
+    ['Des conseils de saison', 'Moustiquaire avant les pluies, eau propre, harmattan : la famille reçoit le bon conseil au bon moment de l’année.', '/famille'],
+    ['Suivi de la croissance par l’agent', 'La mesure du bras à chaque visite : les enfants à risque remontent en tête de liste, avec le prochain pas.', '/connexion'],
+    ['Un export prêt pour le système de santé', 'Huit indicateurs agrégés, sans nom d’enfant, au format d’échange DHIS2 : de quoi brancher Fil d’Or aux statistiques nationales.', '/connexion'],
     ['Un téléphone basique suffit', 'SMS, appel vocal et *789# : aucune application nécessaire pour la famille.', '/telephone'],
     ['Hors réseau, par clé USB', 'L’agent saisit au village sans réseau, puis les données partent par réseau ou par clé USB.', '/hors-reseau'],
     ['Un carnet signé, vérifiable', 'Un QR signé numériquement prouve l’authenticité du carnet, sans afficher de nom.', '/projet'],
@@ -22,6 +29,8 @@ const PRIX = [
     ['Les adolescentes : repères et orientation', 'Informations simples sur le corps et la planification familiale, et orientation vers le centre de santé, sans jugement.', '/adolescents'],
     ['L’acte de naissance des filles', 'Sans acte, une fille a plus de mal à entrer à l’école et à accéder aux services. L’acte est suivi jusqu’au retrait.', '/acte'],
     ['La crèche pour reprendre l’école', 'Une réservation en ligne offre un lieu sûr pour l’enfant : la jeune mère peut retourner en classe ou travailler.', '/creches'],
+    ['Les petites sœurs qui gardent les petits', 'Une crèche fiable libère une grande sœur de 8 à 14 ans pour l’école. Le scénario chiffré est dans le tableau du responsable.', '/carte/ecole'],
+    ['Le bien-être de la jeune mère', 'Deux questions de repérage après la naissance, avec une orientation vers l’agent de santé : une mère soutenue soutient mieux son enfant.', '/famille/bien-etre'],
     ['Signaler une situation inquiétante', 'Un chemin direct, anonyme et sans diagnostic, pour une fille en danger.', '/signalement'],
   ] },
   { id: 'gagnant', nom: 'Le projet gagnant', question: 'Est-ce solide, utilisable, prêt à passer à l’échelle ?', lignes: [
@@ -57,6 +66,7 @@ export default function Impact() {
                 <li key={t}><div><b>{t}</b><span>{d}</span></div><Link to={to} className="bouton secondaire petit-bouton">Voir</Link></li>
               ))}
             </ul>
+            {p.id === 'filles' && <EchelleFilles />}
           </div>
         </section>
 

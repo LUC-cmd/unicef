@@ -2182,3 +2182,51 @@ html, body, .coque { max-width: 100%; overflow-x: clip; }
   .nav-principale a { padding: .5rem .55rem; font-size: .9rem; }
   .entete .interieur { gap: .8rem; padding: 0 1rem; }
 }
+/* Petite enfance : repérages, messages parlés, scénario filles */
+.soins, .voix { display: grid; gap: 1rem; max-width: 760px; }
+.soins .carte label, .echelle-champ { display: grid; gap: .35rem; font-weight: 600; }
+.soins input[type=number] { max-width: 220px; }
+.soin-questions { list-style: none; margin: 1rem 0 .5rem; padding: 0; display: grid; gap: .9rem; }
+.soin-questions li { display: grid; gap: .45rem; padding-bottom: .9rem; border-bottom: 1px solid #e3edf4; }
+.soin-questions li:last-child { border-bottom: 0; }
+.soin-questions p { margin: 0; }
+.soin-choix, .voix-langues, .voix-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.soin-choix button, .voix-langues button { min-height: 44px; padding: .5rem 1.1rem; border: 2px solid #9db8cc; background: #fff; border-radius: 999px; font: inherit; font-weight: 700; color: #12304f; cursor: pointer; }
+.soin-choix button.actif, .voix-langues button.actif { background: #12304f; border-color: #12304f; color: #fff; }
+.soin-choix button:focus-visible, .voix-langues button:focus-visible { outline: 3px solid #1cabe2; outline-offset: 2px; }
+.soin-case { display: flex !important; align-items: center; gap: .6rem; font-weight: 500 !important; }
+.soin-resultat { border-radius: 14px; padding: 1rem 1.1rem; border: 2px solid; display: grid; gap: .4rem; }
+.soin-resultat b { font-size: 1.1rem; }
+.soin-resultat p { margin: 0; }
+.soin-bon, .soin-vert { background: #eaf7ee; border-color: #3d9a5b; color: #17482a; }
+.soin-surveiller, .soin-jaune { background: #fff6dd; border-color: #d9a21b; color: #5a4208; }
+.soin-signaler, .soin-rouge { background: #fdecea; border-color: #c9382c; color: #6b1a12; }
+.soin-resultat .bouton { justify-self: start; }
+.voix-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
+.voix-carte h2 { margin: 0 0 .3rem; font-size: 1.1rem; }
+.voix-carte p { margin: 0 0 .7rem; }
+.voix-actions audio { max-width: 100%; }
+.echelle { display: grid; gap: .9rem; margin-top: 1rem; }
+.echelle-champ input[type=range] { width: 100%; }
+.echelle-champ small { font-weight: 400; color: #5b6b78; }
+.echelle-resultat { margin: 0; padding: 1rem; border-radius: 14px; background: #12304f; color: #fff; font-size: 1.1rem; text-align: center; }
+.echelle-resultat b { font-size: 2rem; margin-right: .3rem; }
+.conseil-saison h2 { display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; margin: 0 0 .5rem; }
+.conseil-saison ul { margin: 0 0 .5rem; padding-left: 1.2rem; display: grid; gap: .3rem; }
+.croissance-liste { list-style: none; margin: .5rem 0; padding: 0; display: grid; gap: .5rem; }
+.croissance-liste li { display: grid; gap: .15rem; padding: .6rem .8rem; border-radius: 10px; border: 2px solid; }
+.croissance-liste li span { font-size: .9rem; }
+.indic { display: grid; gap: 1rem; max-width: 900px; }
+.indic-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .7rem; }
+.indic-liste li { display: grid; gap: .5rem; }
+.indic-liste li > div:first-child { display: grid; gap: .1rem; }
+.indic-liste span { color: #5b6b78; font-size: .92rem; }
+.indic-barre { height: 12px; border-radius: 999px; background: #e3edf4; overflow: hidden; }
+.indic-barre i { display: block; height: 100%; background: #12304f; border-radius: 999px; }
+.etape-apport { display: grid; gap: .3rem; margin: .2rem 0 .8rem; padding: .7rem .8rem; border-radius: 12px; background: color-mix(in srgb, var(--c) 9%, #fff); border-left: 4px solid var(--c); }
+.etape-apport em { font-style: normal; font-size: .75rem; font-weight: 700; color: var(--c); letter-spacing: .02em; }
+.etape-apport b { font-size: .95rem; color: var(--bleu-fonce); line-height: 1.3; }
+.etape-points { display: grid; gap: .25rem; margin-top: .15rem; }
+.etape-points span { position: relative; padding-left: 1.05rem; font-size: .86rem; color: #3b4854; line-height: 1.3; }
+.etape-points span::before { content: ""; position: absolute; left: 0; top: .42em; width: .5rem; height: .5rem; border-radius: 50%; background: var(--c); }
+.photo-famille { width: 100%; height: auto; aspect-ratio: 45 / 32; object-fit: cover; border-radius: 20px; display: block; box-shadow: 0 10px 28px rgba(20, 50, 80, .18); }
