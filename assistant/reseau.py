@@ -18,7 +18,7 @@ import threading
 import time
 import unicodedata
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # ---------------------------------------------------------------- données fictives
@@ -41,6 +41,7 @@ POINTS = {
     "n3": ("Boutique du marché de Zogbédji (fictive)", "zogbedji", "Boutique partenaire"),
 }
 CAS = ("grossesse", "accouchement", "nouveauNe", "enfant")
+LIBELLE_CAS = {"grossesse": "Femme enceinte", "accouchement": "Accouchement", "nouveauNe": "Nouveau-né", "enfant": "Enfant"}
 POUR_DEMANDE = ("grossesse", "allaitement", "petit", "muac")
 POUR_PRODUIT = ("ado", "grossesse", "allaitement", "petit")
 POINTS_CONTROLE = ("periodes", "hygiene", "prix", "substituts", "bons")
@@ -92,7 +93,22 @@ COMPTES = {
     "centre.kpadape": ("centre", "c2", CENTRES["c2"][0]),
     "centre.zogbedji": ("centre", "c3", CENTRES["c3"][0]),
     "centre.davie": ("centre", "c4", CENTRES["c4"][0]),
+    "district.togo": ("district", "", "Responsable de district (démonstration)"),
 }
+
+# Suivi des enfants par village (FICTIF) : (enfants inscrits, enfants vus ces 30 derniers jours avant les saisies du prototype)
+SUIVI_BASE = {"agbele": (62, 51), "kpadape": (48, 21), "zogbedji": (71, 26), "davie": (95, 36), "tovegan": (27, 9)}
+ETATS_REF = ("envoyee", "recue", "arrivee", "prise", "suivie")
+ETAT_ALERTE_VERS_REF = {"en-route": "envoyee", "arrive": "arrivee", "pris": "prise"}
+ETAT_REF_VERS_ALERTE = {"arrivee": "arrive", "prise": "pris"}
+FINALES = ("prise", "suivie")
+DELAI_RETARD_H = 24
+SUJETS_APPEL = {"vaccination": "Rappel de vaccination", "naissance": "Déclaration de naissance", "rendez-vous": "Rendez-vous de consultation",
+                "nutrition": "Conseil de nutrition", "croissance": "Mesure de croissance"}
+TENTATIVES_MAX = 3
+RE_ID_CLIENT = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+RE_CODE_ENFANT = re.compile(r"^[A-Z0-9-]{3,12}$")
+RE_CODE_FAMILLE = re.compile(r"^FAM-[A-Z0-9]{4}$")
 
 MAX_PAR_COLLECTION = 2000
 ALPHABET_CODE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -191,7 +207,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -208,6 +224,10 @@ class Stock:
                         self.d[k] = v + self.d[k]
                     elif not self.d[k]:
                         self.d[k] = v
+            if not self.d["references"]:
+                self.d["references"], appels = _demo_suivi(self.d["alertes"])
+                if not self.d["appels"]:
+                    self.d["appels"] = appels
 
     def sauver(self):
         if not self.chemin:
@@ -254,7 +274,7 @@ def _demo_depart():
     def i():
         return uuid.uuid4().hex[:10]
     d = maintenant()[:10]
-    return {
+    donnees = {
         "produits": [
             {"id": i(), "pointId": "n2", "nom": "Bouillie enrichie au soja", "pour": "petit", "description": "Pour bébé dès 6 mois, sans sucre ajouté", "prix": "900 FCFA (fictif)", "etat": "attente", "motif": "", "date": maintenant()},
             {"id": i(), "pointId": "n2", "nom": "Serviettes lavables (lot de 3)", "pour": "ado", "description": "Lavables et séchées au soleil", "prix": "1 500 FCFA (fictif)", "etat": "valide", "motif": "", "date": maintenant()},
@@ -277,12 +297,52 @@ def _demo_depart():
             {"id": i(), "centreId": "c2", "cas": "enfant", "niveau": "surveiller", "signes": ["Diarrhée depuis 2 jours"], "depuis": "kpadape", "heure": maintenant(), "etat": "arrive"},
             {"id": i(), "centreId": "c3", "cas": "accouchement", "niveau": "urgent", "signes": ["Contractions rapprochées"], "depuis": "zogbedji", "heure": maintenant(), "etat": "en-route"},
         ],
+        "references": [], "appels": [],
         "questions": [
             {"id": i(), "code": "KM4Q7TXA", "texte": "J'ai mal au ventre à chaque règle, est-ce normal ?", "date": d, "reponse": ""},
             {"id": i(), "code": "RT9W2HPN", "texte": "Mes règles ont du retard de deux semaines. Que faire ?", "date": d, "reponse": "Un retard peut avoir plusieurs causes. Va au centre de santé pour un test, avec une personne de confiance : tu seras bien reçue."},
             {"id": i(), "code": "ZH6C3VDE", "texte": "Où trouver des préservatifs sans que personne ne me connaisse ?", "date": d, "reponse": ""},
         ],
     }
+    donnees["references"], donnees["appels"] = _demo_suivi(donnees["alertes"])
+    return donnees
+
+
+def avant(heures):
+    return (datetime.now(timezone.utc) - timedelta(hours=heures)).isoformat(timespec="seconds")
+
+
+def _ref(village, cas, niveau, centre, origine, parcours, alerte=""):
+    """Une référence : une orientation suivie jusqu'à la prise en charge. `parcours` = [(état, il y a combien d'heures)]. Aucun nom."""
+    hist = [{"etat": e, "heure": avant(h)} for e, h in parcours]
+    return {"id": uuid.uuid4().hex[:10], "village": village, "cas": cas, "niveau": niveau, "centreId": centre, "origine": origine,
+            "etat": parcours[-1][0], "heure": hist[0]["heure"], "historique": hist, "alerteId": alerte, "idClient": ""}
+
+
+def _demo_suivi(alertes):
+    refs = []
+    for a in alertes:
+        refs.append(_ref(a["depuis"], a["cas"], a["niveau"], a["centreId"], "alerte", [(ETAT_ALERTE_VERS_REF[a["etat"]], 1)], a["id"]))
+    refs += [
+        _ref("agbele", "enfant", "surveiller", "c1", "visite", [("envoyee", 30), ("arrivee", 28), ("prise", 27)]),
+        _ref("kpadape", "nouveauNe", "urgent", "c4", "visite", [("envoyee", 52), ("arrivee", 50), ("prise", 48), ("suivie", 10)]),
+        _ref("tovegan", "grossesse", "urgent", "c4", "agent", [("envoyee", 40)]),
+        _ref("zogbedji", "enfant", "surveiller", "c3", "visite", [("envoyee", 26), ("recue", 25)]),
+        _ref("davie", "grossesse", "surveiller", "c4", "agent", [("envoyee", 20), ("arrivee", 18), ("prise", 17)]),
+        _ref("tovegan", "enfant", "urgent", "c2", "visite", [("envoyee", 8), ("arrivee", 6)]),
+        _ref("agbele", "grossesse", "urgent", "c4", "agent", [("envoyee", 76), ("arrivee", 74), ("prise", 72)]),
+        _ref("zogbedji", "enfant", "surveiller", "c3", "visite", [("envoyee", 100), ("arrivee", 96), ("prise", 94)]),
+        _ref("davie", "nouveauNe", "urgent", "c4", "visite", [("envoyee", 124), ("arrivee", 123), ("prise", 122)]),
+        _ref("kpadape", "enfant", "surveiller", "c2", "agent", [("envoyee", 148), ("arrivee", 144), ("prise", 140), ("suivie", 100)]),
+        _ref("tovegan", "enfant", "surveiller", "c2", "visite", [("envoyee", 172), ("arrivee", 166), ("prise", 160)]),
+    ]
+    appels = [
+        {"id": uuid.uuid4().hex[:10], "famille": "FAM-7K2Q", "village": "tovegan", "sujet": "vaccination", "langue": "Kabiyè", "etat": "a-visiter", "tentatives": 3, "heure": avant(30)},
+        {"id": uuid.uuid4().hex[:10], "famille": "FAM-4M9D", "village": "agbele", "sujet": "naissance", "langue": "Éwé", "etat": "en-attente", "tentatives": 0, "heure": avant(2)},
+        {"id": uuid.uuid4().hex[:10], "famille": "FAM-H3XP", "village": "kpadape", "sujet": "rendez-vous", "langue": "Kabiyè", "etat": "en-attente", "tentatives": 1, "heure": avant(5)},
+        {"id": uuid.uuid4().hex[:10], "famille": "FAM-B8RT", "village": "zogbedji", "sujet": "nutrition", "langue": "Mina", "etat": "joint", "tentatives": 1, "heure": avant(9)},
+    ]
+    return refs, appels
 
 
 def court(v, n):
@@ -349,7 +409,11 @@ class Reseau:
                     raise Erreur(404, "Alerte introuvable.")
                 if c.get("etat") not in ("arrive", "pris"):
                     raise Erreur(422, "État attendu : arrive ou pris.")
-                return self.s.modifier("alertes", p[1], etat=c["etat"])
+                x = self.s.modifier("alertes", p[1], etat=c["etat"])
+                r = next((r for r in self.s.d["references"] if r.get("alerteId") == p[1]), None)
+                if r:
+                    self._avancer_reference(r, ETAT_ALERTE_VERS_REF[c["etat"]])
+                return x
         # ---- demandes de nutrition
         if p[:1] == ["demandes"]:
             if m == "POST" and n == 1:
@@ -435,7 +499,230 @@ class Reseau:
                 if not x:
                     raise Erreur(404, "Question introuvable.")
                 return {k: v for k, v in x.items() if k != "code"}
+        # ---- visites des agents (une saisie envoyée deux fois n'est enregistrée qu'une fois)
+        if p[:1] == ["visites"]:
+            if m == "POST" and n == 1:
+                u = self._auth(jeton, "agent")
+                return self._enregistrer_visite(c, u[0])
+            if m == "GET" and n == 1:
+                self._auth(jeton, "agent", "district")
+                return {"visites": self.s.d["visites"][:200]}
+        # ---- références : une orientation suivie jusqu'à la prise en charge
+        if p[:1] == ["references"]:
+            if m == "GET" and n == 1:
+                u = self._auth(jeton, "agent", "district", "centre")
+                liste = [self._vue_reference(r) for r in self.s.d["references"] if u[1] != "centre" or r["centreId"] == u[2]]
+                return {"references": liste}
+            if m == "POST" and n == 1:
+                self._auth(jeton, "agent")
+                return self._reference_manuelle(c)
+            if m == "PATCH" and n == 2:
+                u = self._auth(jeton, "agent", "centre")
+                r = self.s.trouver("references", p[1])
+                if not r or (u[1] == "centre" and r["centreId"] != u[2]):
+                    raise Erreur(404, "Référence introuvable.")
+                etat = c.get("etat")
+                if u[1] == "centre" and etat not in ("recue", "arrivee", "prise"):
+                    raise Erreur(422, "État attendu : recue, arrivee ou prise.")
+                if u[1] == "agent" and etat not in ("suivie", "relance"):
+                    raise Erreur(422, "État attendu : suivie ou relance.")
+                if etat == "relance":
+                    with self.s.verrou:
+                        r["historique"].append({"etat": "relance", "heure": maintenant()})
+                        self.s.sauver()
+                    return self._vue_reference(r)
+                if etat == "suivie" and r["etat"] != "prise":
+                    raise Erreur(422, "Le suivi à la maison vient après la prise en charge.")
+                self._avancer_reference(r, etat)
+                return self._vue_reference(r)
+        # ---- villages et district
+        if m == "GET" and p == ["villages"]:
+            self._auth(jeton, "agent", "district")
+            return {"villages": self._villages()}
+        if m == "GET" and p == ["district"]:
+            self._auth(jeton, "district", "agent")
+            return self._district()
+        # ---- appels vocaux : le service va chercher la famille
+        if p[:1] == ["appels"]:
+            if m == "GET" and n == 1:
+                self._auth(jeton, "agent", "district")
+                return {"appels": [self._vue_appel(a) for a in self.s.d["appels"]]}
+            if m == "POST" and n == 1:
+                self._auth(jeton, "agent")
+                fam = court(c.get("famille"), 12).upper()
+                if not RE_CODE_FAMILLE.match(fam) or c.get("sujet") not in SUJETS_APPEL or c.get("village") not in VILLAGES:
+                    raise Erreur(422, "Code famille (FAM-XXXX), sujet et village attendus. Aucun numéro ni nom n'est gardé.")
+                return self._vue_appel(self.s.ajouter("appels", {"id": uuid.uuid4().hex[:10], "famille": fam, "village": c["village"], "sujet": c["sujet"],
+                                                                 "langue": VILLAGES[c["village"]][3], "etat": "en-attente", "tentatives": 0, "heure": maintenant()}))
+            if m == "POST" and n == 3 and p[2] == "tenter":
+                self._auth(jeton, "agent")
+                a = self.s.trouver("appels", p[1])
+                if not a:
+                    raise Erreur(404, "Appel introuvable.")
+                if a["etat"] != "en-attente":
+                    raise Erreur(422, "Cet appel est déjà traité.")
+                joint = bool(c.get("reponse"))
+                with self.s.verrou:
+                    a["tentatives"] += 1
+                    a["etat"] = "joint" if joint else ("a-visiter" if a["tentatives"] >= TENTATIVES_MAX else "en-attente")
+                    self.s.sauver()
+                return self._vue_appel(a)
         raise Erreur(404, "Introuvable.")
+
+    # ---------------------------------------------------------------- références, villages, appels, visites
+    def _vue_reference(self, r):
+        debut = datetime.fromisoformat(r["historique"][0]["heure"])
+        fin = datetime.fromisoformat(next((h["heure"] for h in r["historique"] if h["etat"] in FINALES), maintenant()))
+        age = max(0.0, (fin - debut).total_seconds() / 3600)
+        v = dict(r)
+        v["ageH"] = round(age, 1)
+        v["retard"] = r["etat"] not in FINALES and age > DELAI_RETARD_H
+        v["priseEnMin"] = round(age * 60) if r["etat"] in FINALES else None
+        return v
+
+    def _avancer_reference(self, r, etat):
+        """Une référence ne recule jamais. Garde aussi l'alerte liée dans le même état."""
+        if etat not in ETATS_REF or ETATS_REF.index(etat) <= ETATS_REF.index(r["etat"]):
+            return r
+        with self.s.verrou:
+            r["etat"] = etat
+            r["historique"].append({"etat": etat, "heure": maintenant()})
+            self.s.sauver()
+        if r.get("alerteId") and etat in ETAT_REF_VERS_ALERTE:
+            self.s.modifier("alertes", r["alerteId"], etat=ETAT_REF_VERS_ALERTE[etat])
+        return r
+
+    def _existant(self, nom, id_client):
+        return next((x for x in self.s.d[nom] if id_client and x.get("idClient") == id_client), None)
+
+    def _nouvelle_reference(self, village, cas, niveau, centre_id, origine, signes, id_client="", alerte_id=""):
+        r = {"id": uuid.uuid4().hex[:10], "village": village, "cas": cas, "niveau": niveau, "centreId": centre_id, "origine": origine,
+             "etat": "envoyee", "heure": maintenant(), "historique": [{"etat": "envoyee", "heure": maintenant()}], "alerteId": alerte_id, "idClient": id_client}
+        return self.s.ajouter("references", r)
+
+    def _reference_manuelle(self, c):
+        idc = court(c.get("idClient"), 64)
+        if not RE_ID_CLIENT.match(idc):
+            raise Erreur(422, "Identifiant d'envoi attendu (8 à 64 caractères).")
+        deja = self._existant("references", idc)
+        if deja:
+            return {"doublon": True, "reference": self._vue_reference(deja)}
+        cas, vil = c.get("cas"), c.get("village")
+        if cas not in CAS or vil not in VILLAGES:
+            raise Erreur(422, "Type de cas et village attendus.")
+        signes = [x for x in (c.get("signes") or []) if isinstance(x, str)] if isinstance(c.get("signes"), list) else []
+        o = orienter(cas, signes, vil)
+        niveau = o["niveau"] if o["niveau"] in ("urgent", "surveiller") else "surveiller"
+        centre = o["centre"] or centre_pour(vil, 1)
+        a = self.s.ajouter("alertes", {"id": uuid.uuid4().hex[:10], "centreId": centre["id"], "cas": cas, "niveau": niveau, "signes": o["signes"], "depuis": vil,
+                                       "heure": maintenant(), "etat": "en-route", "idClient": idc + "-a"})
+        r = self._nouvelle_reference(vil, cas, niveau, centre["id"], "agent", o["signes"], idc, a["id"])
+        return {"doublon": False, "reference": self._vue_reference(r), "alerte": a}
+
+    def _enregistrer_visite(self, c, agent):
+        idc = court(c.get("idClient"), 64)
+        if not RE_ID_CLIENT.match(idc):
+            raise Erreur(422, "Identifiant d'envoi attendu (8 à 64 caractères).")
+        deja = self._existant("visites", idc)
+        if deja:
+            return {"doublon": True, "visite": deja}
+        cas, vil = c.get("cas"), c.get("village")
+        if cas not in CAS or vil not in VILLAGES:
+            raise Erreur(422, "Type de cas et village attendus.")
+        code = court(c.get("code"), 12).upper()
+        if code and not RE_CODE_ENFANT.match(code):
+            raise Erreur(422, "Code enfant invalide (lettres, chiffres, tiret). Aucun nom n'est accepté.")
+        valides = {x[0] for x in SIGNES[cas]}
+        signes = sorted({x for x in (c.get("signes") or []) if x in valides}) if isinstance(c.get("signes"), list) else []
+        v = self.s.ajouter("visites", {"id": uuid.uuid4().hex[:10], "idClient": idc, "village": vil, "cas": cas, "code": code, "signes": signes, "agent": agent, "heure": maintenant()})
+        res = {"doublon": False, "visite": v}
+        if signes:
+            o = orienter(cas, signes, vil)
+            res["orientation"] = {"niveau": o["niveau"], "titre": o["titre"], "centre": o["centre"]}
+            if o["niveau"] in ("urgent", "surveiller") and o["centre"]:
+                a = self.s.ajouter("alertes", {"id": uuid.uuid4().hex[:10], "centreId": o["centre"]["id"], "cas": cas, "niveau": o["niveau"], "signes": o["signes"],
+                                               "depuis": vil, "heure": maintenant(), "etat": "en-route", "idClient": idc + "-a"})
+                r = self._nouvelle_reference(vil, cas, o["niveau"], o["centre"]["id"], "visite", o["signes"], idc, a["id"])
+                res["alerte"] = a
+                res["reference"] = self._vue_reference(r)
+        return res
+
+    def _vue_appel(self, a):
+        v = dict(a)
+        v["libelle"] = SUJETS_APPEL.get(a["sujet"], a["sujet"])
+        v["restantes"] = max(0, TENTATIVES_MAX - a["tentatives"]) if a["etat"] == "en-attente" else 0
+        return v
+
+    def _villages(self):
+        refs = [self._vue_reference(r) for r in self.s.d["references"]]
+        out = []
+        for vid, (nom, _x, _y, langue) in VILLAGES.items():
+            inscrits, vus = SUIVI_BASE.get(vid, (0, 0))
+            vus += len({v["code"] or v["id"] for v in self.s.d["visites"] if v["village"] == vid})
+            vus = min(vus, inscrits)
+            mes = [r for r in refs if r["village"] == vid]
+            ouvertes = [r for r in mes if r["etat"] not in FINALES]
+            retard = [r for r in ouvertes if r["retard"]]
+            appels = [a for a in self.s.d["appels"] if a["village"] == vid and a["etat"] == "a-visiter"]
+            cov = round(100 * vus / inscrits) if inscrits else 0
+            if cov < 40 or retard or appels:
+                prio, raison = "prioritaire", ("Références en retard" if retard else "Familles injoignables" if appels else "Moins de 40 % des enfants vus")
+            elif cov < 60:
+                prio, raison = "renforcer", "Couverture à renforcer"
+            else:
+                prio, raison = "bonne", "En bonne voie"
+            centre = centre_pour(vid, 1)
+            out.append({"id": vid, "nom": nom, "langue": langue, "enfants": inscrits, "vus": vus, "sansVisite": max(0, inscrits - vus), "couverture": cov,
+                        "referencesOuvertes": len(ouvertes), "referencesEnRetard": len(retard), "famillesAVisiter": len(appels),
+                        "priorite": prio, "raison": raison, "centre": centre["nom"] if centre else ""})
+        ordre = {"prioritaire": 0, "renforcer": 1, "bonne": 2}
+        return sorted(out, key=lambda v: (ordre[v["priorite"]], v["couverture"]))
+
+    def _district(self):
+        villages = self._villages()
+        refs = [self._vue_reference(r) for r in self.s.d["references"]]
+        prises = [r for r in refs if r["etat"] in FINALES]
+        delais = sorted(r["priseEnMin"] for r in prises if r["priseEnMin"] is not None)
+        median = delais[len(delais) // 2] if delais else None
+        enfants = sum(v["enfants"] for v in villages)
+        vus = sum(v["vus"] for v in villages)
+        return {
+            "enfants": enfants, "vus": vus, "couverture": round(100 * vus / enfants) if enfants else 0,
+            "references": {"total": len(refs), "envoyees": len([r for r in refs if r["etat"] == "envoyee"]), "recues": len([r for r in refs if r["etat"] == "recue"]),
+                           "arrivees": len([r for r in refs if r["etat"] == "arrivee"]), "prises": len(prises), "enRetard": len([r for r in refs if r["retard"]]),
+                           "taux": round(100 * len(prises) / len(refs)) if refs else 0, "delaiMedianMin": median},
+            "appels": {"enAttente": len([a for a in self.s.d["appels"] if a["etat"] == "en-attente"]), "joints": len([a for a in self.s.d["appels"] if a["etat"] == "joint"]),
+                       "aVisiter": len([a for a in self.s.d["appels"] if a["etat"] == "a-visiter"])},
+            "prioritaires": [v["nom"] for v in villages if v["priorite"] == "prioritaire"],
+            "villages": villages,
+            "tendance": self._tendance(refs),
+            "parCas": [{"cas": k, "libelle": LIBELLE_CAS[k], "total": len([r for r in refs if r["cas"] == k])} for k in CAS],
+            "parCentre": self._par_centre(refs),
+        }
+
+    def _tendance(self, refs):
+        """Sept derniers jours : références envoyées et prises en charge, par jour (UTC)."""
+        auj = datetime.now(timezone.utc).date()
+        jours = [auj - timedelta(days=i) for i in range(6, -1, -1)]
+        def compte(evenements):
+            n = {j: 0 for j in jours}
+            for e in evenements:
+                d = datetime.fromisoformat(e).date()
+                if d in n:
+                    n[d] += 1
+            return n
+        env = compte(r["historique"][0]["heure"] for r in refs)
+        pri = compte(h["heure"] for r in refs for h in r["historique"] if h["etat"] == "prise")
+        return [{"jour": j.isoformat(), "envoyees": env[j], "prises": pri[j]} for j in jours]
+
+    def _par_centre(self, refs):
+        out = []
+        for cid, c in CENTRES.items():
+            mes = [r for r in refs if r["centreId"] == cid]
+            delais = sorted(r["priseEnMin"] for r in mes if r["priseEnMin"] is not None)
+            out.append({"id": cid, "nom": c[0], "total": len(mes), "prises": len([r for r in mes if r["etat"] in FINALES]),
+                        "delaiMedianMin": delais[len(delais) // 2] if delais else None})
+        return out
 
     def _orienter(self, c):
         cas, village = c.get("cas"), c.get("village")
@@ -452,8 +739,16 @@ class Reseau:
         return res
 
     def _creer_alerte(self, c):
+        idc = court(c.get("idClient"), 64)
+        if idc and not RE_ID_CLIENT.match(idc):
+            idc = ""
+        deja = self._existant("alertes", idc)
+        if deja:
+            return {**deja, "doublon": True}
         cid, cas, vil = c.get("centreId"), c.get("cas"), c.get("depuis")
         if cid not in CENTRES or cas not in CAS or vil not in VILLAGES or c.get("niveau") not in ("urgent", "surveiller"):
             raise Erreur(422, "Centre, cas, niveau et village attendus.")
         signes = [court(s, 80) for s in c.get("signes", [])[:8]] if isinstance(c.get("signes"), list) else []
-        return self.s.ajouter("alertes", {"id": uuid.uuid4().hex[:10], "centreId": cid, "cas": cas, "niveau": c["niveau"], "signes": signes, "depuis": vil, "heure": maintenant(), "etat": "en-route"})
+        a = self.s.ajouter("alertes", {"id": uuid.uuid4().hex[:10], "centreId": cid, "cas": cas, "niveau": c["niveau"], "signes": signes, "depuis": vil, "heure": maintenant(), "etat": "en-route", "idClient": idc})
+        self._nouvelle_reference(vil, cas, c["niveau"], cid, "alerte", signes, "", a["id"])
+        return a

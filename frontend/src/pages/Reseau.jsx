@@ -4,6 +4,7 @@ import Bandeau from '../components/Bandeau.jsx'
 import Shell from '../components/Shell.jsx'
 import { CAS, CENTRES, POINTS_CONTROLE, POINTS_NUTRITION, POUR, POUR_BOUTIQUE, VILLAGES } from '../lib/parcours.js'
 import { MDP_DEMO } from '../lib/config.js'
+import { Appels, District, References, Villages } from './Suivi.jsx'
 import { ecrireSessionReseau, lireSessionReseau, reseau } from '../lib/reseauClient.js'
 
 const nomVillage = (id) => VILLAGES.find((v) => v.id === id)?.nom ?? id
@@ -12,7 +13,7 @@ const nomPoint = (id) => POINTS_NUTRITION.find((p) => p.id === id)?.nom ?? id
 const ETATS_DEMANDE = { demande: 'Demande reçue', visite: 'Visite prévue', suivi: 'Suivi en cours' }
 const ETATS_PRODUIT = { attente: 'En attente de validation', valide: 'Validé : conseillé aux familles', refuse: 'Refusé' }
 const ETATS_ALERTE = { 'en-route': 'En route', arrive: 'Arrivée', pris: 'Prise en charge' }
-const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé']]
+const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé'], ['district.togo', 'Responsable de district']]
 
 /** Charge une liste du service et la rafraîchit toutes les 8 secondes : un cas urgent apparaît sans recharger la page. */
 function useListe(chemin, cle, jeton, delai = 8000) {
@@ -253,10 +254,11 @@ function Alertes({ s }) {
 
 const MENUS = {
   boutique: { teinte: 'vert', groupes: [{ titre: 'Ma boutique', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/produits', nom: 'Mes produits', icone: 'boite' }, { to: '/reseau/demandes', nom: 'Demandes reçues', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôles', icone: 'bouclier' }] }] },
-  agent: { teinte: 'cyan', groupes: [{ titre: 'Réseau nutrition', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/produits', nom: 'Produits à valider', icone: 'coche' }, { to: '/reseau/demandes', nom: 'Demandes et visites', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôler une boutique', icone: 'bouclier' }, { to: '/reseau/questions', nom: 'Questions anonymes', icone: 'bulle' }] }] },
-  centre: { teinte: 'orange', groupes: [{ titre: 'Centre de santé', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/alertes', nom: 'Cas qui arrivent', icone: 'horloge' }] }] },
+  agent: { teinte: 'cyan', groupes: [{ titre: 'Réseau nutrition', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/produits', nom: 'Produits à valider', icone: 'coche' }, { to: '/reseau/demandes', nom: 'Demandes et visites', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôler une boutique', icone: 'bouclier' }, { to: '/reseau/questions', nom: 'Questions anonymes', icone: 'bulle' }] }, { titre: 'Suivi des enfants', liens: [{ to: '/reseau/villages', nom: 'Villages', icone: 'accueil' }, { to: '/reseau/references', nom: 'Références', icone: 'liste' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }] }] },
+  district: { teinte: 'cyan', groupes: [{ titre: 'District', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/villages', nom: 'Villages', icone: 'liste' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }] }] },
+  centre: { teinte: 'orange', groupes: [{ titre: 'Centre de santé', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/alertes', nom: 'Cas qui arrivent', icone: 'horloge' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }] }] },
 }
-const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé' }
+const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé', district: 'Responsable de district' }
 
 export default function Reseau() {
   const [s, setS] = useState(lireSessionReseau)
@@ -268,13 +270,16 @@ export default function Reseau() {
     <Shell titre={TITRES[s.role]} teinte={m.teinte} groupes={m.groupes} nom={s.nom} sous={TITRES[s.role]} utilisateur={s.identifiant}>
       <p style={{ textAlign: 'right', margin: 0 }}><button type="button" className="bouton secondaire petit-bouton" onClick={sortir}>Se déconnecter</button></p>
       <Routes>
-        <Route index element={<Tableau s={s} />} />
+        <Route index element={s.role === 'district' ? <District s={s} /> : <Tableau s={s} />} />
+        <Route path="villages" element={s.role === 'centre' || s.role === 'boutique' ? <Tableau s={s} /> : <Villages s={s} />} />
+        <Route path="references" element={s.role === 'boutique' ? <Tableau s={s} /> : <References s={s} />} />
+        <Route path="appels" element={s.role === 'centre' || s.role === 'boutique' ? <Tableau s={s} /> : <Appels s={s} />} />
         <Route path="produits" element={s.role === 'centre' ? <Tableau s={s} /> : <Produits s={s} />} />
         <Route path="demandes" element={s.role === 'centre' ? <Tableau s={s} /> : <Demandes s={s} />} />
         <Route path="controles" element={s.role === 'centre' ? <Tableau s={s} /> : <Controles s={s} />} />
         <Route path="questions" element={s.role === 'agent' ? <Questions s={s} /> : <Tableau s={s} />} />
         <Route path="alertes" element={s.role === 'centre' ? <Alertes s={s} /> : <Tableau s={s} />} />
-        <Route path="*" element={<Tableau s={s} />} />
+        <Route path="*" element={s.role === 'district' ? <District s={s} /> : <Tableau s={s} />} />
       </Routes>
     </Shell>
   )

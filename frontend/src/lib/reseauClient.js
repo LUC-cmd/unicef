@@ -45,8 +45,16 @@ const lireSortie = () => { try { return JSON.parse(localStorage.getItem(CLE_SORT
 const ecrireSortie = (l) => { try { localStorage.setItem(CLE_SORTIE, JSON.stringify(l.slice(-200))) } catch { /* plein */ } }
 export const nombreEnAttente = () => lireSortie().length
 
+/** Identifiant d'envoi : le service ignore un second envoi portant le même identifiant (pas de doublon après une coupure). */
+export function idEnvoi() {
+  const a = new Uint32Array(4); crypto.getRandomValues(a)
+  return 'e' + Array.from(a, (x) => x.toString(36)).join('')
+}
+const AVEC_ID = ['alertes', 'visites', 'references']
+
 export async function envoyerOuGarder(chemin, corps) {
-  try { return { ok: true, donnees: await reseau.post(chemin, corps) } } catch (e) {
+  if (AVEC_ID.includes(chemin) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
+  try { return { ok: true, donnees: await reseau.post(chemin, corps, lireSessionReseau()?.jeton) } } catch (e) {
     if (e.statut && e.statut !== 0) return { ok: false, refuse: true, erreur: e.message }
     ecrireSortie([...lireSortie(), { chemin, corps, date: Date.now() }])
     return { ok: false, gardee: true }
@@ -56,7 +64,7 @@ export async function synchroniser() {
   const restes = []
   let envoyes = 0
   for (const x of lireSortie()) {
-    try { await reseau.post(x.chemin, x.corps); envoyes++ } catch (e) { if (!e.statut) restes.push(x) /* les refus définitifs sont abandonnés */ }
+    try { await reseau.post(x.chemin, x.corps, lireSessionReseau()?.jeton); envoyes++ } catch (e) { if (!e.statut) restes.push(x) /* les refus définitifs sont abandonnés */ }
   }
   ecrireSortie(restes)
   return envoyes

@@ -157,3 +157,82 @@ def test_graine_demo_remplit_les_tableaux():
     etats = {x["etat"] for x in s.d["produits"]}
     assert {"attente", "valide", "refuse"} <= etats
     assert not Stock(None).d["alertes"]  # sans graine, rien n'est ajouté
+
+
+class SuiviTest(unittest.TestCase):
+    def setUp(self):
+        self.r = neuf()
+        self.ag = connecter(self.r, "agent.nutrition")
+        self.di = connecter(self.r, "district.togo")
+        self.c1 = connecter(self.r, "centre.agbele")
+
+    def test_visite_idempotente_et_alerte(self):
+        corps = {"idClient": "visite-0001-abcd", "village": "agbele", "cas": "enfant", "code": "AG-0042", "signes": ["convulse4"]}
+        code, a = self.r.traiter("POST", "visites", corps, self.ag)
+        self.assertEqual(code, 200)
+        self.assertFalse(a["doublon"])
+        self.assertIn("alerte", a)
+        n_alertes = len(self.r.s.d["alertes"])
+        code, b = self.r.traiter("POST", "visites", corps, self.ag)
+        self.assertTrue(b["doublon"])
+        self.assertEqual(len(self.r.s.d["alertes"]), n_alertes)
+
+    def test_visite_refuse_un_nom(self):
+        code, _ = self.r.traiter("POST", "visites", {"idClient": "visite-0002-abcd", "village": "agbele", "cas": "enfant", "code": "Kofi Mensah"}, self.ag)
+        self.assertEqual(code, 422)
+
+    def test_alerte_idclient_sans_doublon(self):
+        corps = {"idClient": "alerte-0001-abcd", "centreId": "c1", "cas": "enfant", "niveau": "urgent", "signes": ["toux"], "depuis": "agbele"}
+        self.r.traiter("POST", "alertes", corps)
+        n = len(self.r.s.d["alertes"])
+        _, b = self.r.traiter("POST", "alertes", corps)
+        self.assertTrue(b["doublon"])
+        self.assertEqual(len(self.r.s.d["alertes"]), n)
+
+    def test_reference_suit_l_alerte(self):
+        _, o = self.r.traiter("POST", "visites", {"idClient": "visite-0003-abcd", "village": "davie", "cas": "grossesse", "signes": ["saigne"]}, self.ag)
+        ref, al = o["reference"], o["alerte"]
+        cid = al["centreId"]
+        ident = {"c1": "centre.agbele", "c2": "centre.kpadape", "c3": "centre.zogbedji", "c4": "centre.davie"}[cid]
+        jc = connecter(self.r, ident)
+        self.assertEqual(self.r.traiter("PATCH", f"alertes/{al['id']}", {"etat": "arrive"}, jc)[0], 200)
+        self.assertEqual(self.r.traiter("PATCH", f"alertes/{al['id']}", {"etat": "pris"}, jc)[0], 200)
+        _, liste = self.r.traiter("GET", "references", None, self.ag)
+        x = next(r for r in liste["references"] if r["id"] == ref["id"])
+        self.assertEqual(x["etat"], "prise")
+        self.assertEqual([h["etat"] for h in x["historique"]], ["envoyee", "arrivee", "prise"])
+
+    def test_reference_ne_recule_pas(self):
+        _, o = self.r.traiter("POST", "references", {"idClient": "ref-000001-abcd", "village": "tovegan", "cas": "enfant", "signes": ["toux"]}, self.ag)
+        rid = o["reference"]["id"]
+        code, _ = self.r.traiter("PATCH", f"references/{rid}", {"etat": "suivie"}, self.ag)
+        self.assertEqual(code, 422)  # pas encore prise en charge
+
+    def test_villages_et_district(self):
+        _, v = self.r.traiter("GET", "villages", None, self.di)
+        self.assertEqual(len(v["villages"]), 5)
+        self.assertEqual(v["villages"][0]["priorite"], "prioritaire")
+        _, d = self.r.traiter("GET", "district", None, self.di)
+        self.assertEqual(d["enfants"], sum(x["enfants"] for x in v["villages"]))
+        self.assertGreater(d["references"]["total"], 0)
+
+    def test_appels_trois_tentatives_puis_visite(self):
+        _, a = self.r.traiter("POST", "appels", {"famille": "fam-9abc", "sujet": "vaccination", "village": "kpadape"}, self.ag)
+        self.assertEqual(a["etat"], "en-attente")
+        for _ in range(3):
+            _, a = self.r.traiter("POST", f"appels/{a['id']}/tenter", {"reponse": False}, self.ag)
+        self.assertEqual(a["etat"], "a-visiter")
+
+    def test_droits(self):
+        self.assertEqual(self.r.traiter("GET", "district", None)[0], 401)
+        self.assertEqual(self.r.traiter("GET", "district", None, self.c1)[0], 403)
+
+
+class GraphiquesTest(unittest.TestCase):
+    def test_district_series(self):
+        r = neuf()
+        _, d = r.traiter("GET", "district", None, connecter(r, "district.togo"))
+        self.assertEqual(len(d["tendance"]), 7)
+        self.assertGreater(sum(x["prises"] for x in d["tendance"]), 0)
+        self.assertEqual(sum(x["total"] for x in d["parCas"]), d["references"]["total"])
+        self.assertEqual(sum(x["total"] for x in d["parCentre"]), d["references"]["total"])
