@@ -88,7 +88,7 @@ code { background: var(--ciel); color: var(--nuit); padding: 0.05rem 0.35rem; bo
 .session .qui { text-align: right; line-height: 1.2; }
 .session .qui b { display: block; font-size: 0.9rem; color: var(--nuit); }
 .session .qui span { font-size: 0.78rem; color: var(--texte-doux); }
-@media (max-width: 1339px) {
+@media (max-width: 1319px) {
   .menu-bouton { display: inline-flex; align-items: center; gap: 0.5rem; }
   .entete .interieur { flex-wrap: wrap; padding-top: 0.6rem; padding-bottom: 0.6rem; gap: 0.5rem; min-height: 0; }
   .nav-principale { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0.2rem; padding: 0.4rem 0 0.4rem; justify-content: flex-start; }
@@ -716,6 +716,7 @@ i.case-papier { display: inline-block; width: 2.2rem; height: 2.2rem; }
 .nav-principale .menu-liste a { color: var(--texte); text-shadow: none; font-weight: 500; padding: 0.6rem 0.8rem; white-space: normal; border-radius: 8px; }
 .nav-principale .menu-liste a:hover { background: var(--ciel); color: var(--bleu-fonce); }
 .etat-reseau-entete { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; color: #fff; background: rgba(255, 255, 255, 0.2); border-radius: 999px; padding: 0.25rem 0.7rem; margin-left: 0.4rem; white-space: nowrap; }
+.etat-reseau-entete small { font-size: .66rem; font-weight: 600; opacity: .9; letter-spacing: .01em; }
 .etat-reseau-entete i { width: 9px; height: 9px; border-radius: 50%; background: #80bd41; }
 .etat-reseau-entete.hors i { background: var(--or); }
 @media (max-width: 900px) { .menu-liste { position: static; box-shadow: none; background: rgba(255, 255, 255, 0.95); margin-top: 0.3rem; } .menu-deroulant { width: 100%; } }
@@ -2505,3 +2506,23 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 .b3d-actif .b3d-bac { animation: bacOuvre 1s ease 3; box-shadow: 0 0 18px 4px rgba(255, 194, 14, .85); }
 .b3d-actif .b3d-ecran { animation: bacOuvre 1.2s ease 2; }
 @keyframes bacOuvre { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.9); } }
+
+/* Innovations */
+.innov-bloc { animation: beEntree .35s ease both; }
+.innov-liste, .innov-chaine { list-style: none; padding: 0; margin: .6rem 0; display: grid; gap: .6rem; }
+.innov-liste li, .innov-chaine li { display: flex; gap: .9rem; align-items: center; justify-content: space-between; border: 1px solid #d6e0e8; border-radius: 12px; padding: .7rem .9rem; background: #fff; }
+.innov-liste p, .innov-chaine p { margin: .15rem 0 0; color: #3d4b57; }
+.innov-chaine li { animation: beEntree .4s ease both; animation-delay: calc(var(--k) * 70ms); justify-content: flex-start; }
+.innov-chaine li > div { flex: 1; }
+.innov-chaine li > span { flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: #1b4f7a; color: #fff; display: grid; place-items: center; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .innov-bloc, .innov-chaine li { animation: none; } }
+.nav-principale .lien-proto { font-weight: 700; }
+
+/* Barre du haut : tout reste visible sur un ordinateur portable */
+@media (min-width: 1320px) and (max-width: 1599px) {
+  .nav-principale { gap: 0; }
+  .nav-principale a, .nav-principale summary { font-size: .86rem; padding-left: .5rem; padding-right: .5rem; white-space: nowrap; }
+  .nav-principale a.lien-logiciel { padding: .3rem .7rem; margin-left: .2rem; }
+  .entete .logo small { display: none; }
+  .nav-liens { gap: 0; flex-wrap: nowrap; }
+}

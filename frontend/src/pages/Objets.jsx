@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
-import Borne3D from '../components/Borne3D.jsx'
+import Borne3D, { Carte3D } from '../components/Borne3D.jsx'
 import { Bracelet3D, Ceinture3D } from '../components/Objets3D.jsx'
 
 const OBJETS = {
@@ -16,6 +16,18 @@ const OBJETS = {
       'Fabriquer le coffre en métal ou en bois traité, avec une trappe verrouillée, à l’abri de la pluie et de la poussière.',
       'Installer une première borne dans un village, avec un agent de santé qui la recharge et la surveille.',
       'Faire valider les produits, les seuils et les règles par le ministère de la Santé, puis produire une petite série avec des artisans locaux.',
+    ],
+  },
+  carte: {
+    nom: 'Carte à gratter', vue: () => <Carte3D code="48271639" quota="4 serviettes, 4 préservatifs, 1 bon : exemple fictif" />, lien: ['/borne', 'Essayer avec la borne'],
+    sert: 'Donner à chaque jeune fille un numéro rien qu’à elle, avec un droit de retrait limité par produit. Rien sur la carte n’indique la santé : elle ressemble à une carte de recharge.',
+    qui: 'Jeunes filles, remise par une agente de santé, une école ou un village, sans noter de nom.',
+    etapes: [
+      'Concevoir une carte neutre, avec une zone à gratter qui cache le numéro et un QR pour la borne.',
+      'Générer des lots de numéros avec chiffre de contrôle, et charger leur empreinte dans la borne, jamais les numéros.',
+      'Décider avec le ministère et les centres quel droit chaque carte donne, selon l’âge.',
+      'Imprimer par petites séries chez un imprimeur local, avec un suivi des lots par l’agent.',
+      'Tester la remise et la lecture avec des jeunes filles et des agentes, puis corriger.',
     ],
   },
   muac: {
@@ -61,7 +73,7 @@ export default function Objets() {
   const o = OBJETS[id]
   return (
     <>
-      <Bandeau surtitre="Concepts à fabriquer" titre="Les objets Fil d’Or">Ce sont des concepts : aucun n’existe encore. Chacun est montré en 3D, avec la façon de le fabriquer pas à pas.</Bandeau>
+      <Bandeau surtitre="Concepts à fabriquer · borne, carte, ruban, bracelet, ceinture" titre="Prototypes 3D">Ce sont des concepts : aucun n’existe encore. Chacun est montré en 3D, avec la façon de le fabriquer pas à pas.</Bandeau>
       <main className="page ado">
         <div className="borne-onglets" role="group" aria-label="Objets">
           {Object.entries(OBJETS).map(([k, v]) => <button key={k} type="button" className={id === k ? 'actif' : ''} aria-pressed={id === k} onClick={() => setId(k)}>{v.nom}</button>)}

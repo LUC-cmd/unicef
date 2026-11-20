@@ -53,6 +53,7 @@ export default function Impact() {
         Ce que Fil d'Or apporte, étape par étape, et ce qu'on peut l'essayer dès maintenant.
       </Bandeau>
       <main className="page impact">
+        <p><Link className="bouton" to="/innovations">Voir la chaîne de vie : de la jeune fille à l’enfant</Link> <Link className="bouton secondaire" to="/prototypes">Prototypes 3D</Link></p>
         <section aria-labelledby="t-prix">
           <h2 id="t-prix">Trois questions du jury, trois réponses</h2>
           <div className="impact-onglets" role="tablist" aria-label="Les trois prix">

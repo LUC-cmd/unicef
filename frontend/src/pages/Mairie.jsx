@@ -159,7 +159,7 @@ export default function Mairie({ vue = 'declarations' }) {
           Où en sont les déclarations de naissance de votre commune, et les actes que les familles doivent encore retirer.
         </Bandeau>
         {erreur && <p className="erreur" role="alert">{erreur}</p>}
-        {info && <p className="succes" role="status">{info}</p>}
+        {info && <p className="succes" role="status">{info}{/valid/i.test(info) && <> <Link to="/mairie/nationalite">Étape suivante : le dossier de nationalité</Link></>}</p>}
         {!pret ? <Squelette /> : (<>
         <div className="grille-tuiles">
           <TuileChiffre libelle="À traiter" valeur={comptes('ENVOYEE')} serie={recues} aide={comptes('ENVOYEE') ? 'Dossiers qui attendent votre décision' : 'Tout est à jour'} couleur={COULEURS.orange} />
@@ -261,7 +261,7 @@ export default function Mairie({ vue = 'declarations' }) {
         ))}
       </div>
 
-      {info && <p className="succes" role="status">{info}</p>}
+      {info && <p className="succes" role="status">{info}{/valid/i.test(info) && <> <Link to="/mairie/nationalite">Étape suivante : le dossier de nationalité</Link></>}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
       <div className="filtres-comptes" role="group" aria-label="Filtrer selon l'expéditeur">

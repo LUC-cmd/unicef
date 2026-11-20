@@ -43,6 +43,7 @@ const Solutions = lazy(() => import('./pages/Solutions.jsx'))
 const Muac = lazy(() => import('./pages/Muac.jsx'))
 const Sms = lazy(() => import('./pages/Sms.jsx'))
 const Borne = lazy(() => import('./pages/Borne.jsx'))
+const Innovations = lazy(() => import('./pages/Innovations.jsx'))
 const EspaceFille = lazy(() => import('./pages/EspaceFille.jsx'))
 const EspaceAdolescente = lazy(() => import('./pages/EspaceAdolescente.jsx'))
 const SignesNouveauNe = lazy(() => import('./pages/SignesDanger.jsx').then((m) => ({ default: m.SignesNouveauNe })))
@@ -189,7 +190,7 @@ export default function App() {
                 <>
                   {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
                   <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                    <i aria-hidden="true" /><span className="sr-seul">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
+                    <i aria-hidden="true" /><small>{enLigne ? 'en ligne' : 'hors ligne'}</small>
                   </span>
                 </>
               )}
@@ -204,6 +205,7 @@ export default function App() {
                 <NavLink to="/" end className="lien-accueil">Accueil</NavLink>
                 <NavLink to="/parcours">Un enfant, un parcours</NavLink>
                 <NavLink to="/impact">Innovation et impact</NavLink>
+                <NavLink to="/innovations">Chaîne de vie</NavLink>
                 <NavLink to="/projet">Le projet</NavLink>
                 <details className="menu-deroulant">
                   <summary>Essayer</summary>
@@ -222,7 +224,7 @@ export default function App() {
                     <Link to="/sms"><b>SMS et questions anonymes</b><small>Téléphone simple, sans internet</small></Link>
                     <Link to="/adolescents"><b>Repères pour les adolescentes</b><small>Informations et orientation</small></Link>
                     <p className="menu-groupe">Innovation</p>
-                    <Link to="/objets"><b>Objets en 3D</b><small>Borne, ruban, bracelet, ceinture, fabrication</small></Link>
+                    <Link to="/prototypes"><b>Prototypes 3D</b><small>Borne, carte, ruban, bracelet, ceinture, fabrication</small></Link>
                     <Link to="/muac"><b>Ruban MUAC avec QR</b><small>Mesurer le bras de l'enfant</small></Link>
                     <Link to="/solutions"><b>Problèmes et solutions</b><small>De la jeune fille à l'enfant de 5 ans</small></Link>
                     <p className="menu-groupe">Espaces professionnels</p>
@@ -242,11 +244,12 @@ export default function App() {
                     <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
                   </div>
                 </details>
+                <NavLink to="/prototypes" className="lien-proto">Prototypes 3D</NavLink>
                 <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel</NavLink>
               </div>
               <div className="nav-actions">
                 {!session && !dansFamille && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                  <i aria-hidden="true" /><span className="sr-seul">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
+                  <i aria-hidden="true" /><small>{enLigne ? 'en ligne' : 'hors ligne'}</small>
                 </span>}
               </div>
             </nav>
@@ -312,6 +315,8 @@ export default function App() {
           <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/muac" element={<Muac />} />
           <Route path="/objets" element={<Objets />} />
+          <Route path="/prototypes" element={<Objets />} />
+          <Route path="/innovations" element={<Innovations />} />
           <Route path="/reseau/*" element={<Reseau />} />
           <Route path="/fille/*" element={<EspaceFille />} />
           <Route path="/solutions" element={<Solutions />} />
