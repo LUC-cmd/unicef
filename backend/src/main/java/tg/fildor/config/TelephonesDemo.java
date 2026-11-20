@@ -31,6 +31,15 @@ public class TelephonesDemo implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        // Ce réalignement est un confort pour la démonstration : il ne doit JAMAIS empêcher le serveur de démarrer.
+        try {
+            realigner();
+        } catch (RuntimeException e) {
+            LOG.warn("Réalignement des numéros de démonstration ignoré : {}", e.getMessage());
+        }
+    }
+
+    private void realigner() {
         if (!props.comptesDemo()) {
             return;
         }
@@ -38,15 +47,24 @@ public class TelephonesDemo implements ApplicationRunner {
         for (int i = 1; i <= 45; i++) {
             String code = String.format("F-%04d", i);
             String numero = String.format("9000%04d", i);
-            maj += jdbc.sql("UPDATE famille SET telephone_hash = :h WHERE code_famille = :c AND a_telephone = TRUE "
-                    + "AND telephone_hash IS DISTINCT FROM :h")
-                    .param("h", hasher.hash(numero)).param("c", code).update();
+            try {
+                maj += jdbc.sql("UPDATE famille SET telephone_hash = :h WHERE code_famille = :c AND a_telephone = TRUE "
+                        + "AND telephone_hash IS DISTINCT FROM :h "
+                        + "AND NOT EXISTS (SELECT 1 FROM famille f2 WHERE f2.telephone_hash = :h AND f2.code_famille <> :c)")
+                        .param("h", hasher.hash(numero)).param("c", code).update();
+            } catch (RuntimeException e) {
+                LOG.warn("Numéro de démonstration {} non réaligné : {}", code, e.getMessage());
+            }
         }
         String[][] proches = {{"F-0001", "91000001"}, {"F-0002", "91000002"}, {"F-0046", "91000046"}};
         for (String[] p : proches) {
-            maj += jdbc.sql("UPDATE contact_famille SET telephone_hash = :h WHERE famille_id = "
-                    + "(SELECT id FROM famille WHERE code_famille = :c) AND telephone_hash IS DISTINCT FROM :h")
-                    .param("h", hasher.hash(p[1])).param("c", p[0]).update();
+            try {
+                maj += jdbc.sql("UPDATE contact_famille SET telephone_hash = :h WHERE famille_id = "
+                        + "(SELECT id FROM famille WHERE code_famille = :c) AND telephone_hash IS DISTINCT FROM :h")
+                        .param("h", hasher.hash(p[1])).param("c", p[0]).update();
+            } catch (RuntimeException e) {
+                LOG.warn("Contact de démonstration {} non réaligné : {}", p[0], e.getMessage());
+            }
         }
         if (maj > 0) {
             LOG.info("{} numéro(s) de démonstration ré-alignés sur le poivre en vigueur.", maj);
