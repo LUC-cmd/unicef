@@ -5,6 +5,8 @@ import { LIBELLE_REGION, regionDeploiement } from '../lib/region.js'
 const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTURE: '/structure', ADMIN: '/admin' }
 import ParcoursCartes from '../components/ParcoursCartes.jsx'
 import FilInteractif from '../components/FilInteractif.jsx'
+import Borne3D from '../components/Borne3D.jsx'
+import { Bracelet3D, Ceinture3D } from '../components/Objets3D.jsx'
 import PhotoFamille from '../components/PhotoFamille.jsx'
 import { IconeAccord, IconeBouclier, IconeZone } from '../components/Icones.jsx'
 
@@ -40,7 +42,7 @@ const PLAN = [
     ['/parcours', 'Un enfant, un parcours', 'Les étapes, de la grossesse à 5 ans'],
     ['/impact', 'Innovation et impact', 'Trois prix, six étapes, ce qui existe vraiment'],
     ['/fonctionnement', 'Fonctionnement', 'Comment circulent les informations'],
-    ['/hors-reseau', 'Logiciel hors réseau', 'L’application bureau et la clé USB'],
+    ['/hors-reseau', 'Logiciel', 'L’application bureau, hors réseau, et la clé USB'],
   ]],
   ['Essayer', [
     ['/visite', 'Visite guidée', 'La plateforme entière en 5 minutes'],
@@ -108,6 +110,19 @@ export default function Accueil() {
           </ol>
         </div>
         <div style={{ height: '3.5rem' }} />
+      </section>
+
+
+      <section className="section blanc objets-accueil" aria-labelledby="titre-objets">
+        <div className="interieur">
+          <h2 id="titre-objets" className="titre-section">Les objets Fil d’Or, en 3D</h2>
+          <p className="chapeau-section">Trois objets à fabriquer, qui relient la maison, le village et le centre de santé. Fais-les tourner au doigt.</p>
+          <div className="objets-accueil-grille">
+            <article><Borne3D auto /><h3>La borne</h3><p>Une jeune fille tape son code ou montre son QR : les produits de sa carte sortent, avec des conseils.</p><Link className="bouton secondaire" to="/borne">Essayer la borne</Link></article>
+            <article><Bracelet3D auto /><h3>Le bracelet</h3><p>Il porte le QR du carnet du nouveau-né.</p><Link className="bouton secondaire" to="/objets">Voir comment le fabriquer</Link></article>
+            <article><Ceinture3D auto /><h3>La ceinture</h3><p>Elle accompagne la grossesse : plan d’accouchement et niveau de risque pour le personnel de santé.</p><Link className="bouton secondaire" to="/maternite">Un accouchement plus sûr</Link></article>
+          </div>
+        </div>
       </section>
 
       <FilInteractif />

@@ -2405,3 +2405,103 @@ html, body, .coque { max-width: 100%; overflow-x: clip; }
 .reseau-tuile.alerte { border-color: #b3261e; background: #fdecea; }
 .reseau-tuile.alerte b { color: #b3261e; }
 li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; background: #fdf3f1; }
+
+/* Cartes : un bord uniforme et discret, sans barre de couleur sur le côté ni en haut */
+.tuile, .famille, .famille-tuiles div, .frise-etapes li, .etape-carte, .creche-carte, .guide-role, .resultat-acte, .telechargement, .entree-locale,
+.carte.village, .carte-etape, .fam-boite li, .carte-creche, .carte-installer { border: 1px solid var(--bord); box-shadow: 0 1px 3px rgba(20, 50, 80, .08); }
+.carte.attention, .carte.urgence-info { border: 1px solid #ecd08a; }
+.chiffre, .principe, .garantie { border-left: 0; border-top: 0; }
+.chiffre { padding-left: 0; }
+.menu-groupe { margin: .5rem .8rem .1rem; font-size: .74rem; font-weight: 800; letter-spacing: .02em; color: #5c6c7b; }
+.nav-principale .menu-liste { max-height: min(78vh, 640px); overflow-y: auto; }
+
+/* Essai de la borne */
+.be { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: 1.2rem; align-items: start; }
+@media (max-width: 860px) { .be { grid-template-columns: 1fr; } }
+.be-ecran { background: #0f2f4a; color: #fff; border-radius: 18px; padding: 1.4rem; min-height: 420px; box-shadow: 0 10px 28px rgba(15, 47, 74, .3); border: 6px solid #cfd8e0; }
+.be-ecran h2 { margin: .2rem 0 .5rem; color: #fff; font-size: 1.5rem; }
+.be-ecran h3 { color: #ffe29a; margin: 1rem 0 .3rem; }
+.be-pas { display: flex; gap: .35rem; margin-bottom: .8rem; }
+.be-pas i { flex: 1; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); }
+.be-pas i.on { background: #ffc20e; }
+.be-vue { animation: beEntree .35s ease both; display: grid; gap: .7rem; }
+@keyframes beEntree { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.be-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; }
+.be-bouton { background: rgba(255, 255, 255, .1); color: #fff; border: 2px solid rgba(255, 255, 255, .35); border-radius: 12px; padding: .8rem; font: inherit; font-weight: 700; cursor: pointer; text-align: left; display: grid; gap: .15rem; min-height: 48px; }
+.be-bouton small { font-weight: 400; color: #cfe8f5; }
+.be-bouton.actif { background: #ffc20e; color: #1b2733; border-color: #ffc20e; }
+.be-bouton.actif small { color: #3a3a2a; }
+.be-suite { background: #ffc20e; color: #1b2733; border: 0; border-radius: 12px; padding: .8rem 1.3rem; font: inherit; font-weight: 800; cursor: pointer; justify-self: start; min-height: 46px; }
+.be-suite:disabled { opacity: .4; cursor: not-allowed; }
+.be-sec { background: transparent; color: inherit; border: 2px solid currentColor; border-radius: 10px; padding: .45rem .8rem; font: inherit; font-weight: 700; cursor: pointer; min-height: 40px; }
+.be-sec:disabled { opacity: .45; cursor: not-allowed; }
+.be-ecran .be-sec { color: #fff; }
+.be-form { display: grid; gap: .7rem; }
+.be-num { font-size: 1.9rem; letter-spacing: .25em; text-align: center; padding: .6rem; border-radius: 12px; border: 3px solid #ffc20e; background: #fff; color: #16325c; width: 100%; max-width: 20rem; }
+.be-ligne { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .4rem; }
+.be-note { color: #b9e8ff; font-size: .9rem; margin: 0; }
+.be-douce { background: rgba(255, 255, 255, .1); border-radius: 12px; padding: .7rem .9rem; margin: 0; }
+.be-erreur { background: #fde4e1; color: #8b1a10; border-radius: 10px; padding: .6rem .8rem; margin: 0; font-weight: 700; }
+.be-bac { position: relative; min-height: 120px; background: linear-gradient(#0a2236, #123a58); border-radius: 12px; border: 3px solid #5c7b93; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: .4rem; padding: .8rem .6rem 1.6rem; overflow: hidden; }
+.be-bac em { position: absolute; bottom: .3rem; left: 0; right: 0; text-align: center; font-size: .75rem; font-style: normal; color: #9fc3d8; }
+.be-objet { width: 40px; height: 52px; border-radius: 8px; display: grid; place-items: center; font-weight: 800; color: #fff; box-shadow: 0 3px 6px rgba(0, 0, 0, .35); animation: beChute .8s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: var(--d); }
+.o-preservatifs { background: #c0392b; } .o-serviettes { background: #5a8f3c; } .o-antalgique { background: #2f7fb8; } .o-bon { background: #c58a00; }
+@keyframes beChute { 0% { transform: translateY(-160px) rotate(-18deg); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+.be-liste { margin: 0; padding-left: 1.1rem; }
+.be-conseil { background: rgba(255, 255, 255, .08); border-radius: 10px; padding: .5rem .8rem; }
+.be-conseil ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+.be-cartes { background: #fff; border: 1px solid var(--bord); border-radius: 14px; padding: 1rem; display: grid; gap: .8rem; }
+.be-cartes h3 { margin: 0; }
+.be-carte { display: flex; justify-content: space-between; gap: .8rem; align-items: center; border: 1px solid var(--bord); border-radius: 12px; padding: .7rem; }
+.be-carte .be-sec { color: var(--bleu-fonce, #16325c); }
+.be-code { font-size: 1.25rem; font-weight: 800; letter-spacing: .12em; margin: .15rem 0; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .be-vue, .be-objet { animation: none; } }
+.ma-carte-corps { display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.objets-accueil-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.4rem; margin-top: 1rem; }
+.objets-accueil-grille article { display: grid; gap: .5rem; justify-items: center; text-align: center; }
+.objets-accueil-grille article h3 { margin: .3rem 0 0; }
+.objets-accueil-grille .b3d-vues, .objets-accueil-grille .petit { display: none; }
+.objets-accueil-grille .b3d-scene { height: 330px; }
+.geo-bloc { margin: 1rem 0; padding-top: .8rem; border-top: 1px solid var(--bord); display: grid; gap: .6rem; }
+
+/* Tableaux de bord : des chiffres grands et lisibles, sans barre de couleur */
+.reseau-tuile, .tuile { padding: 1.3rem 1.4rem; box-shadow: 0 2px 8px rgba(20, 50, 80, .1); }
+.reseau-tuile b { font-size: 3rem; }
+.reseau-tuile span { font-size: 1.02rem; font-weight: 600; color: #34495e; }
+.tuile b { font-size: 2.6rem; }
+.tuile span { font-size: 1rem; font-weight: 600; }
+.reseau-tuiles { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.reseau-afaire h2 { margin-top: 0; }
+
+/* Plus aucune barre de couleur sur le bord d'une carte : un contour fin et neutre partout */
+.avertissement, .jeu, .carte.urgence-info, .principe, .garantie, .guide-role, .frise-etapes li, .carte.attention, .resultat-acte, .resultat-acte.ok, .resultat-acte.attention,
+.note-acte, .rassurant, .entree-locale, .telechargement, .action-zone, .editeur-langue.ok, .editeur-langue.attente, .repere-chiffre, .parcours-pas, .etape-carte,
+.etapes-cartes li > .etape-carte, .carte-etape, .fam-boite li, .creche-carte, .carte-creche, .famille, .famille-tuiles div, .carte-installer, .carte.village, .cx-detail,
+.bracelet-etat, .carte-innov, .installer-mobile, .fil-trois article, .impact-liste li, .impact-etapes article, li.reseau-urgent, .tuile, .tuile.alerte, .tuile.mise-en-avant, .kpi-creche .a-traiter {
+  border: 1px solid #d6e0e8 !important;
+  border-radius: 12px;
+}
+.repere-chiffre { padding-left: 0; border: 0 !important; }
+.chiffre { border-left: 0 !important; padding-left: 0; }
+.objets-accueil-grille article > *, .objets-accueil-grille .b3d-bloc, .objets-accueil-grille .an-bloc { width: 100%; max-width: 420px; }
+.objets-accueil-grille .b3d-scene, .objets-accueil-grille .an-scene { width: 100%; }
+.fil-vivant .interieur { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* Espace jeune fille */
+.shell.teinte-rose { --accent: #b83a74; --accent-fond: #fbe9f1; }
+.fille-deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.fille-actions { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+.chat-zone { display: grid; gap: .7rem; max-height: 52vh; overflow-y: auto; padding: .3rem; }
+.chat-bulle { max-width: 86%; padding: .7rem .9rem; border-radius: 14px; animation: beEntree .3s ease both; }
+.chat-bulle p { margin: 0 0 .4rem; }
+.chat-bulle.bot { background: #eef5fa; justify-self: start; border: 1px solid #d6e0e8; }
+.chat-bulle.moi { background: #1b4f7a; color: #fff; justify-self: end; }
+.chat-choix { display: grid; gap: .4rem; background: #fff8e1; border-radius: 12px; padding: .8rem; margin-top: .6rem; }
+.chat-saisie { display: flex; gap: .5rem; margin-top: .8rem; }
+.chat-saisie input { flex: 1; min-width: 0; padding: .7rem; border: 2px solid #b9cbd9; border-radius: 10px; font: inherit; }
+.fille-borne { display: grid; grid-template-columns: minmax(260px, 420px) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+@media (max-width: 960px) { .fille-borne { grid-template-columns: 1fr; } }
+.fille-borne .be { grid-template-columns: 1fr; }
+.b3d-actif .b3d-bac { animation: bacOuvre 1s ease 3; box-shadow: 0 0 18px 4px rgba(255, 194, 14, .85); }
+.b3d-actif .b3d-ecran { animation: bacOuvre 1.2s ease 2; }
+@keyframes bacOuvre { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.9); } }

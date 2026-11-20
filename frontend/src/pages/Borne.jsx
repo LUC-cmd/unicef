@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import Borne3D, { Carte3D } from '../components/Borne3D.jsx'
+import BorneEssai from '../components/BorneEssai.jsx'
 import ResultatSoins from '../components/ResultatSoins.jsx'
 import { MOTIFS_CONSULTATION, PUBLICS, QUESTIONS_CONSULTATION, VILLAGES, consulter, lireMesures } from '../lib/parcours.js'
 import { LANGUES_LOCALES, cleMessage, effacerVoix, ecrireVoix, enregistrer, jouer, lireVoix, toutesLesVoix } from '../lib/voix.js'
 import { prevenirCentre } from '../lib/reseauClient.js'
+import { lireCartePerso } from '../lib/cartePerso.js'
 import { PRODUITS, chargerCartes, ecrireBorne, etatVide, formater, genererLot, lireBorne, resumeJournal, stockBas, utiliserCode } from '../lib/borne.js'
 
 const PARTIES = [
@@ -317,7 +319,7 @@ function CoteAgent({ etat, setEtat, lot, setLot }) {
 }
 
 export default function Borne() {
-  const [onglet, setOnglet] = useState('3d')
+  const [onglet, setOnglet] = useState('essai')
   const [etat, setEtatBrut] = useState(lireBorne)
   const [lot, setLot] = useState([])
   const setEtat = (e) => { setEtatBrut(e); ecrireBorne(e) }
@@ -327,7 +329,7 @@ export default function Borne() {
       <Bandeau surtitre="Concept à fabriquer" titre="La borne Fil d’Or">Un point de village où une adolescente peut poser ses questions, entendre les réponses et retirer des produits avec une carte à gratter. Personne ne connaît son nom : seule elle connaît le numéro.</Bandeau>
       <main className="page ado">
         <div className="borne-onglets" role="group" aria-label="Sections">
-          {[['3d', 'La borne en 3D'], ['essai', 'Retirer avec ma carte'], ['mesures', 'Me mesurer'], ['consult', 'Parler de mon problème'], ['agent', 'Côté agent de santé']].map(([id, nom]) => <button key={id} type="button" className={onglet === id ? 'actif' : ''} aria-pressed={onglet === id} onClick={() => setOnglet(id)}>{nom}</button>)}
+          {[['3d', 'La borne en 3D'], ['essai', 'Essayer la borne'], ['mesures', 'Me mesurer'], ['consult', 'Parler de mon problème'], ['agent', 'Côté agent de santé']].map(([id, nom]) => <button key={id} type="button" className={onglet === id ? 'actif' : ''} aria-pressed={onglet === id} onClick={() => setOnglet(id)}>{nom}</button>)}
         </div>
         {onglet === '3d' && (
           <>
@@ -357,7 +359,7 @@ export default function Borne() {
             <ResultatSoins niveau="signaler" titre="Ce qui reste à valider" texte="Les produits remis, l’âge des bénéficiaires, le lieu d’installation et la règle du bon de consultation doivent être validés avec le ministère de la Santé et les centres de santé. La borne ne remet aucun médicament : les méthodes qui demandent un professionnel restent au centre de santé." />
           </>
         )}
-        {onglet === 'essai' && <><Essai etat={etat} setEtat={setEtat} /><p className="petit">Pour essayer, prépare des cartes dans « Côté agent de santé », charge-les dans la borne, puis tape le numéro d’une carte ici.{demo ? <> Carte de démonstration : <b>{formater(demo.code)}</b>.</> : null}</p></>}
+        {onglet === 'essai' && <BorneEssai etat={etat} setEtat={setEtat} cartePerso={lireCartePerso()} />}
         {onglet === 'mesures' && <Mesures />}
         {onglet === 'consult' && <Consultation etat={etat} setEtat={setEtat} />}
         {onglet === 'agent' && <CoteAgent etat={etat} setEtat={setEtat} lot={lot} setLot={setLot} />}

@@ -6,7 +6,9 @@ import { useAuth } from '../lib/contexte.jsx'
 import { MDP_DEMO } from '../lib/config.js'
 import { api, definirSecretFamille } from '../lib/api.js'
 import { ecrireCompte } from '../lib/famille.js'
+import { entrerFille } from '../lib/fille.js'
 import { ZONES } from '../lib/format.js'
+import { ecrireSessionReseau, reseau } from '../lib/reseauClient.js'
 
 function IconeCroix() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V8l8-5 8 5v13zM12 9v6M9 12h6" /></svg> }
 function IconeReglage() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /></svg> }
@@ -17,6 +19,10 @@ const COMPTES = [
   { id: 'structure.golfe', role: 'Centre de santé', lieu: 'Golfe', detail: 'Répond aux demandes de rappel de vaccination, d’orientation vers les services, met à jour ses horaires.', cible: '/structure', Icone: IconeCroix },
   { id: 'creche.golfe', role: 'Crèche', lieu: 'Crèche communautaire du Golfe', detail: 'Valide les réservations des familles, voit les enfants présents, tient ses horaires et sa capacité, et trouve sa mallette : jeux par âge, menu, hygiène, signes d’alerte.', cible: '/structure', Icone: IconeCroix },
   { id: 'famille', role: 'Famille', lieu: 'Famille de démonstration', detail: 'Ce que voit une maman : le fil d’or de ses enfants, ses rappels, les crèches proches, le dossier de naissance. Aucun mot de passe : on entre directement.', cible: '/famille', Icone: IconeCarnet, famille: true },
+  { id: 'fille.demo', role: 'Jeune fille', lieu: 'Compte personnel, sans nom', detail: 'Poser ses questions en privé, recevoir un conseil, puis aller à la borne avec son code pour retirer ses produits. Aucun mot de passe en démonstration : on entre directement.', cible: '/fille', Icone: IconeCarnet, fille: true },
+  { id: 'boutique.agbele', role: 'Boutique partenaire', lieu: 'Agbélé', detail: 'Ajoute ses produits pour les enfants, les femmes enceintes et les jeunes filles, suit les demandes des familles et ses contrôles. Un agent de santé valide les produits.', cible: '/reseau', Icone: IconeCroix, reseau: true },
+  { id: 'agent.nutrition', role: 'Agent de santé, nutrition', lieu: 'Réseau nutrition', detail: 'Valide les produits des boutiques, prévoit les visites, contrôle les boutiques et répond aux questions anonymes des jeunes filles.', cible: '/reseau', Icone: IconeAgent, reseau: true },
+  { id: 'centre.davie', role: 'Hôpital : cas qui arrivent', lieu: 'Hôpital de Davié', detail: 'Voit arriver les cas urgents annoncés par les agents, les bornes et les téléphones, les urgences en premier.', cible: '/reseau', Icone: IconeCroix, reseau: true },
   { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Voir la carte des zones oubliées, décider où envoyer une équipe en priorité.', cible: '/carte', Icone: IconeZone },
   { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Gère les comptes, les messages, les clés USB, fait avancer le temps pour tester.', cible: '/admin', Icone: IconeReglage },
 ]
@@ -63,6 +69,11 @@ export default function Connexion() {
     setErreur('')
     setEnCours(true)
     try {
+      if (COMPTES.find((c) => c.id === id)?.reseau) {
+        ecrireSessionReseau(await reseau.post('connexion', { identifiant: id, mdp }))
+        navigate('/reseau', { replace: true })
+        return
+      }
       await connexion(id, mdp)
       navigate('/preparation', {
         replace: true,
@@ -110,9 +121,10 @@ export default function Connexion() {
             ))}
           </div>
           {compte && <p className="cx-detail" key={compte.id}>{compte.detail}</p>}
+          {compte?.fille && <button type="button" className="bouton cx-envoi" onClick={() => { entrerFille(); navigate('/fille', { replace: true }) }}>Entrer dans mon espace</button>}
           {compte?.famille && <button type="button" className="bouton cx-envoi" disabled={enCours} onClick={entrerFamille}>{enCours ? 'Ouverture…' : 'Voir l’espace famille'}</button>}
 
-          <form className="cx-form" onSubmit={envoyerFormulaire} style={compte?.famille ? { display: 'none' } : undefined}>
+          <form className="cx-form" onSubmit={envoyerFormulaire} style={compte?.famille || compte?.fille ? { display: 'none' } : undefined}>
             {erreur && <p className="erreur" role="alert">{erreur}</p>}
             <label>Identifiant
               <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required placeholder="ex. agent.vo" />

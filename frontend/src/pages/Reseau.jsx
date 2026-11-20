@@ -3,6 +3,7 @@ import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import Shell from '../components/Shell.jsx'
 import { CAS, CENTRES, POINTS_CONTROLE, POINTS_NUTRITION, POUR, POUR_BOUTIQUE, VILLAGES } from '../lib/parcours.js'
+import { MDP_DEMO } from '../lib/config.js'
 import { ecrireSessionReseau, lireSessionReseau, reseau } from '../lib/reseauClient.js'
 
 const nomVillage = (id) => VILLAGES.find((v) => v.id === id)?.nom ?? id
@@ -26,8 +27,8 @@ function useListe(chemin, cle, jeton, delai = 8000) {
 }
 
 function Connexion({ onOk }) {
-  const [identifiant, setIdentifiant] = useState('')
-  const [mdp, setMdp] = useState('')
+  const [identifiant, setIdentifiant] = useState('boutique.agbele')
+  const [mdp, setMdp] = useState(MDP_DEMO)
   const [erreur, setErreur] = useState('')
   const [attente, setAttente] = useState(false)
   const envoyer = async (e) => {
@@ -46,10 +47,10 @@ function Connexion({ onOk }) {
             {erreur && <p role="alert" className="erreur">{erreur}</p>}
             <button className="bouton" type="submit" disabled={attente}>{attente ? 'Connexion…' : 'Se connecter'}</button>
           </form>
-          <details style={{ marginTop: '1rem' }}>
+          <details open style={{ marginTop: '1rem' }}>
             <summary>Comptes de démonstration</summary>
-            <ul className="liste-coches">{COMPTES_DEMO.map(([id, nom]) => <li key={id}><button type="button" className="bouton secondaire petit-bouton" onClick={() => setIdentifiant(id)}>{id}</button> {nom}</li>)}</ul>
-            <p className="petit">Le mot de passe de démonstration est celui des autres comptes de démonstration de Fil d’Or. Comptes fictifs, à ne pas utiliser en production.</p>
+            <ul className="liste-coches">{COMPTES_DEMO.map(([id, nom]) => <li key={id}><button type="button" className="bouton secondaire petit-bouton" onClick={() => { setIdentifiant(id); setMdp(MDP_DEMO) }}>{id}</button> {nom}</li>)}</ul>
+            <p className="petit">Un clic pré-remplit le compte. Comptes fictifs de démonstration, à ne pas utiliser en production.</p>
           </details>
         </section>
         <p className="petit">Les familles, elles, n’ont pas besoin de compte : <Link to="/nutrition">trouver une boutique</Link>.</p>
@@ -74,6 +75,22 @@ function Tableau({ s }) {
     <>
       <Bandeau titre="Tableau de bord">{s.nom}</Bandeau>
       <div className="reseau-tuiles">{t.map(([titre, n, a]) => <Tuile key={titre} titre={titre} n={n} alerte={a && n > 0} />)}</div>
+      <section className="carte reseau-afaire">
+        <h2>À traiter maintenant</h2>
+        {s.role === 'agent' && <ul className="liste-coches">
+          {(produits ?? []).filter((p) => p.etat === 'attente').map((p) => <li key={p.id}>Valider « {p.nom} » ({nomPoint(p.pointId)}). <Link to="/reseau/produits">Ouvrir</Link></li>)}
+          {(questions ?? []).filter((q) => !q.reponse).map((q) => <li key={q.id}>Répondre à une question anonyme : « {q.texte.slice(0, 70)} ». <Link to="/reseau/questions">Ouvrir</Link></li>)}
+          {(demandes ?? []).filter((d) => d.etat === 'demande').map((d) => <li key={d.id}>Planifier une visite à {nomPoint(d.pointId)}. <Link to="/reseau/demandes">Ouvrir</Link></li>)}
+        </ul>}
+        {s.role === 'boutique' && <ul className="liste-coches">
+          {(produits ?? []).filter((p) => p.etat === 'attente').map((p) => <li key={p.id}>« {p.nom} » attend la validation d’un agent de santé.</li>)}
+          {(produits ?? []).filter((p) => p.etat === 'refuse').map((p) => <li key={p.id}>« {p.nom} » refusé : {p.motif || 'voir avec l’agent'}.</li>)}
+          {(demandes ?? []).filter((d) => d.etat === 'demande').map((d) => <li key={d.id}>Une famille de {VILLAGES.find((v) => v.id === d.village)?.nom ?? d.village} a demandé un suivi ({POUR[d.pour] ?? d.pour}).</li>)}
+        </ul>}
+        {s.role === 'centre' && <ul className="liste-coches">
+          {(demandes ?? []).filter((a) => a.etat === 'en-route').map((a) => <li key={a.id}><b>{a.niveau === 'urgent' ? 'URGENT' : 'À surveiller'}</b> · {(CAS[a.cas] ?? a.cas)} depuis {VILLAGES.find((v) => v.id === a.depuis)?.nom ?? a.depuis} : {(a.signes ?? []).join(', ') || 'signes non précisés'}. <Link to="/reseau/alertes">Ouvrir</Link></li>)}
+        </ul>}
+      </section>
       {s.role === 'boutique' && <section className="carte"><h2>Dernier contrôle de ma boutique</h2>{dernier ? <p><b>{dernier.date}</b> · {dernier.conforme ? 'Conforme' : `À corriger : ${dernier.n} points sur ${POINTS_CONTROLE.length}`}</p> : <p>Aucun contrôle pour l’instant.</p>}</section>}
       <p className="petit">Données fictives de démonstration. Mise à jour automatique toutes les 8 secondes.</p>
     </>

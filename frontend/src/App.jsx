@@ -43,6 +43,7 @@ const Solutions = lazy(() => import('./pages/Solutions.jsx'))
 const Muac = lazy(() => import('./pages/Muac.jsx'))
 const Sms = lazy(() => import('./pages/Sms.jsx'))
 const Borne = lazy(() => import('./pages/Borne.jsx'))
+const EspaceFille = lazy(() => import('./pages/EspaceFille.jsx'))
 const EspaceAdolescente = lazy(() => import('./pages/EspaceAdolescente.jsx'))
 const SignesNouveauNe = lazy(() => import('./pages/SignesDanger.jsx').then((m) => ({ default: m.SignesNouveauNe })))
 const EnfantMalade = lazy(() => import('./pages/SignesDanger.jsx').then((m) => ({ default: m.EnfantMalade })))
@@ -188,7 +189,7 @@ export default function App() {
                 <>
                   {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
                   <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                    <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+                    <i aria-hidden="true" /><span className="sr-seul">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
                   </span>
                 </>
               )}
@@ -208,21 +209,26 @@ export default function App() {
                   <summary>Essayer</summary>
                   <div className="menu-liste">
                     <Link to="/visite"><b>Visite guidée</b><small>Parcourir la plateforme en 3 minutes</small></Link>
+                    <p className="menu-groupe">Pour les familles</p>
                     <Link to="/famille"><b>Espace famille</b><small>Rappels, notifications, dossier de naissance</small></Link>
                     <Link to="/assistant"><b>Assistant</b><small>Poser une question de santé de l'enfant</small></Link>
-                    <Link to="/whatsapp"><b>Assistant WhatsApp</b><small>La même conversation, version chat</small></Link>
                     <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
-                    <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
-                    <Link to="/borne"><b>Borne Fil d'Or</b><small>Point de village avec carte à gratter, en 3D</small></Link>
-                    <Link to="/reseau"><b>Espace boutiques, agents et centres</b><small>Compte, produits à valider, cas qui arrivent</small></Link>
-                    <Link to="/solutions"><b>Problèmes et solutions</b><small>De la jeune fille à l'enfant de 5 ans</small></Link>
-                    <Link to="/objets"><b>Objets en 3D</b><small>Borne, ruban, bracelet, ceinture, et leur fabrication</small></Link>
+                    <Link to="/grossesse"><b>Ma grossesse, mois par mois</b><small>CPN, exercices, signes d'alerte</small></Link>
                     <Link to="/maternite"><b>Un accouchement plus sûr</b><small>Risque, lieu, transport, après la naissance</small></Link>
-                    <Link to="/orientation"><b>Orienter un cas urgent</b><small>L'assistant prévient le centre avant l'arrivée</small></Link>
-                    <Link to="/nutrition"><b>Réseau nutrition</b><small>Nutritionnistes et boutiques partenaires</small></Link>
-                    <Link to="/muac"><b>Ruban MUAC avec QR</b><small>Mesurer le bras de l'enfant, en 3D</small></Link>
+                    <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
+                    <p className="menu-groupe">Pour les jeunes filles</p>
+                    <Link to="/connexion"><b>Mon espace jeune fille</b><small>Questions privées, carte, borne</small></Link>
+                    <Link to="/borne"><b>La borne Fil d'Or</b><small>Essayer la borne : code, produits, conseils</small></Link>
                     <Link to="/sms"><b>SMS et questions anonymes</b><small>Téléphone simple, sans internet</small></Link>
-                    <Link to="/grossesse"><b>Ma grossesse, mois par mois</b><small>CPN, exercices, signes d'alerte, kit d'accouchement</small></Link>
+                    <Link to="/adolescents"><b>Repères pour les adolescentes</b><small>Informations et orientation</small></Link>
+                    <p className="menu-groupe">Innovation</p>
+                    <Link to="/objets"><b>Objets en 3D</b><small>Borne, ruban, bracelet, ceinture, fabrication</small></Link>
+                    <Link to="/muac"><b>Ruban MUAC avec QR</b><small>Mesurer le bras de l'enfant</small></Link>
+                    <Link to="/solutions"><b>Problèmes et solutions</b><small>De la jeune fille à l'enfant de 5 ans</small></Link>
+                    <p className="menu-groupe">Espaces professionnels</p>
+                    <Link to="/connexion"><b>Se connecter</b><small>Agent, centre, boutique, nutrition, mairie</small></Link>
+                    <Link to="/orientation"><b>Orienter un cas urgent</b><small>L'assistant prévient le centre avant l'arrivée</small></Link>
+                    <Link to="/nutrition"><b>Réseau nutrition</b><small>Boutiques partenaires, itinéraire</small></Link>
                   </div>
                 </details>
                 <details className="menu-deroulant">
@@ -233,15 +239,14 @@ export default function App() {
                     <Link to="/annuaire"><b>Annuaire des structures</b><small>Centres de santé, crèches, état civil</small></Link>
                     <Link to="/ecoute"><b>Point d'écoute</b><small>Pour les familles sans téléphone</small></Link>
                     <Link to="/creches"><b>Crèches solidaires</b><small>Formation des femmes leaders</small></Link>
-                    <Link to="/adolescents"><b>Adolescents</b><small>Informations et orientation</small></Link>
                     <Link to="/signalement"><b>Une situation inquiétante ?</b><small>Qui prévenir, tout de suite</small></Link>
                   </div>
                 </details>
-                <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel hors réseau</NavLink>
+                <NavLink to="/hors-reseau" className="lien-logiciel"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 15.5h12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Logiciel</NavLink>
               </div>
               <div className="nav-actions">
                 {!session && !dansFamille && <span className={`etat-reseau-entete ${enLigne ? 'en' : 'hors'}`} role="status" title={enLigne ? 'Connecté au serveur' : 'Hors ligne : les saisies sont gardées sur cet appareil'}>
-                  <i aria-hidden="true" />{enLigne ? 'En ligne' : 'Hors ligne'}
+                  <i aria-hidden="true" /><span className="sr-seul">{enLigne ? 'En ligne' : 'Hors ligne'}</span>
                 </span>}
               </div>
             </nav>
@@ -308,6 +313,7 @@ export default function App() {
           <Route path="/muac" element={<Muac />} />
           <Route path="/objets" element={<Objets />} />
           <Route path="/reseau/*" element={<Reseau />} />
+          <Route path="/fille/*" element={<EspaceFille />} />
           <Route path="/solutions" element={<Solutions />} />
           <Route path="/sms" element={<Sms />} />
           <Route path="/signalement" element={<Signalement />} />

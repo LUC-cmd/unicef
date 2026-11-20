@@ -184,9 +184,15 @@ export function changerAlerte(id, etat) { ecrire('fildor.alertes', lireAlertes()
 export const ordreAlertes = (liste) => [...liste].sort((a, b) => (a.etat === 'pris' ? 1 : 0) - (b.etat === 'pris' ? 1 : 0) || (a.niveau === 'urgent' ? 0 : 1) - (b.niveau === 'urgent' ? 0 : 1) || a.heure.localeCompare(b.heure))
 
 export const POINTS_NUTRITION = [
-  { id: 'n1', nom: 'Nutritionniste du centre de Kpadapé (fictif)', village: 'kpadape', type: 'Nutritionniste', offre: 'Conseil, bouillies enrichies, suivi du poids et du ruban MUAC' },
-  { id: 'n2', nom: 'Boutique « Bonne bouillie » d’Agbélé (fictive)', village: 'agbele', type: 'Boutique partenaire', offre: 'Farines enrichies, œufs, légumes, sur bon du nutritionniste' },
-  { id: 'n3', nom: 'Boutique du marché de Zogbédji (fictive)', village: 'zogbedji', type: 'Boutique partenaire', offre: 'Céréales, niébé, poisson séché, sur bon du nutritionniste' },
+  { id: 'n1', nom: 'Nutritionniste du centre de Kpadapé (fictif)', village: 'kpadape', lat: 6.2840, lng: 1.5150, type: 'Nutritionniste', offre: 'Conseil, bouillies enrichies, suivi du poids et du ruban MUAC' },
+  { id: 'n2', nom: 'Boutique « Bonne bouillie » d’Agbélé (fictive)', village: 'agbele', lat: 6.2400, lng: 1.4700, type: 'Boutique partenaire', offre: 'Farines enrichies, œufs, légumes, sur bon du nutritionniste' },
+  { id: 'n3', nom: 'Boutique du marché de Zogbédji (fictive)', village: 'zogbedji', lat: 6.3200, lng: 1.5800, type: 'Boutique partenaire', offre: 'Céréales, niébé, poisson séché, sur bon du nutritionniste' },
+]
+/** Bornes de démonstration. Positions fictives, à remplacer par les vraies à l'installation. */
+export const BORNES = [
+  { id: 'b1', nom: 'Borne d’Agbélé, place du village (fictive)', village: 'agbele', lat: 6.2420, lng: 1.4690, type: 'Village' },
+  { id: 'b2', nom: 'Borne de Davié, marché (fictive)', village: 'davie', lat: 6.3700, lng: 1.6400, type: 'Bourg' },
+  { id: 'b3', nom: 'Borne de la gare routière, ville (fictive)', village: 'davie', lat: 6.1750, lng: 1.2300, type: 'Ville' },
 ]
 export const POUR = { grossesse: 'Femme enceinte', allaitement: 'Mère qui allaite', petit: 'Enfant de 6 à 23 mois', muac: 'Enfant en zone jaune ou rouge' }
 export const lireDemandes = () => lire('fildor.nutrition', [])

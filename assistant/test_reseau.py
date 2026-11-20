@@ -48,6 +48,14 @@ class OrientationTest(unittest.TestCase):
 
 
 class ComptesTest(unittest.TestCase):
+    def test_mot_de_passe_vide_refuse(self):
+        ancien = os.environ["FILDOR_MDP_DEMO"]
+        os.environ["FILDOR_MDP_DEMO"] = ""
+        try:
+            self.assertEqual(neuf().traiter("POST", "connexion", {"identifiant": "centre.davie", "mdp": ""})[0], 401)
+        finally:
+            os.environ["FILDOR_MDP_DEMO"] = ancien
+
     def test_connexion(self):
         r = neuf()
         self.assertEqual(r.traiter("POST", "connexion", {"identifiant": "centre.davie", "mdp": "faux"})[0], 401)
@@ -141,3 +149,11 @@ class StockTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_graine_demo_remplit_les_tableaux():
+    s = Stock(None, graine=True)
+    assert len(s.d["alertes"]) >= 3 and len(s.d["demandes"]) >= 3 and len(s.d["controles"]) >= 2 and len(s.d["questions"]) >= 2
+    etats = {x["etat"] for x in s.d["produits"]}
+    assert {"attente", "valide", "refuse"} <= etats
+    assert not Stock(None).d["alertes"]  # sans graine, rien n'est ajouté

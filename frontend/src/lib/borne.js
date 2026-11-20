@@ -106,3 +106,19 @@ export const stockBas = (etat) => Object.entries(etat.stock).filter(([, n]) => n
 export const CLE = 'fildor.borne'
 export function lireBorne() { try { const v = JSON.parse(localStorage.getItem(CLE) ?? 'null'); return v ?? etatVide() } catch { return etatVide() } }
 export function ecrireBorne(e) { try { localStorage.setItem(CLE, JSON.stringify(e)) } catch { /* stockage refusé */ } }
+
+/** Numéro complet à partir de 7 chiffres : on ajoute le chiffre de contrôle. */
+export const codeDepuis = (sept) => sept + chiffreControle(sept)
+
+/** Cartes de démonstration, fictives, toujours présentes pour essayer la borne. Le contenu de chaque carte est propre à elle. */
+export const CARTES_DEMO = [
+  { serie: 'DEMO-A', code: codeDepuis('4827163'), quota: { serviettes: 4, preservatifs: 4, bon: 1, antalgique: 0 }, qui: 'Carte remise par une agente de santé' },
+  { serie: 'DEMO-B', code: codeDepuis('7391052'), quota: { serviettes: 2, preservatifs: 0, bon: 1, antalgique: 2 }, qui: 'Carte remise par l’école, sans préservatifs' },
+]
+export const lienQrCarte = (code) => `FILDOR-CARTE:${code}`
+
+/** Ajoute les cartes de démonstration à la borne si elles n'y sont pas encore (sans toucher à ce qui a déjà été retiré). */
+export function assurerDemo(etat) {
+  const manque = CARTES_DEMO.filter((c) => !etat.cartes[empreinte(c.code)])
+  return manque.length ? chargerCartes(etat, manque) : etat
+}

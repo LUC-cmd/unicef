@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import ResultatSoins from '../components/ResultatSoins.jsx'
+import QrCode from '../components/QrCode.jsx'
+import { creerCartePerso, lireCartePerso, QUOTA_PERSO } from '../lib/cartePerso.js'
+import { PRODUITS, formater, lienQrCarte } from '../lib/borne.js'
 import { analyserCycles } from '../lib/parcours.js'
 import { METHODES, SIGNES_GROSSESSE, ajouterJours, ecartJours, ecrireEspace, effacerEspace, lireCycle, lireEspace, lireGrossesse, lireSignesGrossesse, phaseCycle } from '../lib/adolescente.js'
 
@@ -105,9 +108,28 @@ function Cycle({ e, maj, onEnceinte }) {
   )
 }
 
+function MaCarte() {
+  const [code, setCode] = useState(lireCartePerso)
+  return (
+    <section className="carte ma-carte">
+      <h2>Ma carte Fil d’Or</h2>
+      <p>C’est mon numéro personnel. Il est sur mon téléphone, personne d’autre ne le connaît. À la borne, je le tape ou je montre son QR code : les produits sortent, sans nom ni question.</p>
+      {code ? (
+        <div className="ma-carte-corps">
+          <div><p className="be-code" aria-label="Mon numéro">{formater(code)}</p>
+            <p className="petit">Droits de ma carte : {Object.entries(QUOTA_PERSO).filter(([, n]) => n > 0).map(([k, n]) => `${n} ${PRODUITS[k].toLowerCase()}`).join(', ')}. Démonstration fictive.</p>
+            <p><Link className="bouton" to="/borne">Aller à la borne</Link></p></div>
+          <QrCode valeur={lienQrCarte(code)} taille={140} titre="QR code de ma carte" />
+        </div>
+      ) : <button type="button" className="bouton" onClick={() => setCode(creerCartePerso())}>Obtenir ma carte</button>}
+    </section>
+  )
+}
+
 function Proteger() {
   return (
     <>
+      <MaCarte />
       <section className="carte">
         <h2>Choisir quand avoir un enfant</h2>
         <p>Tu as le droit de poser toutes tes questions à une agente de santé, sans jugement. Tu peux demander à lui parler seule. Personne ne doit te forcer à un rapport sexuel ni à une grossesse. En cas de pression ou de violence : <Link to="/signalement">qui prévenir</Link>.</p>

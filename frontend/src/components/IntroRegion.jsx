@@ -27,6 +27,8 @@ export default function IntroRegion({ onFin }) {
   const cible = REGIONS.find((r) => r.nom === region) || REGIONS[0]
   const [ratio, setRatio] = useState(() => window.innerWidth / window.innerHeight)
   const [phase, setPhase] = useState(0) // 0 Afrique · 1 Togo · 2 région · 3 sortie
+  const ordre = useRef([...REGIONS].sort((a, b) => b.centre[1] - a.centre[1] === 0 ? 0 : a.centre[1] - b.centre[1]).filter((r) => r.nom !== cible.nom).concat(cible))
+  const [courante, setCourante] = useState(cible)
   const [coupe, setCoupe] = useState(false) // le Togo se découpe en régions
   const vueInit = useRef(cadre(AFRIQUE_BBOX, 160, window.innerWidth / window.innerHeight))
   const [vue, setVue] = useState(vueInit.current)
@@ -65,8 +67,8 @@ export default function IntroRegion({ onFin }) {
     const t = minuteurs.current = [
       setTimeout(() => { setPhase(1); aller(cadre(BBOX_TOGO, 30, r), 3000) }, 3600),
       setTimeout(() => setCoupe(true), 6900),
-      setTimeout(() => { setPhase(2); aller(cadre(cible.bbox, 18, r), 2600) }, 8800),
-      setTimeout(() => finir(), 12400),
+      ...ordre.current.map((reg, i) => setTimeout(() => { setPhase(2); setCourante(reg); aller(cadre(reg.bbox, 18, r), 1200) }, 8800 + i * 1700)),
+      setTimeout(() => finir(), 8800 + ordre.current.length * 1700 + 600),
     ]
     const echap = (e) => { if (e.key === 'Escape') finir() }
     document.addEventListener('keydown', echap)
@@ -79,7 +81,7 @@ export default function IntroRegion({ onFin }) {
   const px = (n) => n * echelle
   const titre = phase === 0 ? ['Afrique de l’Ouest', 'Un enfant, un parcours']
     : phase === 1 ? [coupe ? 'Cinq régions' : 'Togo', coupe ? 'Maritime · Plateaux · Centrale · Kara · Savanes' : 'Un pays, un suivi']
-      : [LIBELLE_REGION[region], 'Là où Fil d’Or est déployé']
+      : [LIBELLE_REGION[courante.nom] ?? courante.nom, courante.nom === cible.nom ? 'Là où Fil d’Or est déployé' : 'Une région du Togo']
 
   return (
     <div className={`intro ${phase === 3 ? 'sortie' : ''}`} role="dialog" aria-label="Ouverture : de l'Afrique à votre région">
@@ -113,7 +115,7 @@ export default function IntroRegion({ onFin }) {
         )}
         <g style={{ opacity: phase >= 1 ? 1 : 0, transition: 'opacity 1.2s ease .5s' }}>
           {REGIONS.map((r) => {
-            const actif = r.nom === region
+            const actif = r.nom === courante.nom
             return (
               <g key={r.id}>
                 <path d={r.d} fill={phase === 2 && actif ? '#FFC20E' : phase === 2 ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.16)'} style={{ transition: 'fill 1s ease' }} />
@@ -123,7 +125,7 @@ export default function IntroRegion({ onFin }) {
               </g>
             )
           })}
-          {phase === 2 && <text x={cible.centre[0]} y={cible.centre[1]} textAnchor="middle" fontSize={px(14)} fontWeight="800" fill="#0b3a63">{cible.nom}</text>}
+          {phase === 2 && <text x={courante.centre[0]} y={courante.centre[1]} textAnchor="middle" fontSize={px(14)} fontWeight="800" fill="#0b3a63">{courante.nom}</text>}
         </g>
       </svg>
 
@@ -131,7 +133,7 @@ export default function IntroRegion({ onFin }) {
         <LogoMarque />
         <span>Fil d'Or · Hack4Children Togo 2026 · avec l'UNICEF</span>
       </header>
-      <div className="intro-titre" aria-live="polite" key={`${phase}${coupe}`}>
+      <div className="intro-titre" aria-live="polite" key={`${phase}${coupe}${courante.nom}`}>
         <h1>{titre[0]}</h1>
         <p>{titre[1]}</p>
       </div>

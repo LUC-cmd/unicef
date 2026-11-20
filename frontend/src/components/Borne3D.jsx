@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 const VUES = [['Face', -12], ['Côté', 70], ['Dos', 180], ['Autre côté', 250]]
 
 /** Maquette 3D de la borne, en CSS pur : on la fait tourner au doigt, à la souris ou avec les flèches. Aucun fichier 3D, aucune bibliothèque. */
-export default function Borne3D({ onVue }) {
+export default function Borne3D({ onVue, auto, actif }) {
   const [ry, setRy] = useState(-25)
   const [doux, setDoux] = useState(true)
   const depart = useRef(null)
+  useEffect(() => { if (!auto || !doux || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined; const t = setInterval(() => setRy((v) => v + 0.6), 33); return () => clearInterval(t) }, [auto, doux])
   const envoyer = (v) => onVue?.(v)
   useEffect(() => { envoyer(ry) }, [ry]) // eslint-disable-line react-hooks/exhaustive-deps
   const bas = (e) => { depart.current = { x: e.clientX, ry }; setDoux(false); e.currentTarget.setPointerCapture?.(e.pointerId) }
@@ -17,7 +18,7 @@ export default function Borne3D({ onVue }) {
     <div className="b3d-bloc">
       <div className="b3d-scene" tabIndex={0} role="img" aria-label="Maquette 3D de la borne Fil d'Or. Utilisez les flèches gauche et droite pour la faire tourner." onPointerDown={bas} onPointerMove={bouge} onPointerUp={haut} onPointerCancel={haut} onKeyDown={touche}>
         <div className="b3d-sol" />
-        <div className={`b3d ${doux ? 'doux' : ''}`} style={{ transform: `rotateX(-9deg) rotateY(${ry}deg)` }}>
+        <div className={`b3d ${doux && !auto ? 'doux' : ''}${actif ? ' b3d-actif' : ''}`} style={{ transform: `rotateX(-9deg) rotateY(${ry}deg)` }}>
           <div className="b3d-face b3d-av">
             <div className="b3d-haut"><i className="b3d-pic" /><b>Fil d’Or</b></div>
             <div className="b3d-ecran"><span>Choisis ta langue</span><div><i>FR</i><i>EW</i><i>KA</i><i>MI</i></div></div>

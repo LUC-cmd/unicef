@@ -160,7 +160,8 @@ _SECRET_ALEATOIRE = secrets.token_hex(32)
 
 
 def mot_de_passe_demo():
-    return os.environ.get("FILDOR_MDP_DEMO", "FilDor2026!demo")
+    # une variable vide (référence non résolue) ne doit jamais devenir « pas de mot de passe »
+    return os.environ.get("FILDOR_MDP_DEMO") or "FilDor2026!demo"
 
 
 def emettre_jeton(identifiant, duree=8 * 3600):
@@ -187,7 +188,7 @@ def lire_jeton(jeton):
 
 # ---------------------------------------------------------------- stockage
 class Stock:
-    def __init__(self, chemin=None):
+    def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
         self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": []}
@@ -201,6 +202,12 @@ class Stock:
                 pass
         if not self.d["produits"]:
             self.d["produits"] = _produits_depart()
+            if graine:
+                for k, v in _demo_depart().items():
+                    if k == "produits":
+                        self.d[k] = v + self.d[k]
+                    elif not self.d[k]:
+                        self.d[k] = v
 
     def sauver(self):
         if not self.chemin:
@@ -242,6 +249,42 @@ def _produits_depart():
             for p, n, pour, d, prix in base]
 
 
+def _demo_depart():
+    """Données fictives pour que chaque tableau de bord soit déjà rempli à l'ouverture. Rien ne vient d'une vraie personne."""
+    def i():
+        return uuid.uuid4().hex[:10]
+    d = maintenant()[:10]
+    return {
+        "produits": [
+            {"id": i(), "pointId": "n2", "nom": "Bouillie enrichie au soja", "pour": "petit", "description": "Pour bébé dès 6 mois, sans sucre ajouté", "prix": "900 FCFA (fictif)", "etat": "attente", "motif": "", "date": maintenant()},
+            {"id": i(), "pointId": "n2", "nom": "Serviettes lavables (lot de 3)", "pour": "ado", "description": "Lavables et séchées au soleil", "prix": "1 500 FCFA (fictif)", "etat": "valide", "motif": "", "date": maintenant()},
+            {"id": i(), "pointId": "n3", "nom": "Sirop sucré miracle", "pour": "petit", "description": "Annonce « fait grossir vite »", "prix": "2 000 FCFA (fictif)", "etat": "refuse", "motif": "Produit sucré, sans intérêt nutritionnel : refusé.", "date": maintenant()},
+            {"id": i(), "pointId": "n3", "nom": "Œufs frais (plateau)", "pour": "grossesse", "description": "Protéines et fer", "prix": "1 800 FCFA (fictif)", "etat": "attente", "motif": "", "date": maintenant()},
+        ],
+        "demandes": [
+            {"id": i(), "pointId": "n2", "pour": "grossesse", "village": "agbele", "date": d, "etat": "demande"},
+            {"id": i(), "pointId": "n2", "pour": "petit", "village": "agbele", "date": d, "etat": "visite"},
+            {"id": i(), "pointId": "n3", "pour": "allaitement", "village": "zogbedji", "date": d, "etat": "demande"},
+            {"id": i(), "pointId": "n1", "pour": "muac", "village": "kpadape", "date": d, "etat": "suivi"},
+        ],
+        "controles": [
+            {"id": i(), "pointId": "n2", "date": d, "ok": ["bons", "hygiene", "periodes", "prix", "substituts"], "n": 5, "conforme": True},
+            {"id": i(), "pointId": "n3", "date": d, "ok": ["hygiene", "prix"], "n": 2, "conforme": False},
+        ],
+        "alertes": [
+            {"id": i(), "centreId": "c4", "cas": "grossesse", "niveau": "urgent", "signes": ["Elle saigne"], "depuis": "tovegan", "heure": maintenant(), "etat": "en-route"},
+            {"id": i(), "centreId": "c4", "cas": "nouveauNe", "niveau": "surveiller", "signes": ["Fièvre"], "depuis": "davie", "heure": maintenant(), "etat": "en-route"},
+            {"id": i(), "centreId": "c2", "cas": "enfant", "niveau": "surveiller", "signes": ["Diarrhée depuis 2 jours"], "depuis": "kpadape", "heure": maintenant(), "etat": "arrive"},
+            {"id": i(), "centreId": "c3", "cas": "accouchement", "niveau": "urgent", "signes": ["Contractions rapprochées"], "depuis": "zogbedji", "heure": maintenant(), "etat": "en-route"},
+        ],
+        "questions": [
+            {"id": i(), "code": "KM4Q7TXA", "texte": "J'ai mal au ventre à chaque règle, est-ce normal ?", "date": d, "reponse": ""},
+            {"id": i(), "code": "RT9W2HPN", "texte": "Mes règles ont du retard de deux semaines. Que faire ?", "date": d, "reponse": "Un retard peut avoir plusieurs causes. Va au centre de santé pour un test, avec une personne de confiance : tu seras bien reçue."},
+            {"id": i(), "code": "ZH6C3VDE", "texte": "Où trouver des préservatifs sans que personne ne me connaisse ?", "date": d, "reponse": ""},
+        ],
+    }
+
+
 def court(v, n):
     return str(v or "").strip()[:n]
 
@@ -256,7 +299,7 @@ class Erreur(Exception):
 # ---------------------------------------------------------------- le routeur commun
 class Reseau:
     def __init__(self, stock=None, repondre=None, corpus=None):
-        self.s = stock or Stock(os.environ.get("FILDOR_DONNEES", "/tmp/fildor-reseau.json"))
+        self.s = stock or Stock(os.environ.get("FILDOR_DONNEES", "/tmp/fildor-reseau.json"), graine=True)
         self.repondre = repondre
         self.corpus = corpus
 

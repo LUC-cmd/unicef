@@ -7,7 +7,7 @@ import { ETAPES_PARCOURS, SOURCE_BRIEFING } from '../lib/etapes.js'
 // Ce qui est décrit existe dans le prototype et se teste avec les comptes de démonstration. Les effets sur la santé des
 // enfants ne sont pas mesurés : le prototype n'a pas été évalué sur le terrain, toutes les données sont fictives.
 const PRIX = [
-  { id: 'innovation', nom: 'Le plus innovant', question: 'Qu’est-ce qui n’existe pas déjà ?', lignes: [
+  { id: 'innovation', nom: 'L’innovation', question: 'Qu’est-ce qui n’existe pas déjà ?', lignes: [
     ['Le fil d’or de chaque enfant', 'Un seul dossier suit l’enfant de la grossesse à 5 ans : la famille voit où il en est et son prochain pas, l’agent sait qui visiter, le responsable voit où ça se perd.', '/'],
     ['Les ruptures entre deux services', 'Le tableau du responsable compte les enfants perdus entre deux services : grossesse suivie sans naissance notée, acte prêt jamais retiré, vacciné jamais orienté vers l’éveil.', '/connexion'],
     ['L’acte de naissance en trois états', 'Pas d’acte, acte établi mais non retiré, acte retiré : chaque famille n’est relancée que pour ce qui lui manque.', '/acte'],
@@ -34,7 +34,7 @@ const PRIX = [
     ['Le bien-être de la jeune mère', 'Deux questions de repérage après la naissance, avec une orientation vers l’agent de santé : une mère soutenue soutient mieux son enfant.', '/famille/bien-etre'],
     ['Signaler une situation inquiétante', 'Un chemin direct, anonyme et sans diagnostic, pour une fille en danger.', '/signalement'],
   ] },
-  { id: 'gagnant', nom: 'Le projet gagnant', question: 'Est-ce solide, utilisable, prêt à passer à l’échelle ?', lignes: [
+  { id: 'gagnant', nom: 'Prêt à déployer', question: 'Est-ce solide, utilisable, prêt à passer à l’échelle ?', lignes: [
     ['Utilisable dès maintenant', 'Site en ligne, application Android et logiciel Windows, avec des comptes de démonstration pour chaque rôle.', '/telecharger'],
     ['Chaque rôle voit ce qu’il doit voir', 'L’administrateur crée les responsables régionaux, qui créent les agents, états civils, centres et crèches de leur région.', '/connexion'],
     ['Consentement d’abord', 'Rien n’est enregistré sans l’accord de la famille ; aucune photo, aucun nom nécessaire, des codes seulement.', '/projet'],
