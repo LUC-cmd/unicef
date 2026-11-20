@@ -17,7 +17,7 @@ URGENCE = (
     "convulsion", "convulsions", "inconscient", "saignement", "hemorragie",
     "respire difficilement", "respire vite", "ne boit plus", "ne tete plus",
     "vomit tout", "tres faible", "difficile a reveiller", "bouge moins",
-    "vue trouble", "maux de tete",
+    "vue trouble", "maux de tete", "saigne", "saignent",
 )
 
 VIDES = {

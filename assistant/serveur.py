@@ -8,8 +8,10 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from repondre import charger, repondre
+from reseau import Reseau
 
 CORPUS = charger()
+RESEAU = Reseau(repondre=repondre, corpus=CORPUS)
 
 # Historique des conversations par session (conserve les 3 dernières questions)
 HISTORIQUE_SESSIONS = {}
@@ -23,7 +25,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         # En-têtes CORS
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-ID, Session-Id, session-id")
         self.send_header("Access-Control-Expose-Headers", "X-Session-ID, Session-Id")
         if session_id:
@@ -36,13 +38,37 @@ class Handler(BaseHTTPRequestHandler):
         """Réponse preflight CORS pour les requêtes avec en-têtes personnalisés."""
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-ID, Session-Id, session-id")
         self.send_header("Access-Control-Expose-Headers", "X-Session-ID, Session-Id")
         self.send_header("Access-Control-Max-Age", "86400")
         self.end_headers()
 
+    def _reseau(self, methode):
+        """Réseau Fil d'Or (prototype) : même contrat que app.py."""
+        chemin = self.path.split("?")[0]
+        for prefixe in ("/assistant/reseau/", "/reseau/"):
+            if chemin.startswith(prefixe):
+                corps = {}
+                if methode in ("POST", "PATCH"):
+                    try:
+                        corps = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))).decode() or "{}")
+                    except (json.JSONDecodeError, UnicodeDecodeError):
+                        self._json(422, {"detail": "JSON invalide"})
+                        return True
+                jeton = self.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+                code, objet = RESEAU.traiter(methode, chemin[len(prefixe):], corps, jeton)
+                self._json(code, objet)
+                return True
+        return False
+
+    def do_PATCH(self):
+        if not self._reseau("PATCH"):
+            self._json(404, {"detail": "introuvable"})
+
     def do_GET(self):
+        if self._reseau("GET"):
+            return
         chemin = self.path.split("?")[0]
         if chemin in ("/health", "/assistant/health"):
             self._json(200, {"statut": "ok", "service": "assistant", "contenus": len(CORPUS)})
@@ -60,6 +86,8 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"detail": "introuvable"})
 
     def do_POST(self):
+        if self._reseau("POST"):
+            return
         chemin = self.path.split("?")[0]
         if chemin not in ("/questions", "/assistant/questions"):
             self._json(404, {"detail": "introuvable"})

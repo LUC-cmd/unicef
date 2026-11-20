@@ -70,7 +70,7 @@ export const etapeParCode = (c) => ETAPES_PARCOURS.find((e) => e.code === c)
 export const SOURCE_BRIEFING = 'UNICEF Togo, briefing thématique Hack4Children, 16 novembre 2026'
 const PLUS = {
   adolescence: {
-    probleme: "17 % des décès maternels touchent des adolescentes de 12 à 19 ans, et 60,9 % des 15 à 19 ans sexuellement actives n'ont pas de contraception adaptée à leurs besoins.",
+    probleme: "Selon le briefing du concours, 17 % des décès maternels touchent des adolescentes de 12 à 19 ans, et 60,9 % des adolescentes de 15 à 19 ans non mariées et sexuellement actives n'ont pas de contraception adaptée à leurs besoins. Sources et définitions exactes à confirmer.",
     innovation: "La jeune mère est repérée dès l'inscription et son suivi est renforcé tout seul : priorité plus haute, orientation vers la santé et l'école. Le responsable régional a un tableau « filles et jeunes mères ».",
     aide: "Les adolescentes et les jeunes mères : moins de grossesses à risque sans suivi, un retour à l'école accompagné.",
   },

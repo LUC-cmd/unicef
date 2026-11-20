@@ -23,7 +23,7 @@ export default function Adolescents() {
 
         <section className="carte">
           <h2>Choisir quand avoir un enfant</h2>
-          <p>Au Togo, 17 % des décès de mères touchent des adolescentes de 12 à 19 ans, et 60,9 % des 15-19 ans sexuellement actives n'ont pas de contraception adaptée à leurs besoins (UNICEF Togo, briefing Hack4Children 2026).</p>
+          <p>Selon le briefing du concours Hack4Children 2026, 17 % des décès de mères touchent des adolescentes de 12 à 19 ans, et 60,9 % des adolescentes de 15 à 19 ans non mariées et sexuellement actives n'ont pas de contraception adaptée à leurs besoins. Sources et définitions exactes à confirmer.</p>
           <ul className="liste-coches">
             <li>Il existe plusieurs méthodes de planification familiale. Un professionnel de santé aide à choisir, sans jugement et dans la confidentialité.</li>
             <li>Le préservatif protège aussi des infections. Le centre de santé donne les informations et oriente.</li>

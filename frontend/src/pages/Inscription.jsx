@@ -9,6 +9,7 @@ import {
 } from '../lib/format.js'
 import { ajouterInscription, nouvelUuid } from '../lib/offline.js'
 import Bandeau from '../components/Bandeau.jsx'
+import { niveauAgeMere } from '../lib/adolescente.js'
 import ApercuMessage from '../components/ApercuMessage.jsx'
 
 const enfantVide = () => ({ cle: nouvelUuid(), statut: 'ENFANT', dateNaissance: '', dateTermePrevue: '', sexe: '', acteExistant: '', etapesFaites: [], consultationsFaites: 0, parents: parentsVides() })
@@ -44,6 +45,8 @@ export default function Inscription() {
   const [codeZone, setCodeZone] = useState('GOLFE')
   const [consentement, setConsentement] = useState(false)
   const [mereAdolescente, setMereAdolescente] = useState(false)
+  const [ageMere, setAgeMere] = useState('')
+  const niveauMere = ageMere === '' ? null : niveauAgeMere(Number(ageMere))
   const [enfants, setEnfants] = useState([enfantVide()])
   const [proches, setProches] = useState([])
   const [erreur, setErreur] = useState('')
@@ -302,6 +305,23 @@ export default function Inscription() {
               <input type="checkbox" checked={mereAdolescente} onChange={(e) => setMereAdolescente(e.target.checked)} />
               <span>La mère a <b>moins de 20 ans</b>. Aucun âge exact n'est gardé.</span>
             </label>
+            <label className="champ">
+              <span className="champ-titre">Âge de la mère, pour afficher le protocole de suivi <span className="champ-aide">Facultatif. Cet âge n'est pas enregistré : il sert seulement à cocher la case et à rappeler quoi faire.</span></span>
+              <input type="number" inputMode="numeric" min="10" max="55" value={ageMere} onChange={(ev) => { setAgeMere(ev.target.value); const a = Number(ev.target.value); if (ev.target.value !== '') setMereAdolescente(a < 20) }} style={{ maxWidth: 160 }} />
+            </label>
+            {niveauMere && niveauMere.niveau !== 'bon' && (
+              <div className={`soin-resultat soin-${niveauMere.niveau === 'rouge' ? 'urgent' : niveauMere.niveau}`} role="status">
+                <b>{niveauMere.titre}</b>
+                <p>{niveauMere.texte}</p>
+                <ul className="liste-coches">
+                  <li>Consultations prénatales rapprochées dès la première visite.</li>
+                  <li>Accouchement prévu en centre de santé, avec un plan d'accouchement rempli.</li>
+                  <li>Orientation vers le centre social pour rester à l'école ou apprendre un métier.</li>
+                  <li>Proposition d'une méthode de planification familiale avant la sortie après la naissance, avec son accord.</li>
+                  <li>Remettre l'adresse de l'espace adolescente : <b>Espace famille › Mon espace adolescente</b> (privé, sur son téléphone).</li>
+                </ul>
+              </div>
+            )}
           </section>
 
           <section className="etape">

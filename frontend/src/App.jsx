@@ -34,6 +34,18 @@ const Creches = lazy(() => import('./pages/Creches.jsx'))
 const Telecharger = lazy(() => import('./pages/Telecharger.jsx'))
 const HorsReseau = lazy(() => import('./pages/HorsReseau.jsx'))
 const Adolescents = lazy(() => import('./pages/Adolescents.jsx'))
+const Orientation = lazy(() => import('./pages/Orientation.jsx'))
+const Maternite = lazy(() => import('./pages/Maternite.jsx'))
+const Nutrition = lazy(() => import('./pages/Nutrition.jsx'))
+const Reseau = lazy(() => import('./pages/Reseau.jsx'))
+const Objets = lazy(() => import('./pages/Objets.jsx'))
+const Solutions = lazy(() => import('./pages/Solutions.jsx'))
+const Muac = lazy(() => import('./pages/Muac.jsx'))
+const Sms = lazy(() => import('./pages/Sms.jsx'))
+const Borne = lazy(() => import('./pages/Borne.jsx'))
+const EspaceAdolescente = lazy(() => import('./pages/EspaceAdolescente.jsx'))
+const SignesNouveauNe = lazy(() => import('./pages/SignesDanger.jsx').then((m) => ({ default: m.SignesNouveauNe })))
+const EnfantMalade = lazy(() => import('./pages/SignesDanger.jsx').then((m) => ({ default: m.EnfantMalade })))
 const Signalement = lazy(() => import('./pages/Signalement.jsx'))
 const Projet = lazy(() => import('./pages/Projet.jsx'))
 const Impact = lazy(() => import('./pages/Impact.jsx'))
@@ -201,6 +213,15 @@ export default function App() {
                     <Link to="/whatsapp"><b>Assistant WhatsApp</b><small>La même conversation, version chat</small></Link>
                     <Link to="/telephone"><b>Simulateur de téléphone</b><small>SMS, appel vocal et USSD *789#</small></Link>
                     <Link to="/jeux"><b>Jeux d'éveil</b><small>Des jeux simples à faire à la maison</small></Link>
+                    <Link to="/borne"><b>Borne Fil d'Or</b><small>Point de village avec carte à gratter, en 3D</small></Link>
+                    <Link to="/reseau"><b>Espace boutiques, agents et centres</b><small>Compte, produits à valider, cas qui arrivent</small></Link>
+                    <Link to="/solutions"><b>Problèmes et solutions</b><small>De la jeune fille à l'enfant de 5 ans</small></Link>
+                    <Link to="/objets"><b>Objets en 3D</b><small>Borne, ruban, bracelet, ceinture, et leur fabrication</small></Link>
+                    <Link to="/maternite"><b>Un accouchement plus sûr</b><small>Risque, lieu, transport, après la naissance</small></Link>
+                    <Link to="/orientation"><b>Orienter un cas urgent</b><small>L'assistant prévient le centre avant l'arrivée</small></Link>
+                    <Link to="/nutrition"><b>Réseau nutrition</b><small>Nutritionnistes et boutiques partenaires</small></Link>
+                    <Link to="/muac"><b>Ruban MUAC avec QR</b><small>Mesurer le bras de l'enfant, en 3D</small></Link>
+                    <Link to="/sms"><b>SMS et questions anonymes</b><small>Téléphone simple, sans internet</small></Link>
                     <Link to="/grossesse"><b>Ma grossesse, mois par mois</b><small>CPN, exercices, signes d'alerte, kit d'accouchement</small></Link>
                   </div>
                 </details>
@@ -274,9 +295,21 @@ export default function App() {
           <Route path="/famille/developpement" element={<FamilleSousPage><DeveloppementFamille /></FamilleSousPage>} />
           <Route path="/famille/bras" element={<FamilleSousPage><MesureBras /></FamilleSousPage>} />
           <Route path="/famille/bien-etre" element={<FamilleSousPage><BienEtreMere /></FamilleSousPage>} />
+          <Route path="/famille/adolescente" element={<FamilleSousPage><EspaceAdolescente /></FamilleSousPage>} />
+          <Route path="/famille/nouveau-ne" element={<FamilleSousPage><SignesNouveauNe /></FamilleSousPage>} />
+          <Route path="/famille/enfant-malade" element={<FamilleSousPage><EnfantMalade /></FamilleSousPage>} />
           <Route path="/famille/voix" element={<FamilleSousPage><MessagesParles /></FamilleSousPage>} />
           <Route path="/creches" element={<Creches />} />
           <Route path="/adolescents" element={<Adolescents />} />
+          <Route path="/borne" element={<Borne />} />
+          <Route path="/orientation" element={<Orientation />} />
+          <Route path="/maternite" element={<Maternite />} />
+          <Route path="/nutrition" element={<Nutrition />} />
+          <Route path="/muac" element={<Muac />} />
+          <Route path="/objets" element={<Objets />} />
+          <Route path="/reseau/*" element={<Reseau />} />
+          <Route path="/solutions" element={<Solutions />} />
+          <Route path="/sms" element={<Sms />} />
           <Route path="/signalement" element={<Signalement />} />
           <Route path="/jeux" element={<Jeux />} />
           <Route path="/jeux/:jeu" element={<Jeux />} />

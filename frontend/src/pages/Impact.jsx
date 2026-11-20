@@ -30,6 +30,7 @@ const PRIX = [
     ['L’acte de naissance des filles', 'Sans acte, une fille a plus de mal à entrer à l’école et à accéder aux services. L’acte est suivi jusqu’au retrait.', '/acte'],
     ['La crèche pour reprendre l’école', 'Une réservation en ligne offre un lieu sûr pour l’enfant : la jeune mère peut retourner en classe ou travailler.', '/creches'],
     ['Les petites sœurs qui gardent les petits', 'Une crèche fiable libère une grande sœur de 8 à 14 ans pour l’école. Le scénario chiffré est dans le tableau du responsable.', '/carte/ecole'],
+    ['Mon espace adolescente, privé et sur le téléphone', 'Comprendre son cycle avec un calendrier, choisir une protection, et être guidée pas à pas si elle est enceinte : consultations renforcées avant 18 ans, signes de danger, plan d’accouchement. Aucune donnée envoyée.', '/connexion'],
     ['Le bien-être de la jeune mère', 'Deux questions de repérage après la naissance, avec une orientation vers l’agent de santé : une mère soutenue soutient mieux son enfant.', '/famille/bien-etre'],
     ['Signaler une situation inquiétante', 'Un chemin direct, anonyme et sans diagnostic, pour une fille en danger.', '/signalement'],
   ] },

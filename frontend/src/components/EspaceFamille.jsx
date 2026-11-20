@@ -18,12 +18,15 @@ export default function EspaceFamille({ aRepondre = 0, children }) {
     { titre: 'Pour mon enfant', liens: [
       { to: '/famille/grossesse', nom: 'Ma grossesse', icone: 'coeur' },
       { to: '/famille/developpement', nom: 'Mon enfant avance-t-il bien ?', icone: 'graphe' },
+      { to: '/famille/nouveau-ne', nom: 'Nouveau-né : signes de danger', icone: 'bouclier' },
+      { to: '/famille/enfant-malade', nom: 'Mon enfant est malade', icone: 'aide' },
       { to: '/famille/bras', nom: 'Mesure du bras', icone: 'ruban' },
       { to: '/famille/jeux', nom: 'Jeux et vidéos', icone: 'jeu' },
       { to: '/famille/assistant', nom: 'Poser une question', icone: 'bulle' },
       { to: '/famille/acte', nom: 'Acte de naissance', icone: 'livre' },
     ] },
     { titre: 'Pour moi', liens: [
+      { to: '/famille/adolescente', nom: 'Mon espace adolescente', icone: 'coeur' },
       { to: '/famille/bien-etre', nom: 'Comment je vais, moi ?', icone: 'soleil' },
       { to: '/famille/voix', nom: 'Messages parlés', icone: 'micro' },
     ] },
