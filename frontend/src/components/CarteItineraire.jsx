@@ -7,8 +7,8 @@ import { delaiLisible } from '../lib/suivi.js'
  * avec l'itinéraire par moto, voiture ou à pied. Les professionnels signalent un obstacle ; tout le monde le voit.
  */
 const TYPES = {
-  hopital: ['Hôpital', '#c8372b'], centre: ['Centre de santé', '#d9622b'], creche: ['Crèche', '#0e7c86'], jardin: ['Jardin d’enfants', '#2f8f5b'],
-  ecole: ['École maternelle', '#2f8f5b'], boutique: ['Boutique partenaire', '#6a4fa3'], nutrition: ['Nutritionniste', '#6a4fa3'],
+  hopital: ['Hôpital', '#c8372b'], centre: ['Centre de santé', '#d9622b'], creche: ['Crèche', '#0e7c86'], jardin: ['Jardin d’enfants et maternelle', '#2f8f5b'],
+  ecole: ['École primaire', '#2f8f5b'], boutique: ['Boutique partenaire', '#6a4fa3'], nutrition: ['Nutritionniste', '#6a4fa3'],
 }
 const FILTRES = [['tous', 'Tous les lieux'], ['soins', 'Hôpitaux et centres'], ['petite', 'Crèches, jardins et écoles'], ['nutri', 'Nutrition']]
 const DANS = { soins: ['hopital', 'centre'], petite: ['creche', 'jardin', 'ecole'], nutri: ['boutique', 'nutrition'] }
@@ -173,7 +173,7 @@ function NouvelEtablissement({ jeton, villages, onChange }) {
       <h2>Ajouter une crèche, un jardin d’enfants ou une école</h2>
       <form onSubmit={creer} className="ado-champs">
         <label>Nom<input value={f.nom} maxLength={80} onChange={(e) => setF({ ...f, nom: e.target.value })} required /></label>
-        <label>Type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}><option value="creche">Crèche (0 à 3 ans)</option><option value="jardin">Jardin d’enfants (3 à 5 ans)</option><option value="ecole">École maternelle (4 à 5 ans)</option></select></label>
+        <label>Type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}><option value="creche">Crèche (0 à 3 ans)</option><option value="jardin">Jardin d’enfants et école maternelle (3 à 5 ans)</option><option value="ecole">École primaire (6 à 11 ans)</option></select></label>
         <label>Village<select value={f.village} onChange={(e) => setF({ ...f, village: e.target.value })}>{Object.entries(villages).map(([k, v]) => <option key={k} value={k}>{v.nom}</option>)}</select></label>
         <label>Places<input type="number" min="0" max="500" value={f.capacite} onChange={(e) => setF({ ...f, capacite: e.target.value })} /></label>
         <p><button className="bouton" type="submit">Ajouter</button></p>

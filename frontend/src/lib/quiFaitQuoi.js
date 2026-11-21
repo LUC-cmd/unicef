@@ -28,7 +28,7 @@ export const ROLES = [
     fait: 'Prépare l’accueil, marque l’arrivée puis la prise en charge. L’hôpital reçoit les cas graves que les centres lui envoient.',
     pas: 'Les alertes ne portent aucun nom : le type de cas, les signes, le village.',
     horsLigne: 'Besoin de réseau pour recevoir les alertes en direct. Sans réseau, l’agent prévient par SMS ou téléphone ; le passage entre deux centres peut se faire par QR signé.' },
-  { id: 'ecole', nom: 'Crèche, jardin d’enfants, école maternelle', ou: 'Dans le village',
+  { id: 'ecole', nom: 'Crèche, jardin d’enfants et maternelle, école primaire', ou: 'Dans le village',
     cree: 'Les observations d’éveil et d’apprentissage (4 domaines), les présences du jour, les signalements d’un enfant par son code.',
     envoie: 'Un signalement au centre le plus proche (absent depuis 3 jours, très maigre, fièvre, vaccin en retard, retard de développement). Quand deux domaines ou plus sont faibles, le centre est prévenu automatiquement.',
     recoit: 'Les enfants à stimuler, des activités conseillées, l’état de chaque signalement jusqu’à la prise en charge.',

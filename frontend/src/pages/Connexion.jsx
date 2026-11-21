@@ -26,9 +26,8 @@ const COMPTES = [
   { id: 'district.togo', role: 'Responsable de district', lieu: 'District de démonstration', detail: 'Crée les villages, centres, hôpitaux, crèches et écoles, ouvre les accès (code d’activation), suit références, retards et manques, et envoie les agents où il faut.', cible: '/reseau', Icone: IconeZone, reseau: true },
   { id: 'national.togo', role: 'Responsable national', lieu: 'Togo, toutes les régions', detail: 'Voit le pays entier : vaccination, nutrition, santé de la mère et de l’enfant, éveil, jeunes filles, région par région, avec l’évolution sur 6 mois et les reculs. Aucun nom d’enfant.', cible: '/reseau', Icone: IconeBouclier, reseau: true },
   { id: 'centre.agbele', role: 'Centre de santé de village', lieu: 'Agbélé', detail: 'Reçoit les cas annoncés par les agents et les écoles avant l’arrivée du patient, avec l’itinéraire, et marque l’arrivée puis la prise en charge.', cible: '/reseau', Icone: IconeCroix, reseau: true },
-  { id: 'ecole.agbele', role: 'Jardin d’enfants', lieu: 'Jardin d’enfants d’Agbélé', detail: 'Présences, éveil et apprentissage (4 domaines), signalement d’un enfant au centre le plus proche. Aucun nom, des codes.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
-  { id: 'ecole.davie', role: 'École maternelle', lieu: 'École maternelle de Davié', detail: 'Mêmes outils que le jardin d’enfants : présences, éveil, signalements vers l’hôpital de Davié.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
-  { id: 'ecole.zogbedji', role: 'Crèche de village', lieu: 'Crèche de Zogbédji', detail: 'Présences, repas, éveil des tout-petits et signalement au centre de santé le plus proche.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
+  { id: 'ecole.agbele', role: 'Jardin d’enfants et école maternelle', lieu: 'Agbélé', detail: 'Présences, éveil et apprentissage (4 domaines), signalement d’un enfant au centre le plus proche. Aucun nom, des codes.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
+  { id: 'ecole.davie', role: 'École primaire', lieu: 'École primaire de Davié', detail: 'Présences, suivi des élèves de 6 à 11 ans, signalement d’un enfant à l’hôpital de Davié. Aucun nom, des codes.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
   { id: 'unicef.partenaire', role: 'Partenaire UNICEF', lieu: 'Lecture seule', detail: 'Voit le tableau national, l’état des bornes en totaux et télécharge un rapport. Ne peut rien modifier et ne voit aucune personne. Compte de démonstration : ce n’est pas un compte officiel de l’UNICEF.', cible: '/reseau', Icone: IconeBouclier, reseau: true },
   { id: 'technicien.borne', role: 'Technicien des bornes', lieu: 'Bornes du district', detail: 'Voit l’état de chaque borne (stock, relève, réseau), recharge, enregistre une relève même sans réseau et lit ce que disent les utilisatrices.', cible: '/reseau', Icone: IconeReglage, reseau: true },
   { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Voir la carte des zones oubliées, décider où envoyer une équipe en priorité.', cible: '/carte', Icone: IconeZone },
@@ -38,7 +37,7 @@ const COMPTES = [
 const GROUPES = [
   ['Pilotage', 'Voir le pays, la région, le district, décider', ['national.togo', 'unicef.partenaire', 'decideur', 'district.togo']],
   ['Santé', 'Soigner, orienter, visiter', ['agent.vo', 'agent.nutrition', 'structure.golfe', 'centre.agbele', 'centre.davie', 'technicien.borne']],
-  ['Petite enfance et école', 'Éveil, présences, signalements', ['creche.golfe', 'ecole.agbele', 'ecole.davie', 'ecole.zogbedji']],
+  ['Petite enfance et école', 'Éveil, présences, signalements', ['creche.golfe', 'ecole.agbele', 'ecole.davie']],
   ['Familles et jeunes filles', 'Un code, aucun nom', ['famille', 'fille.demo', 'boutique.agbele']],
   ['Administration', 'Naissances, comptes, démonstration', ['mairie', 'admin']],
 ]

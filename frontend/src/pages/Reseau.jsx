@@ -25,7 +25,7 @@ const nomPoint = (id) => POINTS_NUTRITION.find((p) => p.id === id)?.nom ?? id
 const ETATS_DEMANDE = { demande: 'Demande reçue', visite: 'Visite prévue', suivi: 'Suivi en cours' }
 const ETATS_PRODUIT = { attente: 'En attente de validation', valide: 'Validé : conseillé aux familles', refuse: 'Refusé' }
 const ETATS_ALERTE = { 'en-route': 'En route', arrive: 'Arrivée', pris: 'Prise en charge' }
-const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé'], ['district.togo', 'Responsable de district'], ['national.togo', 'Responsable national'], ['ecole.agbele', 'Jardin d’enfants d’Agbélé'], ['ecole.davie', 'École maternelle de Davié'], ['ecole.zogbedji', 'Crèche de Zogbédji']]
+const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé'], ['district.togo', 'Responsable de district'], ['national.togo', 'Responsable national'], ['ecole.agbele', 'Jardin d’enfants et maternelle d’Agbélé'], ['ecole.davie', 'École primaire de Davié'], ['ecole.zogbedji', 'Crèche de Zogbédji']]
 
 /** Charge une liste du service et la rafraîchit toutes les 8 secondes : un cas urgent apparaît sans recharger la page. */
 function useListe(chemin, cle, jeton, delai = 8000) {

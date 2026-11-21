@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Bandeau from '../components/Bandeau.jsx'
 import { reseau } from '../lib/reseauClient.js'
 
-const ROLES = { district: 'Responsable de district', agent: 'Agent de santé', centre: 'Centre de santé ou hôpital', ecole: 'Crèche, jardin d’enfants ou école' }
+const ROLES = { district: 'Responsable de district', agent: 'Agent de santé', centre: 'Centre de santé ou hôpital', ecole: 'Crèche, jardin d’enfants ou école primaire' }
 const ETATS = { 'a-activer': 'À activer', actif: 'Actif', suspendu: 'Suspendu' }
 const LANGUES = ['Éwé', 'Kabiyè', 'Mina', 'Autre']
 
@@ -110,7 +110,7 @@ function NouvelEtab({ villages, jeton, onChange }) {
       <h2>Ajouter un centre, un hôpital, une crèche, un jardin d’enfants ou une école</h2>
       <form onSubmit={envoyer} className="ado-champs">
         <label>Nom<input value={f.nom} maxLength={80} onChange={(e) => setF({ ...f, nom: e.target.value })} required /></label>
-        <label>Type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}><option value="centre">Centre de santé</option><option value="hopital">Hôpital</option><option value="creche">Crèche (0 à 3 ans)</option><option value="jardin">Jardin d’enfants (3 à 5 ans)</option><option value="ecole">École maternelle (4 à 5 ans)</option></select></label>
+        <label>Type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}><option value="centre">Centre de santé</option><option value="hopital">Hôpital</option><option value="creche">Crèche (0 à 3 ans)</option><option value="jardin">Jardin d’enfants et école maternelle (3 à 5 ans)</option><option value="ecole">École primaire (6 à 11 ans)</option></select></label>
         <label>Village<select value={f.village} onChange={(e) => setF({ ...f, village: e.target.value })}>{villages.map(([k, v]) => <option key={k} value={k}>{v.nom}</option>)}</select></label>
         <label>Places (enfants)<input type="number" min="0" value={f.capacite} onChange={(e) => setF({ ...f, capacite: e.target.value })} /></label>
         <p><button className="bouton" type="submit">Ajouter</button></p>

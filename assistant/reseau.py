@@ -95,8 +95,8 @@ COMPTES = {
     "centre.davie": ("centre", "c4", CENTRES["c4"][0]),
     "district.togo": ("district", "", "Responsable de district (démonstration)"),
     "national.togo": ("national", "", "Responsable national (démonstration)"),
-    "ecole.agbele": ("ecole", "e1", "Jardin d’enfants d’Agbélé (fictif)"),
-    "ecole.davie": ("ecole", "e2", "École maternelle de Davié (fictive)"),
+    "ecole.agbele": ("ecole", "e1", "Jardin d’enfants et école maternelle d’Agbélé (fictif)"),
+    "ecole.davie": ("ecole", "e2", "École primaire de Davié (fictive)"),
     "ecole.zogbedji": ("ecole", "e3", "Crèche communautaire de Zogbédji (fictive)"),
     "technicien.borne": ("technicien", "", "Technicien des bornes (démonstration)"),
     "unicef.partenaire": ("partenaire", "", "UNICEF Togo, partenaire en lecture seule (démonstration)"),
@@ -118,7 +118,7 @@ OBSTACLES = {  # type -> (libellé, effet par mode : None = bloqué, sinon coeff
     "boue": ("Piste boueuse", {"moto": 1.8, "voiture": 2.5, "pied": 1.3}),
     "marche": ("Jour de marché, route encombrée", {"moto": 1.3, "voiture": 1.6, "pied": 1.0}),
 }
-TYPES_ETABLISSEMENT = {"creche": "Crèche (0 à 3 ans)", "jardin": "Jardin d’enfants (3 à 5 ans)", "ecole": "École maternelle (4 à 5 ans)", "centre": "Centre de santé", "hopital": "Hôpital"}
+TYPES_ETABLISSEMENT = {"creche": "Crèche (0 à 3 ans)", "jardin": "Jardin d’enfants et école maternelle (3 à 5 ans)", "ecole": "École primaire (6 à 11 ans)", "centre": "Centre de santé", "hopital": "Hôpital"}
 ROLES_CREABLES = {"district": ("agent", "centre", "ecole"), "national": ("district", "agent", "centre", "ecole")}
 # Règles de démonstration de la campagne porte-à-porte : (libellé, âge minimum en mois, âge maximum, intervalle en jours ; None = une seule fois). À valider avec le ministère de la Santé.
 SOINS_CAMPAGNE = {"vitamineA": ("Vitamine A", 6, 59, 180), "deparasitage": ("Déparasitage", 12, 59, 180), "rougeole": ("Vaccin rougeole (rappel)", 9, 59, None)}
@@ -128,8 +128,8 @@ DOMAINES_NAT = {"vaccination": "Vaccination des enfants", "nutrition": "Nutritio
 ALPHABET_ACTIVATION = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 
 STRUCTURES = {
-    "e1": ("Jardin d’enfants d’Agbélé (fictif)", "agbele", "Jardin d’enfants (3 à 5 ans)", 38, 31, 38),
-    "e2": ("École maternelle de Davié (fictive)", "davie", "École maternelle (4 à 5 ans)", 54, 36, 0),
+    "e1": ("Jardin d’enfants et école maternelle d’Agbélé (fictif)", "agbele", "Jardin d’enfants et école maternelle (3 à 5 ans)", 38, 31, 38),
+    "e2": ("École primaire de Davié (fictive)", "davie", "École primaire (6 à 11 ans)", 54, 36, 0),
     "e3": ("Crèche communautaire de Zogbédji (fictive)", "zogbedji", "Crèche (0 à 3 ans)", 22, 20, 22),
 }
 DOMAINES = {"langage": "Langage et communication", "motricite": "Motricité et coordination", "social": "Vie sociale et émotions", "cognition": "Découverte et apprentissage"}
