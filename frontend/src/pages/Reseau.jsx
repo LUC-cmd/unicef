@@ -5,6 +5,13 @@ import Shell from '../components/Shell.jsx'
 import { CAS, CENTRES, POINTS_CONTROLE, POINTS_NUTRITION, POUR, POUR_BOUTIQUE, VILLAGES } from '../lib/parcours.js'
 import { MDP_DEMO } from '../lib/config.js'
 import { Appels, District, References, Villages } from './Suivi.jsx'
+import CloucheReseau from '../components/CloucheReseau.jsx'
+import CarteReseau from './CarteReseau.jsx'
+import Campagne from './Campagne.jsx'
+import Gestion from './Gestion.jsx'
+import Manques from './Manques.jsx'
+import National from './National.jsx'
+import QuiFaitQuoi from './QuiFaitQuoi.jsx'
 import { Structures, TableauCentre, TableauEcole } from './Structures.jsx'
 import { ecrireSessionReseau, lireSessionReseau, reseau } from '../lib/reseauClient.js'
 
@@ -14,7 +21,7 @@ const nomPoint = (id) => POINTS_NUTRITION.find((p) => p.id === id)?.nom ?? id
 const ETATS_DEMANDE = { demande: 'Demande reçue', visite: 'Visite prévue', suivi: 'Suivi en cours' }
 const ETATS_PRODUIT = { attente: 'En attente de validation', valide: 'Validé : conseillé aux familles', refuse: 'Refusé' }
 const ETATS_ALERTE = { 'en-route': 'En route', arrive: 'Arrivée', pris: 'Prise en charge' }
-const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé'], ['district.togo', 'Responsable de district'], ['ecole.agbele', 'Jardin d’enfants d’Agbélé'], ['ecole.davie', 'École maternelle de Davié'], ['ecole.zogbedji', 'Crèche de Zogbédji']]
+const COMPTES_DEMO = [['boutique.agbele', 'Boutique d’Agbélé'], ['boutique.zogbedji', 'Boutique de Zogbédji'], ['agent.nutrition', 'Agent de santé (nutrition)'], ['centre.davie', 'Hôpital de Davié'], ['centre.kpadape', 'Centre de Kpadapé'], ['district.togo', 'Responsable de district'], ['national.togo', 'Responsable national'], ['ecole.agbele', 'Jardin d’enfants d’Agbélé'], ['ecole.davie', 'École maternelle de Davié'], ['ecole.zogbedji', 'Crèche de Zogbédji']]
 
 /** Charge une liste du service et la rafraîchit toutes les 8 secondes : un cas urgent apparaît sans recharger la page. */
 function useListe(chemin, cle, jeton, delai = 8000) {
@@ -28,7 +35,30 @@ function useListe(chemin, cle, jeton, delai = 8000) {
   return [liste, erreur, charger]
 }
 
+function Activation({ retour }) {
+  const [f, setF] = useState({ identifiant: '', code: '', mdp: '', mdp2: '' })
+  const [msg, setMsg] = useState('')
+  const [ok, setOk] = useState(false)
+  const envoyer = async (e) => {
+    e.preventDefault(); setMsg('')
+    if (f.mdp !== f.mdp2) { setMsg('Les deux mots de passe ne sont pas identiques.'); return }
+    try { await reseau.post('activer', { identifiant: f.identifiant, code: f.code, mdp: f.mdp }); setOk(true) } catch (er) { setMsg(er.message) }
+  }
+  if (ok) return <p role="status">Accès activé. <button type="button" className="bouton" onClick={retour}>Me connecter</button></p>
+  return (
+    <form onSubmit={envoyer} style={{ display: 'grid', gap: '.8rem', maxWidth: 420 }}>
+      <label>Identifiant (donné par votre responsable)<input value={f.identifiant} onChange={(e) => setF({ ...f, identifiant: e.target.value })} autoComplete="username" required /></label>
+      <label>Code d’activation<input value={f.code} maxLength={12} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} required /></label>
+      <label>Choisissez un mot de passe (8 caractères au moins)<input type="password" value={f.mdp} onChange={(e) => setF({ ...f, mdp: e.target.value })} autoComplete="new-password" minLength={8} required /></label>
+      <label>Répétez-le<input type="password" value={f.mdp2} onChange={(e) => setF({ ...f, mdp2: e.target.value })} autoComplete="new-password" required /></label>
+      {msg && <p role="alert" className="erreur">{msg}</p>}
+      <p><button className="bouton" type="submit">Activer mon accès</button> <button type="button" className="bouton secondaire" onClick={retour}>Retour</button></p>
+    </form>
+  )
+}
+
 function Connexion({ onOk }) {
+  const [activer, setActiver] = useState(false)
   const [identifiant, setIdentifiant] = useState('boutique.agbele')
   const [mdp, setMdp] = useState(MDP_DEMO)
   const [erreur, setErreur] = useState('')
@@ -42,7 +72,8 @@ function Connexion({ onOk }) {
       <Bandeau surtitre="Boutiques, agents de santé et centres" titre="Espace du réseau Fil d’Or">Une boutique propose ses produits, l’agent de santé les valide et la contrôle, et le centre voit arriver les cas urgents.</Bandeau>
       <main className="page ado">
         <section className="carte">
-          <h2>Se connecter</h2>
+          <h2>{activer ? 'Première connexion' : 'Se connecter'}</h2>
+          {activer ? <Activation retour={() => setActiver(false)} /> : <>
           <form onSubmit={envoyer} style={{ display: 'grid', gap: '.8rem', maxWidth: 420 }}>
             <label>Identifiant<input value={identifiant} onChange={(e) => setIdentifiant(e.target.value)} autoComplete="username" required /></label>
             <label>Mot de passe<input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required /></label>
@@ -54,6 +85,8 @@ function Connexion({ onOk }) {
             <ul className="liste-coches">{COMPTES_DEMO.map(([id, nom]) => <li key={id}><button type="button" className="bouton secondaire petit-bouton" onClick={() => { setIdentifiant(id); setMdp(MDP_DEMO) }}>{id}</button> {nom}</li>)}</ul>
             <p className="petit">Un clic pré-remplit le compte. Comptes fictifs de démonstration, à ne pas utiliser en production.</p>
           </details>
+          <p><button type="button" className="bouton secondaire" onClick={() => setActiver(true)}>Première connexion : activer mon accès</button></p>
+          </>}
         </section>
         <p className="petit">Les familles, elles, n’ont pas besoin de compte : <Link to="/nutrition">trouver une boutique</Link>.</p>
       </main>
@@ -254,13 +287,14 @@ function Alertes({ s }) {
 }
 
 const MENUS = {
-  boutique: { teinte: 'vert', groupes: [{ titre: 'Ma boutique', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/produits', nom: 'Mes produits', icone: 'boite' }, { to: '/reseau/demandes', nom: 'Demandes reçues', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôles', icone: 'bouclier' }] }] },
-  agent: { teinte: 'cyan', groupes: [{ titre: 'Réseau nutrition', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/produits', nom: 'Produits à valider', icone: 'coche' }, { to: '/reseau/demandes', nom: 'Demandes et visites', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôler une boutique', icone: 'bouclier' }, { to: '/reseau/questions', nom: 'Questions anonymes', icone: 'bulle' }] }, { titre: 'Suivi des enfants', liens: [{ to: '/reseau/villages', nom: 'Villages', icone: 'accueil' }, { to: '/reseau/references', nom: 'Références', icone: 'liste' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }, { to: '/reseau/structures', nom: 'Crèches et écoles', icone: 'boite' }] }] },
-  district: { teinte: 'cyan', groupes: [{ titre: 'District', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/villages', nom: 'Villages', icone: 'liste' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }, { to: '/reseau/structures', nom: 'Crèches et écoles', icone: 'boite' }] }] },
-  ecole: { teinte: 'vert', groupes: [{ titre: 'Mon établissement', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }] }] },
-  centre: { teinte: 'orange', groupes: [{ titre: 'Centre de santé ou hôpital', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/alertes', nom: 'Cas qui arrivent', icone: 'horloge' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }] }] },
+  boutique: { teinte: 'vert', groupes: [{ titre: 'Ma boutique', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/produits', nom: 'Mes produits', icone: 'boite' }, { to: '/reseau/demandes', nom: 'Demandes reçues', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôles', icone: 'bouclier' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  agent: { teinte: 'cyan', groupes: [{ titre: 'Réseau nutrition', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/produits', nom: 'Produits à valider', icone: 'coche' }, { to: '/reseau/demandes', nom: 'Demandes et visites', icone: 'liste' }, { to: '/reseau/controles', nom: 'Contrôler une boutique', icone: 'bouclier' }, { to: '/reseau/questions', nom: 'Questions anonymes', icone: 'bulle' }] }, { titre: 'Suivi des enfants', liens: [{ to: '/reseau/villages', nom: 'Villages', icone: 'accueil' }, { to: '/reseau/references', nom: 'Références', icone: 'liste' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }, { to: '/reseau/structures', nom: 'Crèches et écoles', icone: 'boite' }] }, { titre: 'Sur le terrain', liens: [{ to: '/reseau/campagne', nom: 'Campagne porte-à-porte', icone: 'coche' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'carte' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  district: { teinte: 'cyan', groupes: [{ titre: 'District', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/villages', nom: 'Villages', icone: 'liste' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }, { to: '/reseau/structures', nom: 'Crèches et écoles', icone: 'boite' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'carte' }] }, { titre: 'Gestion', liens: [{ to: '/reseau/gestion', nom: 'Comptes et villages', icone: 'cle' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  national: { teinte: 'cyan', groupes: [{ titre: 'National', liens: [{ to: '/reseau', nom: 'Tableau national', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'carte' }] }, { titre: 'Gestion', liens: [{ to: '/reseau/gestion', nom: 'Comptes et villages', icone: 'cle' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  ecole: { teinte: 'vert', groupes: [{ titre: 'Mon établissement', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }] }, { titre: 'Mes autres espaces', liens: [{ to: '/connexion', nom: 'Espace crèche et structure', icone: 'batiment' }, { to: '/fonctionnement', nom: 'Comment tout se relie', icone: 'aide' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  centre: { teinte: 'orange', groupes: [{ titre: 'Centre de santé ou hôpital', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/alertes', nom: 'Cas qui arrivent', icone: 'horloge' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
 }
-const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé', district: 'Responsable de district', ecole: 'Établissement 0-5 ans' }
+const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé', district: 'Responsable de district', national: 'Responsable national', ecole: 'Établissement 0-5 ans' }
 
 export default function Reseau() {
   const [s, setS] = useState(lireSessionReseau)
@@ -271,9 +305,14 @@ export default function Reseau() {
   const sortir = () => { ecrireSessionReseau(null); setS(null); nav('/reseau') }
   return (
     <Shell titre={titre} teinte={m.teinte} groupes={m.groupes} nom={s.nom} sous={titre} utilisateur={s.identifiant}>
-      <p style={{ textAlign: 'right', margin: 0 }}><button type="button" className="bouton secondaire petit-bouton" onClick={sortir}>Se déconnecter</button></p>
+      <div className="barre-reseau"><CloucheReseau jeton={s.jeton} /><button type="button" className="bouton secondaire petit-bouton" onClick={sortir}>Se déconnecter</button></div>
       <Routes>
-        <Route index element={s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
+        <Route index element={s.role === 'national' ? <National s={s} /> : s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
+        <Route path="carte" element={<CarteReseau s={s} />} />
+        <Route path="roles" element={<QuiFaitQuoi dans />} />
+        <Route path="gestion" element={s.role === 'district' || s.role === 'national' ? <Gestion s={s} /> : <Tableau s={s} />} />
+        <Route path="manques" element={['district', 'national', 'agent'].includes(s.role) ? <Manques s={s} /> : <Tableau s={s} />} />
+        <Route path="campagne" element={s.role === 'agent' ? <Campagne s={s} /> : <Tableau s={s} />} />
         <Route path="structures" element={s.role === 'agent' || s.role === 'district' ? <Structures s={s} /> : <Tableau s={s} />} />
         <Route path="villages" element={s.role === 'centre' || s.role === 'boutique' || s.role === 'ecole' ? <Tableau s={s} /> : <Villages s={s} />} />
         <Route path="references" element={s.role === 'boutique' || s.role === 'ecole' ? <Tableau s={s} /> : <References s={s} />} />
@@ -283,7 +322,7 @@ export default function Reseau() {
         <Route path="controles" element={s.role === 'centre' ? <Tableau s={s} /> : <Controles s={s} />} />
         <Route path="questions" element={s.role === 'agent' ? <Questions s={s} /> : <Tableau s={s} />} />
         <Route path="alertes" element={s.role === 'centre' ? <Alertes s={s} /> : <Tableau s={s} />} />
-        <Route path="*" element={s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
+        <Route path="*" element={s.role === 'national' ? <National s={s} /> : s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
       </Routes>
     </Shell>
   )

@@ -4,7 +4,7 @@ import Picto from './Picto.jsx'
 
 const GROUPES = [
   ['Mon espace', [['/famille', 'Accueil', 'famille', true], ['/famille/messages', 'Messages', 'telephone'], ['/famille/dossier', 'Dossier de naissance', 'fiche'], ['/famille/compte', 'Mon compte', 'coeur']]],
-  ['Crèches', [['/famille/lieux', 'Crèches près de moi', 'pin'], ['/famille/creche', 'Réserver une place', 'horloge']]],
+  ['Crèches', [['/famille/lieux', 'Crèches près de moi', 'pin'], ['/famille/carte', 'Centres, écoles et itinéraire', 'pin'], ['/famille/creche', 'Réserver une place', 'horloge']]],
   ['Pour mon enfant', [['/famille/grossesse', 'Ma grossesse', 'enceinte'], ['/famille/jeux', 'Jeux et vidéos', 'danse'], ['/famille/assistant', 'Poser une question', 'parole'], ['/famille/acte', 'Acte de naissance', 'bol']]],
 ]
 const TOUS = GROUPES.flatMap(([, l]) => l)

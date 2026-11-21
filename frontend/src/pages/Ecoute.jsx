@@ -22,7 +22,7 @@ export default function Ecoute() {
     let annule = false
     setErreur('')
     api.get(`/api/public/ecoute?zone=${encodeURIComponent(zone)}`)
-      .then((s) => { if (!annule) setSeance(s) })
+      .then((s) => { if (!annule) setSeance(Array.isArray(s?.moments) ? s : null) })
       .catch((e) => { if (!annule) { setSeance(null); setErreur(e.message) } })
     return () => { annule = true }
   }, [zone])

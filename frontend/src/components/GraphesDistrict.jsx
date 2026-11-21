@@ -100,3 +100,41 @@ export function ParCas({ donnees }) {
     </Cadre>
   )
 }
+
+/** Anneaux de pourcentage, un par domaine : on voit tout de suite le plus faible. */
+export function Anneaux({ titre, aide, items }) {
+  const R = 26, C = 2 * Math.PI * R
+  return (
+    <Cadre titre={titre} aide={aide} colonnes={['Domaine', 'Acquis']} lignes={items.map((i) => [i.nom, `${i.pct} %`])}>
+      <ul className="anneaux">
+        {items.map((i) => (
+          <li key={i.id} className={i.pct < 50 ? 'anneau-bas' : ''}>
+            <svg viewBox="0 0 64 64" className="anneau" role="img" aria-label={`${i.nom} : ${i.pct} %`}>
+              <circle cx="32" cy="32" r={R} className="anneau-fond" />
+              <circle cx="32" cy="32" r={R} className="anneau-val" strokeDasharray={C} strokeDashoffset={C * (1 - i.pct / 100)} transform="rotate(-90 32 32)" />
+              <text x="32" y="37" textAnchor="middle">{i.pct} %</text>
+            </svg>
+            <span>{i.nom}</span>
+          </li>
+        ))}
+      </ul>
+    </Cadre>
+  )
+}
+
+/** Une courbe simple : évolution d'un pourcentage au fil des mois. */
+export function Evolution({ titre, donnees, aide }) {
+  const W = 560, H = 200, g = 34, d = 18
+  const x = (i) => g + (i * (W - g - d)) / Math.max(1, donnees.length - 1)
+  const y = (v) => H - 30 - (v * (H - 30 - d)) / 100
+  const trace = donnees.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.pct).toFixed(1)}`).join(' ')
+  return (
+    <Cadre titre={titre} aide={aide} colonnes={['Mois', 'Indice']} lignes={donnees.map((p) => [p.etiquette, `${p.pct} %`])}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="svg-graphe" role="img" aria-label={titre}>
+        {[0, 50, 100].map((v) => <g key={v}><line x1={g} x2={W - d} y1={y(v)} y2={y(v)} className="g-grille" /><text x={g - 8} y={y(v) + 4} textAnchor="end" className="g-texte">{v}</text></g>)}
+        <path d={trace} className="g-ligne g-prises" />
+        {donnees.map((p, i) => <g key={p.etiquette}><circle cx={x(i)} cy={y(p.pct)} r="4" className="g-point"><title>{`${p.etiquette} : ${p.pct} %`}</title></circle><text x={x(i)} y={H - 10} textAnchor="middle" className="g-texte">{p.etiquette}</text></g>)}
+      </svg>
+    </Cadre>
+  )
+}

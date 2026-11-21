@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import LecteurQr from './LecteurQr.jsx'
 import QrCode from './QrCode.jsx'
-import { CARTES_DEMO, PRODUITS, assurerDemo, formater, lienQrCarte, nettoyer, utiliserCode } from '../lib/borne.js'
+import { CARTES_DEMO, PRODUITS, assurerDemo, formater, lienQrCarte, nettoyer, noterSondage, utiliserCode } from '../lib/borne.js'
+import { QUESTIONS, choixDepuis, ecouter, parler, taire, texteC, texteQ, voixDispo } from '../lib/dialogueBorne.js'
+import { cleMessage, jouer, lireVoix } from '../lib/voix.js'
 
-const LANGUES = ['Français', 'Éwé', 'Kabiyè', 'Mina']
+const LANGUES = ['Français', 'English', 'Éwé', 'Kabiyè', 'Mina']
 const BESOINS = [
   ['preservatifs', 'Préservatifs', 'Me protéger'],
   ['serviettes', 'Serviettes hygiéniques', 'Mes règles'],
@@ -25,6 +27,54 @@ const CONSEILS = {
 const ICONES = { preservatifs: 'P', serviettes: 'S', antalgique: 'A', bon: 'B' }
 
 /** Essai complet de la borne : langue, besoin, mot de réconfort, carte (numéro ou QR), puis les produits sortent selon ce que la carte permet. */
+/** La borne questionne à voix haute ; on répond en touchant, en tapant le numéro du choix, ou en parlant. Rien n'est lié à la personne. */
+function Questions({ langue, onFin }) {
+  const [i, setI] = useState(0)
+  const [rep, setRep] = useState({})
+  const [ecoute, setEcoute] = useState(false)
+  const [vu, setVu] = useState('')
+  const q = QUESTIONS[i]
+  const dire = () => {
+    const texte = `${texteQ(q, langue)} ${q.choix.map((c, k) => `${k + 1}. ${texteC(c, langue)}`).join('. ')}`
+    if (voixDispo(langue)) { parler(texte, langue); return }
+    lireVoix(cleMessage(langue, 'sondage', i)).then((v) => { if (v?.blob) jouer(v.blob) }).catch(() => {})
+  }
+  useEffect(() => { setVu(''); dire(); return taire }, [i]) // eslint-disable-line react-hooks/exhaustive-deps
+  const choisir = (k) => {
+    taire()
+    const r = { ...rep, [q.id]: q.choix[k][0] }
+    setRep(r)
+    if (i + 1 < QUESTIONS.length) setI(i + 1); else onFin(r)
+  }
+  useEffect(() => {
+    const t = (e) => { const n = Number(e.key); if (n >= 1 && n <= q.choix.length && !/INPUT|TEXTAREA/.test(e.target.tagName)) choisir(n - 1) }
+    window.addEventListener('keydown', t); return () => window.removeEventListener('keydown', t)
+  }) // eslint-disable-line react-hooks/exhaustive-deps
+  const parlerMoi = async () => {
+    taire(); setEcoute(true)
+    const dit = await ecouter(langue); setEcoute(false)
+    if (dit === null) { setVu('Ce téléphone ne sait pas écouter : touche ou tape le numéro.'); return }
+    setVu(dit ? `J’ai entendu : « ${dit} »` : 'Je n’ai pas entendu. Réessaie ou touche ton choix.')
+    const k = choixDepuis(dit, q.choix, langue)
+    if (k >= 0) choisir(k)
+  }
+  return (
+    <div className="be-vue">
+      <h2>Une dernière chose</h2>
+      <p>Trois questions pour améliorer la borne. Personne ne saura que c’est toi. Question {i + 1} sur {QUESTIONS.length}.</p>
+      <p className="be-douce"><b>{texteQ(q, langue)}</b></p>
+      <div className="be-grille">{q.choix.map((c, k) => <button key={c[0]} type="button" className="be-bouton gros" onClick={() => choisir(k)}><b>{k + 1}</b> {texteC(c, langue)}</button>)}</div>
+      <div className="be-ligne">
+        <button type="button" className="be-sec" onClick={dire}>Réécouter la question</button>
+        <button type="button" className="be-sec" onClick={parlerMoi} disabled={ecoute}>{ecoute ? 'Je t’écoute…' : 'Répondre en parlant'}</button>
+        <button type="button" className="be-sec" onClick={() => { taire(); onFin(Object.keys(rep).length ? rep : null) }}>Passer</button>
+      </div>
+      {vu && <p className="be-note" role="status">{vu}</p>}
+      {!voixDispo(langue) && <p className="be-note">En {langue}, la borne joue la voix enregistrée par un locuteur du village (page « Côté agent », studio de voix). Tant qu’elle n’est pas enregistrée, le texte s’affiche en français.</p>}
+    </div>
+  )
+}
+
 export default function BorneEssai({ etat, setEtat, cartePerso, besoinInitial, onEtape }) {
   const [etape, setEtape] = useState(0)
   const [langue, setLangue] = useState('Français')
@@ -58,7 +108,7 @@ export default function BorneEssai({ etat, setEtat, cartePerso, besoinInitial, o
   return (
     <section className="be" aria-label="Essai de la borne">
       <div className="be-ecran">
-        <div className="be-pas" aria-hidden="true">{[0, 1, 2, 3, 4].map((i) => <i key={i} className={etape >= i ? 'on' : ''} />)}</div>
+        <div className="be-pas" aria-hidden="true">{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} className={etape >= i ? 'on' : ''} />)}</div>
         {etape === 0 && (
           <div className="be-vue" key="0">
             <h2>Bienvenue</h2>
@@ -112,9 +162,10 @@ export default function BorneEssai({ etat, setEtat, cartePerso, besoinInitial, o
             <h3>Quelques conseils</h3>
             {Object.keys(res.remis).map((k) => <div key={k} className="be-conseil"><b>{PRODUITS[k]}</b><ul>{CONSEILS[k].map((c) => <li key={c}>{c}</li>)}</ul></div>)}
             <p className="be-note">Il reste sur ta carte : {Object.entries(res.reste).filter(([, n]) => n > 0).map(([k, n]) => `${n} ${PRODUITS[k].toLowerCase()}`).join(', ') || 'rien'}. Un problème qui t’inquiète ? Va au centre de santé.</p>
-            <button type="button" className="be-suite" onClick={recommencer}>Terminer</button>
+            <button type="button" className="be-suite" onClick={() => setEtape(5)}>Terminer</button>
           </div>
         )}
+        {etape === 5 && <Questions key="5" langue={langue} onFin={(r) => { if (r) setEtat(noterSondage(etat, langue, r)); recommencer() }} />}
       </div>
       <aside className="be-cartes">
         <h3>Les cartes à essayer</h3>

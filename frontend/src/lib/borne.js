@@ -122,3 +122,27 @@ export function assurerDemo(etat) {
   const manque = CARTES_DEMO.filter((c) => !etat.cartes[empreinte(c.code)])
   return manque.length ? chargerCartes(etat, manque) : etat
 }
+
+/** Recharger une carte déjà utilisée : le même numéro continue de marcher, on ajoute des droits. Seule l'empreinte est touchée. */
+export function rechargerCarte(etat, saisie, ajout) {
+  const code = nettoyer(saisie)
+  if (!codeValide(code)) return { etat, ok: false, raison: 'format' }
+  const h = empreinte(code)
+  const carte = etat.cartes[h]
+  if (!carte) return { etat, ok: false, raison: 'inconnu' }
+  const reste = { ...carte.reste }
+  for (const [k, n] of Object.entries(ajout)) if (k in PRODUITS) reste[k] = (reste[k] ?? 0) + Math.max(0, Number(n) || 0)
+  return { etat: { ...etat, cartes: { ...etat.cartes, [h]: { reste } } }, ok: true, reste }
+}
+
+/** Réponses anonymes aux questions de la borne : jamais de carte, jamais d'heure précise, seulement la langue et le jour. */
+export function noterSondage(etat, langue, reponses, maintenant = Date.now()) {
+  const jour = new Date(maintenant).toISOString().slice(0, 10)
+  return { ...etat, sondage: [...(etat.sondage ?? []), { jour, langue, ...reponses }] }
+}
+export function resumeSondage(etat) {
+  const s = etat.sondage ?? []
+  const compte = (cle) => s.reduce((a, r) => (r[cle] ? { ...a, [r[cle]]: (a[r[cle]] ?? 0) + 1 } : a), {})
+  const langues = s.reduce((a, r) => ({ ...a, [r.langue]: (a[r.langue] ?? 0) + 1 }), {})
+  return { total: s.length, probleme: compte('probleme'), ailleurs: compte('ailleurs'), utile: compte('utile'), langues }
+}

@@ -3,9 +3,10 @@ import MenuProfil from './components/MenuProfil.jsx'
 import MenuProfilFamille from './components/MenuProfilFamille.jsx'
 import NotificationsFamille from './components/NotificationsFamille.jsx'
 import { useCompteFamille } from './lib/famille.js'
+import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau } from './lib/espace.js'
 import { Notifications } from './components/Shell.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth, useReseau } from './lib/contexte.jsx'
 import Accueil from './pages/Accueil.jsx'
 import Connexion from './pages/Connexion.jsx'
@@ -38,6 +39,9 @@ const Orientation = lazy(() => import('./pages/Orientation.jsx'))
 const Maternite = lazy(() => import('./pages/Maternite.jsx'))
 const Nutrition = lazy(() => import('./pages/Nutrition.jsx'))
 const Reseau = lazy(() => import('./pages/Reseau.jsx'))
+const QuiFaitQuoi = lazy(() => import('./pages/QuiFaitQuoi.jsx'))
+const FamilleCarte = lazy(() => import('./pages/FamilleCarte.jsx'))
+const FamilleNutrition = lazy(() => import('./pages/Nutrition.jsx'))
 const Objets = lazy(() => import('./pages/Objets.jsx'))
 const Solutions = lazy(() => import('./pages/Solutions.jsx'))
 const Muac = lazy(() => import('./pages/Muac.jsx'))
@@ -115,6 +119,7 @@ export default function App() {
   const { session } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
+  const naviguer = useNavigate()
   const [menuOuvert, setMenuOuvert] = useState(false)
   const [intro, setIntro] = useState(() => {
     try {
@@ -126,8 +131,15 @@ export default function App() {
   })
   const finIntro = () => setIntro(false)
   const compteFamille = useCompteFamille()
-  const dansFamille = Boolean(compteFamille) && !session && /^\/famille(\/|$)/.test(lieu.pathname)
-  const dansEspace = (Boolean(session) && /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/.test(lieu.pathname)) || dansFamille
+  const reseauSession = useSessionReseau()
+  const dehors = useDehors()
+  const connecte = { session, reseauSession, compteFamille }
+  useNouvelleConnexion(identiteConnectee(connecte))
+  const espace = espaceDe({ ...connecte, accueilRole: ACCUEIL_ROLE })
+  const dansFamille = Boolean(compteFamille) && !session && !reseauSession && /^\/famille(\/|$)/.test(lieu.pathname)
+  const dansEspace = Boolean(espace) && !dehors && espace.estDans(lieu.pathname)
+  // Connecté et pas « dehors » : tout ce qui n'est pas dans son espace ramène à son espace.
+  const retour = espace && !dehors && !espace.estDans(lieu.pathname) ? (espace.vers?.(lieu.pathname) ?? espace.base) : null
   
   // Ferme le menu mobile et remonte en haut à chaque changement de page
   useEffect(() => {
@@ -172,6 +184,8 @@ export default function App() {
     return () => obs.disconnect()
   })
 
+  if (retour) return <Navigate to={retour} replace />
+
   return (
     <div className="coque">
       {intro && <Suspense fallback={null}><IntroRegion onFin={finIntro} /></Suspense>}
@@ -181,11 +195,11 @@ export default function App() {
       <div className={`entete-bloc no-print ${menuOuvert ? 'ouvert' : ''}${dansEspace ? ' espace' : ''}`}>
         <header className="entete">
           <div className="interieur">
-            <Link to="/" className="logo" aria-label="Fil d'Or, accueil"><Logo /></Link>
+            <Link to={dansEspace ? espace.base : '/'} className="logo" aria-label={dansEspace ? "Fil d'Or, mon espace" : "Fil d'Or, accueil"}><Logo /></Link>
             <div className="entete-action">
-              {!session && !dansFamille && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
-              {session && !dansEspace && <Link className="bouton-entete principal" to={ACCUEIL_ROLE[session.role] ?? '/'}>Mon espace</Link>}
-              {(session || dansFamille) && dansEspace && <Link className="bouton-entete principal" to="/">Accueil</Link>}
+              {!espace && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
+              {espace && !dansEspace && <Link className="bouton-entete principal" to={espace.base} onClick={() => ecrireDehors(false)}>Retourner dans mon espace</Link>}
+              {dansEspace && <button type="button" className="bouton-entete principal" onClick={() => { ecrireDehors(true); naviguer('/') }}>Quitter l’espace</button>}
               {(session || dansFamille) && dansEspace && (
                 <>
                   {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
@@ -237,6 +251,7 @@ export default function App() {
                   <summary>Ressources</summary>
                   <div className="menu-liste">
                     <Link to="/fonctionnement"><b>Fonctionnement</b><small>Comment circulent les informations</small></Link>
+                    <Link to="/roles"><b>Qui fait quoi</b><small>Rôles, accès, déploiement, hors ligne</small></Link>
                     <Link to="/acte"><b>Acte de naissance</b><small>Les étapes, les délais, la gratuité</small></Link>
                     <Link to="/annuaire"><b>Annuaire des structures</b><small>Centres de santé, crèches, état civil</small></Link>
                     <Link to="/ecoute"><b>Point d'écoute</b><small>Pour les familles sans téléphone</small></Link>
@@ -283,6 +298,7 @@ export default function App() {
           <Route path="/whatsapp" element={<WhatsApp />} />
           <Route path="/annuaire" element={<Annuaire />} />
           <Route path="/acte" element={<ActeNaissance />} />
+          <Route path="/roles" element={<QuiFaitQuoi />} />
           <Route path="/fonctionnement" element={<Fonctionnement />} />
           <Route path="/visite" element={<Visite />} />
           <Route path="/hors-reseau" element={<HorsReseau />} />
@@ -294,6 +310,8 @@ export default function App() {
           <Route path="/famille/lieux" element={<Famille onglet="creches" />} />
           <Route path="/famille/dossier" element={<Famille onglet="dossier" />} />
           <Route path="/famille/compte" element={<Famille onglet="compte" />} />
+          <Route path="/famille/carte" element={<FamilleSousPage><FamilleCarte /></FamilleSousPage>} />
+          <Route path="/famille/nutrition" element={<FamilleSousPage><FamilleNutrition /></FamilleSousPage>} />
           <Route path="/famille/creche" element={<FamilleSousPage><FamilleCreche /></FamilleSousPage>} />
           <Route path="/famille/grossesse" element={<FamilleSousPage><Grossesse /></FamilleSousPage>} />
           <Route path="/famille/jeux" element={<FamilleSousPage><Jeux /></FamilleSousPage>} />

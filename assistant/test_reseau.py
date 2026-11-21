@@ -270,3 +270,162 @@ class StructuresTest(unittest.TestCase):
         self.assertTrue(c["hopital"])
         self.assertEqual(len(c["tendance"]), 7)
         self.assertEqual(self.r.traiter("GET", "structures/moi", None, ho)[0], 403)
+
+
+class EveilTest(unittest.TestCase):
+    def test_observation_et_signalement_automatique(self):
+        r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS); ec = connecter(r, "ecole.agbele")
+        _, v = r.traiter("GET", "structures/moi", None, ec)
+        self.assertEqual(len(v["eveil"]["evolution"]), 6)
+        self.assertEqual(len(v["eveil"]["domaines"]), 4)
+        corps = {"idClient": "obs-00000001-ab", "code": "AG-0099", "ageMois": 40, "langage": 1, "motricite": 1, "social": 3, "cognition": 2}
+        code, o = r.traiter("POST", "structures/moi/observation", corps, ec)
+        self.assertEqual(code, 200)
+        self.assertEqual(len(o["aStimuler"]), 2)
+        self.assertIn("signalement", o)
+        self.assertTrue(r.traiter("POST", "structures/moi/observation", corps, ec)[1]["doublon"])
+        self.assertEqual(r.traiter("POST", "structures/moi/observation", {**corps, "idClient": "obs-00000002-ab", "langage": 9}, ec)[0], 422)
+
+
+class NotificationsTest(unittest.TestCase):
+    def test_par_role(self):
+        r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        for ident in ("centre.davie", "agent.nutrition", "district.togo", "ecole.davie"):
+            code, o = r.traiter("GET", "notifications", None, connecter(r, ident))
+            self.assertEqual(code, 200)
+            self.assertIsInstance(o["notifications"], list)
+        _, o = r.traiter("GET", "notifications", None, connecter(r, "district.togo"))
+        self.assertTrue(any("prioritaire" in n["texte"] for n in o["notifications"]))
+        self.assertEqual(r.traiter("GET", "notifications", None)[0], 401)
+
+
+class ItineraireTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+
+    def test_voiture_bloquee_par_inondation_moto_passe(self):
+        code, o = self.r.traiter("POST", "itineraire", {"de": "zogbedji", "vers": "c4"})
+        self.assertEqual(code, 200)
+        modes = {m["mode"]: m for m in o["modes"]}
+        self.assertTrue(modes["moto"]["possible"])
+        self.assertTrue(modes["voiture"]["possible"])  # contourne par Kpadapé, plus long
+        self.assertGreater(modes["voiture"]["minutes"], 0)
+        self.assertIn(o["recommande"], ("moto", "voiture"))
+
+    def test_pont_coupe_bloque_tout_sauf_a_pied(self):
+        ag = connecter(self.r, "agent.nutrition")
+        for a, b in (("zogbedji", "davie"), ("kpadape", "davie")):
+            self.assertEqual(self.r.traiter("POST", "obstacles", {"de": a, "vers": b, "type": "pont"}, ag)[0], 200)
+        _, o = self.r.traiter("POST", "itineraire", {"de": "agbele", "vers": "c4"})
+        modes = {m["mode"]: m for m in o["modes"]}
+        self.assertFalse(modes["moto"]["possible"])
+        self.assertFalse(modes["voiture"]["possible"])
+        self.assertTrue(modes["pied"]["possible"])
+
+    def test_obstacle_leve(self):
+        ag = connecter(self.r, "agent.nutrition")
+        _, lst = self.r.traiter("GET", "obstacles", None)
+        oid = lst["obstacles"][0]["id"]
+        self.assertEqual(self.r.traiter("PATCH", f"obstacles/{oid}", {}, ag)[0], 200)
+        _, lst2 = self.r.traiter("GET", "obstacles", None)
+        self.assertEqual(len(lst2["obstacles"]), len(lst["obstacles"]) - 1)
+
+    def test_signaler_exige_un_compte_pro(self):
+        self.assertEqual(self.r.traiter("POST", "obstacles", {"de": "agbele", "vers": "kpadape", "type": "arbre"})[0], 401)
+
+    def test_district_cree_un_etablissement(self):
+        di = connecter(self.r, "district.togo")
+        code, e = self.r.traiter("POST", "etablissements", {"nom": "Crèche de Tovégan", "village": "tovegan", "type": "creche", "capacite": 25}, di)
+        self.assertEqual(code, 200)
+        _, l = self.r.traiter("GET", "lieux", None)
+        self.assertTrue(any(x["id"] == e["id"] for x in l["lieux"]))
+        self.assertEqual(self.r.traiter("POST", "etablissements", {"nom": "X", "village": "tovegan", "type": "creche"}, connecter(self.r, "agent.nutrition"))[0], 403)
+
+
+class GouvernanceTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.di = connecter(self.r, "district.togo")
+
+    def test_creer_compte_activer_connecter(self):
+        code, o = self.r.traiter("POST", "comptes", {"role": "agent", "nom": "Akou Mensah", "ref": "kpadape"}, self.di)
+        self.assertEqual(code, 200)
+        ident, cle = o["compte"]["identifiant"], o["codeActivation"]
+        self.assertEqual(self.r.traiter("POST", "connexion", {"identifiant": ident, "mdp": "nimporte"})[0], 401)
+        self.assertEqual(self.r.traiter("POST", "activer", {"identifiant": ident, "code": "MAUVAIS1", "mdp": "motdepasse1"})[0], 422)
+        self.assertEqual(self.r.traiter("POST", "activer", {"identifiant": ident, "code": cle, "mdp": "court"})[0], 422)
+        self.assertEqual(self.r.traiter("POST", "activer", {"identifiant": ident, "code": cle, "mdp": "motdepasse1"})[0], 200)
+        self.assertEqual(self.r.traiter("POST", "activer", {"identifiant": ident, "code": cle, "mdp": "motdepasse1"})[0], 422)  # code à usage unique
+        code, c = self.r.traiter("POST", "connexion", {"identifiant": ident, "mdp": "motdepasse1"})
+        self.assertEqual(code, 200)
+        self.assertEqual(c["role"], "agent")
+        # le nouvel agent a bien les droits d'un agent
+        self.assertEqual(self.r.traiter("GET", "references", None, c["jeton"])[0], 200)
+        # suspendu : plus d'accès
+        self.r.traiter("PATCH", f"comptes/{ident}", {"actif": False}, self.di)
+        self.assertEqual(self.r.traiter("GET", "references", None, c["jeton"])[0], 401)
+
+    def test_seul_le_national_cree_un_district(self):
+        self.assertEqual(self.r.traiter("POST", "comptes", {"role": "district", "nom": "District Test"}, self.di)[0], 403)
+        na = connecter(self.r, "national.togo")
+        self.assertEqual(self.r.traiter("POST", "comptes", {"role": "district", "nom": "District Test"}, na)[0], 200)
+
+    def test_creer_village_centre_et_manques(self):
+        code, v = self.r.traiter("POST", "villages", {"nom": "Kpélé Nord", "x": 60, "y": 25, "langue": "Éwé", "enfants": 80, "relie": ["tovegan"]}, self.di)
+        self.assertEqual(code, 200)
+        _, m = self.r.traiter("GET", "manques", None, self.di)
+        mv = next(x for x in m["manques"] if x["id"] == v["id"])
+        self.assertTrue(any(f["code"] == "prescolaire" for f in mv["manques"]))
+        self.assertTrue(any(f["code"] == "centre" for f in mv["manques"]))
+        code, e = self.r.traiter("POST", "etablissements", {"nom": "Centre de Kpélé", "village": v["id"], "type": "centre"}, self.di)
+        self.assertEqual(code, 200)
+        _, m2 = self.r.traiter("GET", "manques", None, self.di)
+        self.assertFalse(any(f["code"] == "centre" for f in next(x for x in m2["manques"] if x["id"] == v["id"])["manques"]))
+        # le nouveau centre peut recevoir une alerte
+        self.assertEqual(self.r.traiter("POST", "alertes", {"centreId": e["id"], "cas": "enfant", "niveau": "urgent", "signes": ["toux"], "depuis": v["id"]})[0], 200)
+        _, it = self.r.traiter("POST", "itineraire", {"de": "agbele", "vers": v["id"]})
+        self.assertTrue(any(x["possible"] for x in it["modes"]))
+
+    def test_national(self):
+        na = connecter(self.r, "national.togo")
+        _, n = self.r.traiter("GET", "national", None, na)
+        self.assertEqual(len(n["regions"]), 5)
+        self.assertEqual(len(n["regions"][0]["valeurs"]["vaccination"]["serie"]), 6)
+        self.assertEqual(self.r.traiter("GET", "national", None, self.di)[0], 403)
+
+
+class FoyersTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ag = connecter(self.r, "agent.nutrition")
+
+    def test_scanner_un_foyer_et_ne_pas_redonner(self):
+        _, f = self.r.traiter("GET", "foyers", None, self.ag)
+        code = f["foyers"][0]["code"]
+        _, v = self.r.traiter("GET", f"foyers/{code}", None, self.ag)
+        enfant = next(e for e in v["enfants"] if any(s["statut"] == "a-faire" for s in e["soins"]))
+        soin = next(s["soin"] for s in enfant["soins"] if s["statut"] == "a-faire")
+        corps = {"enfant": enfant["code"], "soin": soin, "idClient": "soin-0000001-a"}
+        _, o = self.r.traiter("POST", f"foyers/{code}/soins", corps, self.ag)
+        self.assertFalse(o["deja"])
+        # envoyé deux fois (coupure réseau) : pas de doublon
+        self.assertTrue(self.r.traiter("POST", f"foyers/{code}/soins", corps, self.ag)[1]["doublon"])
+        # un autre agent repasse : le système dit « déjà fait », sans erreur
+        _, o3 = self.r.traiter("POST", f"foyers/{code}/soins", {**corps, "idClient": "soin-0000002-a"}, self.ag)
+        self.assertTrue(o3["deja"])
+        self.assertIn("déjà donné", o3["message"])
+
+    def test_creer_foyer(self):
+        corps = {"idClient": "foyer-000001-a", "village": "tovegan", "enfants": [{"ageMois": 10}, {"ageMois": 40}]}
+        code, f = self.r.traiter("POST", "foyers", corps, self.ag)
+        self.assertEqual(code, 200)
+        self.assertEqual(f["nbEnfants"], 2)
+        self.assertTrue(f["qr"].startswith("FILDOR-FOYER:FOY-"))
+        self.assertTrue(self.r.traiter("POST", "foyers", corps, self.ag)[1]["doublon"])
+        self.assertEqual(self.r.traiter("POST", "foyers", {**corps, "idClient": "foyer-000002-a", "enfants": [{"ageMois": 200}]}, self.ag)[0], 422)
+
+    def test_pas_concerne_a_cet_age(self):
+        _, f = self.r.traiter("POST", "foyers", {"idClient": "foyer-000003-a", "village": "agbele", "enfants": [{"ageMois": 3}]}, self.ag)
+        e = f["enfants"][0]["code"]
+        code, _ = self.r.traiter("POST", f"foyers/{f['code']}/soins", {"enfant": e, "soin": "vitamineA", "idClient": "soin-0000009-a"}, self.ag)
+        self.assertEqual(code, 422)

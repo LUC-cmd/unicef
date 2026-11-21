@@ -39,6 +39,9 @@ const NUMEROS_DEMO = [
 ]
 
 export default function Telephone() {
+  const [modele, setModele] = useState('smart')
+  const [heure, setHeure] = useState(() => new Date())
+  useEffect(() => { const t = setInterval(() => setHeure(new Date()), 15000); return () => clearInterval(t) }, [])
   const [numero, setNumero] = useState('90000001')
   const [profil, setProfil] = useState(null)
   const [onglet, setOnglet] = useState('appel')
@@ -54,27 +57,31 @@ export default function Telephone() {
   const [urgenceEnvoyee, setUrgenceEnvoyee] = useState(false)
 
   const chiffres = numero.replace(/\D/g, '')
+  // N'importe quel numéro marche : on garde les 8 derniers chiffres (« +228 », « 00228 » ou un 0 devant sont ignorés).
+  const local = chiffres.length > 8 ? chiffres.slice(-8) : chiffres
   const proche = profil?.profil === 'PROCHE'
+  // Numéro libre : la démonstration utilise une famille fictive pour que chaque simulation fonctionne.
+  const telEff = profil?.test ? '90000001' : local
   const onglets = proche ? ONGLETS_PROCHE : ONGLETS_FAMILLE
 
   // Qui est ce numéro ? Famille, proche, ou inconnu : le téléphone s'adapte.
   useEffect(() => {
     setProfil(null)
     setErreur('')
-    if (chiffres.length < 8) return undefined
+    if (local.length < 8) return undefined
     const t = setTimeout(() => {
-      api.post('/api/public/profil', { telephone: numero })
+      api.post('/api/public/profil', { telephone: local })
         .then((p) => {
           setProfil(p)
           setErreur('')
         })
         .catch((e) => {
-          setProfil({ profil: !e.statut || e.statut >= 500 ? 'HORS_LIGNE' : 'INCONNU' })
+          setProfil(!e.statut || e.statut >= 500 ? { profil: 'HORS_LIGNE' } : { profil: 'FAMILLE', test: true })
           if (e.statut === 0) setErreur('Le serveur ne répond pas. Lancez le backend avec : cd backend && mvn spring-boot:run')
         })
     }, 350)
     return () => clearTimeout(t)
-  }, [numero, chiffres.length])
+  }, [local])
 
   useEffect(() => {
     if (proche && !['sms', 'appel'].includes(onglet)) setOnglet('sms')
@@ -86,12 +93,12 @@ export default function Telephone() {
   }
 
   const ecouter = (sujet) => executer(async () => {
-    const m = await api.post('/api/public/voix', { telephone: numero, sujet, langue: langue || null })
+    const m = await api.post('/api/public/voix', { telephone: telEff, sujet, langue: langue || null })
     setMessage(m); lire(m.texte)
   })
-  const chargerSms = () => executer(async () => setSms((await api.post('/api/public/sms', { telephone: numero })).messages ?? []))
-  const chargerJeux = () => executer(async () => setJeux(await api.post('/api/public/jeu', { telephone: numero })))
-  const chargerStructures = () => executer(async () => setStructures(await api.post('/api/public/structures/proches', { telephone: numero })))
+  const chargerSms = () => executer(async () => setSms((await api.post('/api/public/sms', { telephone: telEff })).messages ?? []))
+  const chargerJeux = () => executer(async () => setJeux(await api.post('/api/public/jeu', { telephone: telEff })))
+  const chargerStructures = () => executer(async () => setStructures(await api.post('/api/public/structures/proches', { telephone: telEff })))
 
   useEffect(() => {
     if (profil?.profil !== 'FAMILLE' && profil?.profil !== 'PROCHE') return
@@ -102,26 +109,27 @@ export default function Telephone() {
   }, [onglet, profil])
 
   const repondreOk = (id) => executer(async () => {
-    const r = await api.post(`/api/public/sms/${id}/ok`, { telephone: numero })
-    setInfo(r.message); setSms((await api.post('/api/public/sms', { telephone: numero })).messages ?? [])
+    const r = await api.post(`/api/public/sms/${id}/ok`, { telephone: telEff })
+    setInfo(r.message); setSms((await api.post('/api/public/sms', { telephone: telEff })).messages ?? [])
   })
-  const appelManque = () => executer(async () => setInfo((await api.post('/api/public/appel-manque', { telephone: numero })).message))
+  const appelManque = () => executer(async () => setInfo((await api.post('/api/public/appel-manque', { telephone: telEff })).message))
   const jeuFait = (codeEnfant) => executer(async () => {
-    setInfo((await api.post('/api/public/jeu/fait', { telephone: numero, codeEnfant })).message)
-    setJeux(await api.post('/api/public/jeu', { telephone: numero }))
+    setInfo((await api.post('/api/public/jeu/fait', { telephone: telEff, codeEnfant })).message)
+    setJeux(await api.post('/api/public/jeu', { telephone: telEff }))
   })
   const demander = (codeStructure, motif) => executer(async () =>
-    setInfo((await api.post('/api/public/demandes', { telephone: numero, codeStructure, motif })).message))
+    setInfo((await api.post('/api/public/demandes', { telephone: telEff, codeStructure, motif })).message))
   const urgence = () => executer(async () => {
-    const r = await api.post('/api/public/urgence', { telephone: numero, motif: urgenceMotif })
+    const r = await api.post('/api/public/urgence', { telephone: telEff, motif: urgenceMotif })
     setInfo(r.message)
     setUrgenceEnvoyee(true)
   })
 
   /* Indicateur visuel du statut du profil */
   const profilIndicateur = (() => {
-    if (chiffres.length < 8) return { couleur: '#888', texte: 'Tapez un numéro à 8 chiffres.' }
+    if (local.length < 8) return { couleur: '#888', texte: 'Tapez un numéro à 8 chiffres (le +228 est accepté).' }
     if (!profil) return { couleur: '#1cabe2', texte: 'Vérification du numéro…' }
+    if (profil.test) return { couleur: '#00833d', texte: 'Numéro de test : la démonstration utilise une famille fictive. Tout fonctionne.' }
     if (profil.profil === 'FAMILLE') return { couleur: '#00833d', texte: 'Famille suivie par Fil d\'Or.' }
     if (profil.profil === 'PROCHE') return { couleur: '#374ea2', texte: `Proche (${LIBELLE_ROLE_PROCHE[profil.roleProche] ?? 'proche'}) : rappels généraux seulement.` }
     if (profil.profil === 'INCONNU') return { couleur: '#e2231a', texte: 'Numéro non enregistré. Essayez un numéro ci-dessous.' }
@@ -137,6 +145,19 @@ export default function Telephone() {
     <main className="page">
 
       <div className="telephone-cadre">
+        <div className="tel-boite">
+        <div className="b3d-vues" role="group" aria-label="Type de téléphone">
+          <button type="button" aria-pressed={modele === 'smart'} onClick={() => setModele('smart')}>Smartphone</button>
+          <button type="button" aria-pressed={modele === 'basique'} onClick={() => setModele('basique')}>Téléphone à touches</button>
+        </div>
+        <div className={`tel-corps ${modele}`}>
+        <span className="tel-haut-parleur" aria-hidden="true" />
+        <div className="tel-statut" aria-hidden="true">
+          <b>{heure.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</b>
+          <span>Togo Mobile</span>
+          <span className="tel-signal"><i /><i /><i /><i /></span>
+          <span>{modele === 'smart' ? 'SMS · voix · USSD' : '2G'}</span>
+        </div>
         <div className="telephone" role="group" aria-label="Téléphone simulé">
 
           {/* Numéros de démo rapides */}
@@ -305,7 +326,7 @@ export default function Telephone() {
               </>
             )}
 
-            {onglet === 'ussd' && <Ussd numero={numero} />}
+            {onglet === 'ussd' && <Ussd numero={telEff} />}
 
             {onglet === 'manque' && (
               <>
@@ -317,6 +338,9 @@ export default function Telephone() {
             {info && <p className="succes" role="status">{info}</p>}
             {erreur && <p className="erreur" role="alert">{erreur}</p>}
           </div>
+        </div>
+        <div className="tel-bas" aria-hidden="true">{modele === 'smart' ? <><i /><i className="rond" /><i /></> : <div className="tel-touches">{['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((t) => <i key={t}>{t}</i>)}</div>}</div>
+        </div>
         </div>
 
         <aside className="carte">

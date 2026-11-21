@@ -13,6 +13,7 @@ export default function EspaceFamille({ aRepondre = 0, children }) {
     ] },
     { titre: 'Crèches', liens: [
       { to: '/famille/lieux', nom: 'Crèches près de moi', icone: 'carte' },
+      { to: '/famille/carte', nom: 'Centres, écoles et itinéraire', icone: 'carte' },
       { to: '/famille/creche', nom: 'Réserver une place', icone: 'horloge' },
     ] },
     { titre: 'Pour mon enfant', liens: [
@@ -23,6 +24,7 @@ export default function EspaceFamille({ aRepondre = 0, children }) {
       { to: '/famille/bras', nom: 'Mesure du bras', icone: 'ruban' },
       { to: '/famille/jeux', nom: 'Jeux et vidéos', icone: 'jeu' },
       { to: '/famille/assistant', nom: 'Poser une question', icone: 'bulle' },
+      { to: '/famille/nutrition', nom: 'Que faire manger ?', icone: 'coeur' },
       { to: '/famille/acte', nom: 'Acte de naissance', icone: 'livre' },
     ] },
     { titre: 'Pour moi', liens: [

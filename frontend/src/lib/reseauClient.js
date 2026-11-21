@@ -38,7 +38,10 @@ export const reseau = {
 
 /* ---------- session d'un espace professionnel (onglet) ---------- */
 export function lireSessionReseau() { try { return JSON.parse(sessionStorage.getItem(CLE_SESSION) || 'null') } catch { return null } }
-export function ecrireSessionReseau(s) { try { if (s) sessionStorage.setItem(CLE_SESSION, JSON.stringify(s)); else sessionStorage.removeItem(CLE_SESSION) } catch { /* refusé */ } }
+export function ecrireSessionReseau(s) {
+  try { if (s) sessionStorage.setItem(CLE_SESSION, JSON.stringify(s)); else sessionStorage.removeItem(CLE_SESSION) } catch { /* refusé */ }
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('fildor-reseau'))
+}
 
 /* ---------- envoyer, ou garder jusqu'au retour du réseau ---------- */
 const lireSortie = () => { try { return JSON.parse(localStorage.getItem(CLE_SORTIE) || '[]') } catch { return [] } }
@@ -50,10 +53,10 @@ export function idEnvoi() {
   const a = new Uint32Array(4); crypto.getRandomValues(a)
   return 'e' + Array.from(a, (x) => x.toString(36)).join('')
 }
-const AVEC_ID = ['alertes', 'visites', 'references']
+const AVEC_ID = ['alertes', 'visites', 'references', 'foyers']
 
 export async function envoyerOuGarder(chemin, corps) {
-  if ((AVEC_ID.includes(chemin) || chemin.endsWith('/signalement')) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
+  if ((AVEC_ID.includes(chemin) || (chemin.endsWith('/signalement') || chemin.endsWith('/observation') || chemin.endsWith('/soins'))) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
   try { return { ok: true, donnees: await reseau.post(chemin, corps, lireSessionReseau()?.jeton) } } catch (e) {
     if (e.statut && e.statut !== 0) return { ok: false, refuse: true, erreur: e.message }
     ecrireSortie([...lireSortie(), { chemin, corps, date: Date.now() }])

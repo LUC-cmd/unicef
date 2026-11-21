@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
-import { Tendance } from '../components/GraphesDistrict.jsx'
+import { Anneaux, Evolution, Tendance } from '../components/GraphesDistrict.jsx'
 import { envoyerOuGarder, reseau } from '../lib/reseauClient.js'
 import { delaiLisible } from '../lib/suivi.js'
 import { ETATS_REF } from '../lib/suivi.js'
@@ -43,6 +43,56 @@ export function TableauCentre({ s }) {
 }
 
 /** Tableau de bord d'un jardin d'enfants, d'une école maternelle ou d'une crèche. */
+const NOTES = [[1, 'À stimuler'], [2, 'En progrès'], [3, 'Acquis'], [4, 'Très à l’aise']]
+
+/** Suivi d'éveil et d'apprentissage : quatre domaines, évolution sur 6 mois, enfants à stimuler et activités conseillées. */
+function Eveil({ v, s, recharger }) {
+  const e = v.eveil
+  const [f, setF] = useState({ code: '', ageMois: '', langage: 3, motricite: 3, social: 3, cognition: 3 })
+  const [msg, setMsg] = useState('')
+  const [conseils, setConseils] = useState([])
+  const envoyer = async (ev) => {
+    ev.preventDefault(); setMsg(''); setConseils([])
+    const r = await envoyerOuGarder('structures/moi/observation', { ...f, code: f.code.toUpperCase(), ageMois: Number(f.ageMois) || 0 })
+    if (r.ok) {
+      setMsg(r.donnees.signalement ? 'Observation enregistrée. Plusieurs domaines sont faibles : le centre de santé a été prévenu pour une évaluation.' : 'Observation enregistrée.')
+      setConseils(r.donnees.conseils ?? []); setF({ ...f, code: '' }); recharger()
+    } else setMsg(r.gardee ? 'Pas de réseau : l’observation est gardée et partira au retour de la connexion.' : r.erreur)
+  }
+  return (
+    <>
+      <div className="grille-graphes">
+        <Anneaux titre="Éveil et apprentissage" aide={`${e.observes} enfants observés, dernière observation de chacun.`} items={e.domaines.map((d) => ({ id: d.id, nom: d.libelle, pct: d.pct }))} />
+        <Evolution titre="Évolution sur 6 mois" donnees={e.evolution.map((x) => ({ etiquette: x.mois.slice(5) + '/' + x.mois.slice(2, 4), pct: x.pct }))} />
+      </div>
+      <section className="carte">
+        <h2>Enfants à stimuler ({e.aStimuler.length})</h2>
+        {e.aStimuler.length === 0 ? <p>Aucun enfant à stimuler en ce moment.</p> : (
+          <ul className="liste-coches">{e.aStimuler.map((x) => <li key={x.code}><b>{x.code}</b> : {x.domaines.join(', ')}</li>)}</ul>
+        )}
+        <details>
+          <summary>Activités conseillées par domaine</summary>
+          <ul className="liste-coches">{e.domaines.map((d) => <li key={d.id}><b>{d.libelle}</b> : {d.activite}</li>)}</ul>
+        </details>
+      </section>
+      <section className="carte">
+        <h2>Noter l’éveil d’un enfant</h2>
+        <form onSubmit={envoyer} className="ado-champs">
+          <label>Code de l’enfant<input value={f.code} placeholder="AG-0042" maxLength={12} onChange={(ev) => setF({ ...f, code: ev.target.value.toUpperCase() })} required /></label>
+          <label>Âge en mois<input type="number" min="0" max="71" value={f.ageMois} onChange={(ev) => setF({ ...f, ageMois: ev.target.value })} /></label>
+          {e.domaines.map((d) => (
+            <label key={d.id}>{d.libelle}<select value={f[d.id]} onChange={(ev) => setF({ ...f, [d.id]: Number(ev.target.value) })}>{NOTES.map(([n, l]) => <option key={n} value={n}>{l}</option>)}</select></label>
+          ))}
+          <p><button className="bouton" type="submit">Enregistrer</button></p>
+        </form>
+        {msg && <p role="status">{msg}</p>}
+        {conseils.length > 0 && <ul className="liste-coches">{conseils.map((c) => <li key={c}>{c}</li>)}</ul>}
+        <p className="petit">Une observation par enfant et par mois suffit. Pas un diagnostic : un repère pour agir tôt.</p>
+      </section>
+    </>
+  )
+}
+
 export function TableauEcole({ s }) {
   const [v, erreur, recharger] = useDonnees('structures/moi', s.jeton, 10000)
   const [presents, setPresents] = useState('')
@@ -85,6 +135,7 @@ export function TableauEcole({ s }) {
           </form>
         </section>
       </div>
+      <Eveil v={v} s={s} recharger={recharger} />
       <section className="carte">
         <h2>Prévenir le centre de santé</h2>
         <form onSubmit={signaler} className="ado-champs">
@@ -125,6 +176,7 @@ export function Structures({ s }) {
                 <div><dt>Inscrits</dt><dd>{e.inscrits}</dd></div>
                 <div><dt>Présence moyenne</dt><dd>{e.presenceMoyennePct ?? '–'} %</dd></div>
                 <div><dt>Vaccins à jour</dt><dd>{e.vaccinesPct} %</dd></div>
+                <div><dt>Éveil</dt><dd>{e.eveilIndice ?? '–'} %{e.eveilAStimuler > 0 && <em> dont {e.eveilAStimuler} à stimuler</em>}</dd></div>
                 <div><dt>Signalements</dt><dd>{e.signalements} ({e.signalementsPris} pris en charge)</dd></div>
               </dl>
             </div>

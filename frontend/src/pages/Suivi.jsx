@@ -78,6 +78,7 @@ export function District({ s }) {
         <div className="tuile"><b>{r.taux} %</b><span>des références prises en charge</span></div>
         <div className={`tuile ${r.enRetard ? 'alerte' : ''}`}><b>{r.enRetard}</b><span>référence{r.enRetard > 1 ? 's' : ''} en retard (plus de 24 h)</span></div>
         <div className="tuile"><b>{r.delaiMedianMin == null ? '–' : delaiLisible(r.delaiMedianMin)}</b><span>délai médian jusqu’à la prise en charge</span></div>
+        <div className="tuile"><b>{Math.round(d.structures.filter((x) => x.eveilIndice != null).reduce((a, x) => a + x.eveilIndice, 0) / Math.max(1, d.structures.filter((x) => x.eveilIndice != null).length))} %</b><span>éveil et apprentissage moyen (crèches et écoles)</span></div>
         <div className={`tuile ${d.appels.aVisiter ? 'alerte' : ''}`}><b>{d.appels.aVisiter}</b><span>famille{d.appels.aVisiter > 1 ? 's' : ''} injoignable{d.appels.aVisiter > 1 ? 's' : ''} par téléphone : visite à prévoir</span></div>
       </div>
       <div className="grille-graphes">
@@ -155,6 +156,7 @@ export function References({ s }) {
                   <td><span className={`etat etat-${r.etat}`}>{ETATS_REF[r.etat]}</span>{r.retard && <b className="pastille pastille-prioritaire"> En retard</b>}</td>
                   <td>{delaiLisible(Math.round(r.ageH * 60))}</td>
                   <td>
+                    {r.etat !== 'prise' && r.etat !== 'suivie' && <Link className="bouton secondaire petit-bouton" to={`/reseau/carte?de=${r.village}&vers=${r.centreId}`}>Itinéraire</Link>}{' '}
                     {centre && r.etat === 'envoyee' && <button type="button" className="bouton secondaire petit-bouton" onClick={() => avancer(r, 'arrivee')}>Marquer arrivée</button>}
                     {centre && r.etat === 'arrivee' && <button type="button" className="bouton secondaire petit-bouton" onClick={() => avancer(r, 'prise')}>Prise en charge</button>}
                     {agent && r.etat === 'prise' && <button type="button" className="bouton secondaire petit-bouton" onClick={() => avancer(r, 'suivie')}>Visite faite</button>}

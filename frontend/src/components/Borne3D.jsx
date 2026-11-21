@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 const VUES = [['Face', -12], ['Côté', 70], ['Dos', 180], ['Autre côté', 250]]
+const BOITES = [
+  { t: 'Serviettes', n: 'hygiéniques', c: '#d9467a' }, { t: 'Préservatifs', n: 'sachets', c: '#2e9e4f' }, { t: 'Antalgique', n: 'règles', c: '#e8a317' },
+  { t: 'Bons', n: 'consultation', c: '#1cabe2' }, { t: 'Savon', n: 'et gel', c: '#7a5bd6' }, { t: 'Informations', n: 'fiches', c: '#0e7c86' },
+  { t: 'Réserve', n: 'serviettes', c: '#d9467a' }, { t: 'Réserve', n: 'préservatifs', c: '#2e9e4f' }, { t: 'Libre', n: 'selon le village', c: '#8fa3b5' },
+]
 
 /** Maquette 3D de la borne, en CSS pur : on la fait tourner au doigt, à la souris ou avec les flèches. Aucun fichier 3D, aucune bibliothèque. */
 export default function Borne3D({ onVue, auto, actif }) {
@@ -14,29 +19,45 @@ export default function Borne3D({ onVue, auto, actif }) {
   const bouge = (e) => { if (depart.current) setRy(depart.current.ry + (e.clientX - depart.current.x) * 0.6) }
   const haut = () => { depart.current = null; setDoux(true) }
   const touche = (e) => { if (e.key === 'ArrowLeft') setRy((v) => v - 15); if (e.key === 'ArrowRight') setRy((v) => v + 15) }
+  const [ouverte, setOuverte] = useState(false)
+  const porte = ouverte || actif
   return (
     <div className="b3d-bloc">
-      <div className="b3d-scene" tabIndex={0} role="img" aria-label="Maquette 3D de la borne Fil d'Or. Utilisez les flèches gauche et droite pour la faire tourner." onPointerDown={bas} onPointerMove={bouge} onPointerUp={haut} onPointerCancel={haut} onKeyDown={touche}>
+      <div className="b3d-scene" tabIndex={0} role="img" aria-label="Maquette 3D de la borne Fil d'Or : une armoire avec une porte, des étagères et des petites boîtes de produits. Flèches gauche et droite pour la faire tourner." onPointerDown={bas} onPointerMove={bouge} onPointerUp={haut} onPointerCancel={haut} onKeyDown={touche}>
         <div className="b3d-sol" />
-        <div className={`b3d ${doux && !auto ? 'doux' : ''}${actif ? ' b3d-actif' : ''}`} style={{ transform: `rotateX(-9deg) rotateY(${ry}deg)` }}>
-          <div className="b3d-face b3d-av">
+        <div className={`bg ${doux && !auto ? 'doux' : ''}`} style={{ transform: `rotateX(-8deg) rotateY(${ry}deg)` }}>
+          <div className="bg-f bg-haut">
             <div className="b3d-haut"><i className="b3d-pic" /><b>Fil d’Or</b></div>
-            <div className="b3d-ecran"><span>Choisis ta langue</span><div><i>FR</i><i>EW</i><i>KA</i><i>MI</i></div></div>
-            <div className="b3d-hp">{Array.from({ length: 12 }, (_, k) => <i key={k} />)}</div>
+            <div className="b3d-ecran"><span>Choisis ta langue</span><div><i>FR</i><i>EN</i><i>EW</i><i>KA</i><i>MI</i></div></div>
+            <div className="bg-micro"><span>Micro</span><span className="bg-hp">{Array.from({ length: 12 }, (_, k) => <i key={k} />)}</span><span>Haut-parleur</span></div>
             <div className="b3d-clavier">{['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'OK'].map((t, k) => <i key={k}>{t}</i>)}</div>
-            <div className="b3d-bac"><span>Prends ici</span></div>
           </div>
-          <div className="b3d-face b3d-ar"><div className="b3d-trappe"><span>Entretien<br />carte mémoire<br />et stock</span></div><div className="b3d-serrure" /></div>
-          <div className="b3d-face b3d-dr"><div className="b3d-bande" /></div>
-          <div className="b3d-face b3d-ga"><div className="b3d-capt"><span>Thermomètre</span><span>Tensiomètre</span><span>Oxymètre</span></div></div>
-          <div className="b3d-face b3d-toit" />
-          <div className="b3d-panneau"><span /></div>
+          <div className="bg-f bg-plinthe"><span>Prends ici</span></div>
+          <div className="bg-f bg-fond" />
+          <div className="bg-f bg-ar"><div className="b3d-trappe"><span>Trappe d’entretien<br />ordinateur, batterie<br />et carte mémoire</span></div><div className="b3d-serrure" /></div>
+          <div className="bg-f bg-dr"><div className="b3d-bande" /></div>
+          <div className="bg-f bg-ga"><div className="b3d-capt"><span>Panneau solaire<br />sur le toit</span><span>Ventilation</span></div></div>
+          <div className="bg-f bg-toit" />
+          <div className="bg-f bg-etagere" style={{ top: 198 }} />
+          <div className="bg-f bg-etagere" style={{ top: 248 }} />
+          <div className="bg-f bg-etagere bg-sol" />
+          {[0, 1, 2].flatMap((r) => [0, 1, 2].map((c) => {
+            const m = BOITES[r * 3 + c]
+            return (
+              <div key={r + '-' + c} className="bg-boite" style={{ left: 16 + c * 72, top: [152, 202, 252][r], '--c': m.c }}>
+                <div className="bg-bf bg-bav"><b>{m.t}</b><small>{m.n}</small></div>
+                <div className="bg-bf bg-bga" /><div className="bg-bf bg-bdr" /><div className="bg-bf bg-bto" />
+              </div>
+            )
+          }))}
+          <div className={`bg-porte${porte ? ' ouverte' : ''}`}><span className="bg-vitre">Produits</span><i className="bg-poignee" /></div>
         </div>
       </div>
       <div className="b3d-vues" role="group" aria-label="Changer de vue">
         {VUES.map(([nom, a]) => <button key={nom} type="button" onClick={() => setRy(a)}>{nom}</button>)}
+        <button type="button" aria-pressed={porte} onClick={() => setOuverte((v) => !v)}>{porte ? 'Fermer la porte' : 'Ouvrir la porte'}</button>
       </div>
-      <p className="petit">Fais glisser pour tourner. Concept à fabriquer : la maquette n’est pas un objet existant.</p>
+      <p className="petit">Fais glisser pour tourner, ouvre la porte pour voir les petites boîtes. Concept à fabriquer : la maquette n’est pas un objet existant.</p>
     </div>
   )
 }

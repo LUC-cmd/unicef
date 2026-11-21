@@ -8,7 +8,8 @@ import { MOTIFS_CONSULTATION, PUBLICS, QUESTIONS_CONSULTATION, VILLAGES, consult
 import { LANGUES_LOCALES, cleMessage, effacerVoix, ecrireVoix, enregistrer, jouer, lireVoix, toutesLesVoix } from '../lib/voix.js'
 import { prevenirCentre } from '../lib/reseauClient.js'
 import { lireCartePerso } from '../lib/cartePerso.js'
-import { PRODUITS, chargerCartes, ecrireBorne, etatVide, formater, genererLot, lireBorne, resumeJournal, stockBas, utiliserCode } from '../lib/borne.js'
+import { PRODUITS, chargerCartes, ecrireBorne, etatVide, formater, genererLot, lireBorne, rechargerCarte, resumeJournal, resumeSondage, stockBas, utiliserCode } from '../lib/borne.js'
+import { LIBELLES_PROBLEME } from '../lib/dialogueBorne.js'
 
 const PARTIES = [
   ['Panneau solaire et batterie', 'La borne ne dépend ni du réseau électrique ni du réseau téléphonique.'],
@@ -272,6 +273,50 @@ function Studio() {
   )
 }
 
+const NOMS_REP = { oui: 'Oui', non: 'Non', peu: 'Un peu', difficile: 'Oui, mais difficile ou cher' }
+function Sondage({ etat }) {
+  const r = resumeSondage(etat)
+  const Liste = ({ titre, o, noms }) => <div><b>{titre}</b><ul className="liste-coches">{Object.entries(o).map(([k, n]) => <li key={k}>{noms[k] ?? k} : {n}</li>)}</ul></div>
+  return (
+    <section className="carte">
+      <h2>4. Ce que disent les utilisatrices</h2>
+      {r.total === 0 ? <p>Aucune réponse pour l’instant. Les questions de la borne se posent en fin de parcours.</p> : (
+        <div className="borne-stock">
+          <Liste titre={`Leur plus gros problème (${r.total} réponses)`} o={r.probleme} noms={LIBELLES_PROBLEME} />
+          <Liste titre="Trouvaient-elles ces produits avant ?" o={r.ailleurs} noms={NOMS_REP} />
+          <Liste titre="La borne les a-t-elle aidées ?" o={r.utile} noms={NOMS_REP} />
+          <Liste titre="Langue choisie" o={r.langues} noms={{}} />
+        </div>
+      )}
+      <p className="petit">Les réponses ne sont liées ni à une carte ni à une personne. L’agent les relève au passage pour décider où porter de l’aide.</p>
+    </section>
+  )
+}
+
+function Recharge({ etat, setEtat }) {
+  const [code, setCode] = useState('')
+  const [ajout, setAjout] = useState({ serviettes: 4, preservatifs: 0, bon: 0, antalgique: 0 })
+  const [msg, setMsg] = useState('')
+  const faire = (e) => {
+    e.preventDefault()
+    const r = rechargerCarte(etat, code, ajout)
+    if (r.ok) { setEtat(r.etat); setMsg('Carte rechargée : la même carte marche, avec les nouveaux droits.') }
+    else setMsg(r.raison === 'format' ? 'Le numéro doit avoir 8 chiffres.' : 'Cette carte n’est pas dans cette borne.')
+  }
+  return (
+    <section className="carte">
+      <h2>5. Recharger une carte déjà utilisée</h2>
+      <p>Une jeune fille revient avec sa carte vide : l’agent ajoute des droits au même numéro. La borne ne la rejette pas, et ne sait toujours pas qui elle est.</p>
+      <form onSubmit={faire} className="ado-champs">
+        <label>Numéro de la carte<input inputMode="numeric" maxLength={9} value={code} onChange={(e) => setCode(e.target.value)} placeholder="0000 0000" /></label>
+        {Object.entries(PRODUITS).map(([k, nom]) => <label key={k}>{nom} à ajouter<input type="number" min="0" max="12" value={ajout[k]} onChange={(e) => setAjout({ ...ajout, [k]: Number(e.target.value) })} /></label>)}
+        <p><button type="submit" className="bouton">Recharger</button></p>
+      </form>
+      {msg && <p role="status"><b>{msg}</b></p>}
+    </section>
+  )
+}
+
 function CoteAgent({ etat, setEtat, lot, setLot }) {
   const [nombre, setNombre] = useState(20)
   const [quota, setQuota] = useState(QUOTA_DEFAUT)
@@ -303,7 +348,7 @@ function CoteAgent({ etat, setEtat, lot, setLot }) {
         <div className="borne-stock">
           {Object.entries(PRODUITS).map(([k, nom]) => <div key={k} className={bas.includes(k) ? 'bas' : ''}><span>{nom}</span><b>{etat.stock[k]}</b>{bas.includes(k) && <small>Stock bas : à recharger</small>}</div>)}
         </div>
-        <p><button type="button" className="bouton secondaire" onClick={() => setEtat({ ...etat, stock: { serviettes: 60, preservatifs: 60, bon: 100 } })}>Recharger le stock (démo)</button></p>
+        <p><button type="button" className="bouton secondaire" onClick={() => setEtat({ ...etat, stock: { serviettes: 60, preservatifs: 60, bon: 100, antalgique: 40 } })}>Recharger le stock (démo)</button></p>
       </section>
       <section className="carte">
         <h2>3. Journal anonyme récupéré au passage</h2>
@@ -313,6 +358,8 @@ function CoteAgent({ etat, setEtat, lot, setLot }) {
         <p className="petit">Seuls des totaux par jour sont conservés. Ni numéro de carte, ni heure précise, ni identité : on sait combien de produits sortent, jamais qui les a pris.</p>
         <p><button type="button" className="bouton secondaire" onClick={() => { setEtat(etatVide()); setLot([]) }}>Tout remettre à zéro</button></p>
       </section>
+      <Sondage etat={etat} />
+      <Recharge etat={etat} setEtat={setEtat} />
       <Studio />
     </>
   )
