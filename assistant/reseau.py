@@ -265,7 +265,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -739,11 +739,25 @@ class Reseau:
             u = self._auth(jeton, "district", "national")
             return self._creer_village(c)
         if m == "GET" and p == ["manques"]:
-            self._auth(jeton, "district", "national", "agent")
+            self._auth(jeton, "district", "national", "agent", "partenaire", "technicien")
             return {"manques": self._manques()}
         if m == "GET" and p == ["national"]:
             self._auth(jeton, "national", "partenaire")
             return self._national()
+        # ---- messagerie entre comptes du réseau (jamais de nom d'enfant : on écrit avec des codes)
+        if m == "GET" and p == ["contacts"]:
+            u = self._auth(jeton)
+            return {"contacts": self._contacts(u)}
+        if p[:1] == ["messages"]:
+            u = self._auth(jeton)
+            if u[1] == "partenaire":
+                raise Erreur(403, "Un compte partenaire est en lecture seule.")
+            if m == "GET" and n == 1:
+                return self._fils(u)
+            if m == "GET" and n == 2:
+                return self._conversation(u, p[1])
+            if m == "POST" and n == 1:
+                return self._envoyer_message(u, c)
         if p[:1] == ["bornes"]:
             if m == "GET" and n == 1:
                 u = self._auth(jeton, "technicien", "partenaire", "district", "national")
@@ -938,6 +952,67 @@ class Reseau:
             v["suivi"] = [self._vue_reference(r) for r in signal][:20]
         return v
 
+    def _noms_comptes(self):
+        """Tous les comptes du réseau qui peuvent échanger : identifiant -> (nom, rôle). Le partenaire en est exclu (lecture seule)."""
+        out = {i: (v[2], v[0]) for i, v in COMPTES.items() if v[0] != "partenaire"}
+        for x in self.s.d["comptes"]:
+            if x.get("actif") and x["role"] != "partenaire":
+                out[x["identifiant"]] = (x["nom"], x["role"])
+        return out
+
+    def _contacts(self, u):
+        return [{"identifiant": i, "nom": n, "role": r} for i, (n, r) in sorted(self._noms_comptes().items(), key=lambda t: t[1][0]) if i != u[0]]
+
+    def _fils(self, u):
+        noms = self._noms_comptes()
+        moi, fils = u[0], {}
+        for x in self.s.d["messages"]:
+            if moi not in (x["de"], x["a"]):
+                continue
+            autre = x["a"] if x["de"] == moi else x["de"]
+            f = fils.setdefault(autre, {"avec": autre, "nom": noms.get(autre, (autre, ""))[0], "role": noms.get(autre, ("", ""))[1], "dernier": "", "heure": "", "nonLus": 0, "urgent": False})
+            f["dernier"] = ("[photo] " if x.get("photo") else "") + x["texte"][:80]
+            f["heure"] = x["heure"]
+            if x["a"] == moi and not x["lu"]:
+                f["nonLus"] += 1
+                f["urgent"] = f["urgent"] or x["urgent"]
+        liste = sorted(fils.values(), key=lambda f: f["heure"], reverse=True)
+        return {"fils": liste, "nonLus": sum(f["nonLus"] for f in liste), "urgents": sum(1 for f in liste if f["urgent"])}
+
+    def _conversation(self, u, autre):
+        moi = u[0]
+        msgs = [x for x in self.s.d["messages"] if {x["de"], x["a"]} == {moi, autre}]
+        modifie = False
+        with self.s.verrou:
+            for x in msgs:
+                if x["a"] == moi and not x["lu"]:
+                    x["lu"] = True
+                    modifie = True
+        if modifie:
+            self.s.sauver()
+        noms = self._noms_comptes()
+        return {"avec": autre, "nom": noms.get(autre, (autre, ""))[0], "messages": [{"id": x["id"], "moi": x["de"] == moi, "texte": x["texte"], "photo": x.get("photo", ""), "urgent": x["urgent"], "heure": x["heure"], "lu": x["lu"]} for x in msgs][-100:]}
+
+    def _envoyer_message(self, u, c):
+        noms = self._noms_comptes()
+        dest = court(c.get("a"), 60)
+        if dest not in noms or dest == u[0]:
+            raise Erreur(422, "Destinataire inconnu.")
+        texte = court(c.get("texte"), 1000)
+        photo = c.get("photo") or ""
+        if photo:
+            if not isinstance(photo, str) or len(photo) > 260000 or not re.match(r"^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$", photo):
+                raise Erreur(422, "Photo non acceptée : image JPEG, PNG ou WebP de 190 Ko au plus.")
+        if not texte and not photo:
+            raise Erreur(422, "Écrivez un message ou joignez une photo.")
+        idc = court(c.get("idClient"), 40)
+        if idc:
+            deja = next((x for x in self.s.d["messages"] if x.get("idClient") == idc and x["de"] == u[0]), None)
+            if deja:
+                return {"id": deja["id"], "doublon": True}
+        x = self.s.ajouter("messages", {"id": uuid.uuid4().hex[:10], "de": u[0], "a": dest, "texte": texte, "photo": photo, "urgent": bool(c.get("urgent")), "heure": maintenant(), "lu": False, "idClient": idc})
+        return {"id": x["id"]}
+
     def _vue_borne(self, x, detail=True):
         """Une borne vue par le technicien (tout) ou par un partenaire (totaux seulement, jamais de détail de lieu précis)."""
         maintenant_ = datetime.now(timezone.utc)
@@ -1039,6 +1114,13 @@ class Reseau:
             pris = [r for r in refs if r.get("structure") == ref and r["etat"] in FINALES]
             if pris:
                 ajoute("info", f"{len(pris)} enfant(s) signalé(s) pris en charge par un centre", "/reseau")
+        moi = ident
+        nl = [x for x in self.s.d["messages"] if x["a"] == moi and not x["lu"]]
+        if nl:
+            urg = [x for x in nl if x["urgent"]]
+            if urg:
+                ajoute("urgent", f"{len(urg)} message(s) urgent(s) à lire", "/reseau/messages")
+            ajoute("info", f"{len(nl)} message(s) non lu(s)", "/reseau/messages")
         return out
 
     def _eveil(self, sid):

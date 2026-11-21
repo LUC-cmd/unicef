@@ -464,3 +464,37 @@ class BornesTest(unittest.TestCase):
     def test_notifications_technicien(self):
         _, n = self.r.traiter("GET", "notifications", None, self.tech)
         self.assertTrue(any("relève" in x["texte"] for x in n["notifications"]))
+
+
+class MessagerieTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ag = connecter(self.r, "agent.nutrition"); self.ce = connecter(self.r, "centre.davie"); self.uni = connecter(self.r, "unicef.partenaire")
+
+    def test_ecrire_lire_urgent_et_non_lus(self):
+        c, o = self.r.traiter("POST", "messages", {"a": "centre.davie", "texte": "Enfant T036A, convulsions, j'arrive.", "urgent": True, "idClient": "m1"}, self.ag)
+        self.assertEqual(c, 200)
+        self.assertTrue(self.r.traiter("POST", "messages", {"a": "centre.davie", "texte": "x", "idClient": "m1"}, self.ag)[1].get("doublon"))
+        _, f = self.r.traiter("GET", "messages", None, self.ce)
+        self.assertEqual((f["nonLus"], f["urgents"]), (1, 1))
+        _, n = self.r.traiter("GET", "notifications", None, self.ce)
+        self.assertTrue(any("urgent" in x["texte"] for x in n["notifications"]))
+        _, conv = self.r.traiter("GET", "messages/agent.nutrition", None, self.ce)
+        self.assertEqual(len(conv["messages"]), 1)
+        self.assertEqual(self.r.traiter("GET", "messages", None, self.ce)[1]["nonLus"], 0)
+
+    def test_photo_controlee_et_partenaire_exclu(self):
+        bonne = "data:image/jpeg;base64,/9j/4AAQSkZJRg=="
+        self.assertEqual(self.r.traiter("POST", "messages", {"a": "centre.davie", "photo": bonne}, self.ag)[0], 200)
+        for mauvaise in ("data:text/html;base64,AAAA", "javascript:alert(1)", "data:image/jpeg;base64," + "A" * 270000):
+            self.assertEqual(self.r.traiter("POST", "messages", {"a": "centre.davie", "photo": mauvaise}, self.ag)[0], 422)
+        self.assertEqual(self.r.traiter("POST", "messages", {"a": "centre.davie", "texte": "x"}, self.uni)[0], 403)
+        self.assertEqual(self.r.traiter("POST", "messages", {"a": "unicef.partenaire", "texte": "x"}, self.ag)[0], 422)
+        self.assertEqual(self.r.traiter("POST", "messages", {"a": "inconnu", "texte": "x"}, self.ag)[0], 422)
+        _, k = self.r.traiter("GET", "contacts", None, self.ag)
+        self.assertNotIn("unicef.partenaire", [x["identifiant"] for x in k["contacts"]])
+
+    def test_on_ne_lit_pas_les_messages_des_autres(self):
+        self.r.traiter("POST", "messages", {"a": "centre.davie", "texte": "secret"}, self.ag)
+        tiers = connecter(self.r, "district.togo")
+        self.assertEqual(self.r.traiter("GET", "messages/agent.nutrition", None, tiers)[1]["messages"], [])

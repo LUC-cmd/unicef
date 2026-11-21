@@ -58,7 +58,7 @@ export function idEnvoi() {
   const a = new Uint32Array(4); crypto.getRandomValues(a)
   return 'e' + Array.from(a, (x) => x.toString(36)).join('')
 }
-const AVEC_ID = ['alertes', 'visites', 'references', 'foyers']
+const AVEC_ID = ['alertes', 'visites', 'references', 'foyers', 'messages']
 const SE_TERMINE_PAR = ['/signalement', '/observation', '/soins', '/releve', '/recharge']
 
 export async function envoyerOuGarder(chemin, corps) {

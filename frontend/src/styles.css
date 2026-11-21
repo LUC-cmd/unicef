@@ -2775,3 +2775,32 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 .boutons-ligne { display: flex; flex-wrap: wrap; gap: .5rem; }
 .champ-synchro { display: grid; gap: .3rem; max-width: 22rem; margin: .4rem 0 .8rem; font-weight: 600; }
 @media print { .partenaire-actions, .liaisons, .barre-reseau { display: none; } }
+
+/* Entête des espaces du réseau */
+.entete-reseau { display: inline-flex; align-items: center; gap: .5rem; position: relative; }
+.cloche-badge.urgent { background: #c62828; }
+.entete-reseau .cloche { position: relative; display: inline-grid; place-items: center; }
+.profil-sortie { display: block; width: 100%; text-align: left; background: none; border: 0; font: inherit; cursor: pointer; padding: .55rem .9rem; color: #b3261e; font-weight: 700; }
+.cloche-panneau li.urgent a { color: #b3261e; font-weight: 700; }
+/* Messagerie */
+.messagerie { display: grid; grid-template-columns: minmax(250px, 320px) 1fr; gap: 1rem; align-items: start; }
+.msg-liste, .msg-fenetre { background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 1rem; }
+.msg-liste h2 { font-size: 1rem; margin: .2rem 0 .5rem; }
+.msg-fil, .msg-contact { display: flex; justify-content: space-between; align-items: center; gap: .5rem; width: 100%; text-align: left; background: #f5f9fc; border: 1px solid transparent; border-radius: 10px; padding: .55rem .7rem; margin-bottom: .4rem; cursor: pointer; font: inherit; }
+.msg-fil.actif { border-color: #1cabe2; background: #e8f6fd; } .msg-fil.urgent { border-left: 4px solid #c62828; }
+.msg-fil span { display: grid; gap: .1rem; min-width: 0; } .msg-fil small, .msg-contact small { color: #5b6f82; } .msg-fil em { font-style: normal; color: #3d5266; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-contacts { display: grid; gap: .3rem; max-height: 260px; overflow: auto; margin-top: .4rem; } .msg-contact { flex-direction: column; align-items: flex-start; gap: 0; }
+.msg-fenetre { min-height: 460px; display: flex; flex-direction: column; } .msg-fenetre header h2 { margin: 0 0 .6rem; font-size: 1.1rem; }
+.msg-vide { margin: auto; color: #5b6f82; text-align: center; }
+.msg-fil-liste { flex: 1; display: flex; flex-direction: column; gap: .5rem; overflow: auto; max-height: 52vh; padding: .3rem .1rem; }
+.msg-bulle { max-width: 78%; background: #eef3f7; border-radius: 14px 14px 14px 4px; padding: .55rem .75rem; align-self: flex-start; }
+.msg-bulle.moi { align-self: flex-end; background: #d8eefb; border-radius: 14px 14px 4px 14px; }
+.msg-bulle.urgent { outline: 2px solid #c62828; } .msg-bulle p { margin: .2rem 0; white-space: pre-wrap; overflow-wrap: anywhere; } .msg-bulle small { color: #5b6f82; }
+.msg-bulle img { display: block; max-width: 100%; max-height: 260px; border-radius: 10px; margin-bottom: .3rem; } .msg-urg { color: #c62828; font-size: .78rem; }
+.msg-envoi { display: grid; gap: .5rem; border-top: 1px solid var(--bord); padding-top: .7rem; margin-top: .6rem; }
+.msg-envoi textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--bord); border-radius: 10px; padding: .6rem; font: inherit; resize: vertical; }
+.msg-apercu { display: flex; align-items: center; gap: .7rem; } .msg-apercu img { height: 64px; border-radius: 8px; }
+.msg-urgent-case { display: inline-flex; align-items: center; gap: .35rem; font-weight: 700; color: #b3261e; }
+@media (max-width: 760px) { .messagerie { grid-template-columns: 1fr; } }
+.msg-fil .cloche-badge { position: static; flex: none; }
+.msg-bulle img { max-height: 200px; width: auto; }

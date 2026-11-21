@@ -40,6 +40,8 @@ async def reseau(chemin: str, requete: Request):
     """Réseau Fil d'Or (prototype) : orientation, alertes aux centres, boutiques, questions anonymes."""
     corps = {}
     if requete.method in ("POST", "PATCH"):
+        if int(requete.headers.get("content-length", "0") or 0) > 400_000:
+            return JSONResponse({"detail": "Envoi trop volumineux."}, status_code=413)
         try:
             corps = await requete.json()
         except ValueError:

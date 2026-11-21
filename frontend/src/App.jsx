@@ -1,6 +1,7 @@
 import BandeauAndroid from './components/BandeauAndroid.jsx'
 import MenuProfil from './components/MenuProfil.jsx'
 import MenuProfilFamille from './components/MenuProfilFamille.jsx'
+import EnteteReseau from './components/EnteteReseau.jsx'
 import NotificationsFamille from './components/NotificationsFamille.jsx'
 import { useCompteFamille } from './lib/famille.js'
 import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau } from './lib/espace.js'
@@ -208,6 +209,7 @@ export default function App() {
                   </span>
                 </>
               )}
+              {reseauSession && dansEspace && !session && <EnteteReseau s={reseauSession} />}
               {session && <MenuProfil />}
               {dansFamille && <MenuProfilFamille compte={compteFamille} />}
             </div>

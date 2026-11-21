@@ -51,6 +51,9 @@ class Handler(BaseHTTPRequestHandler):
             if chemin.startswith(prefixe):
                 corps = {}
                 if methode in ("POST", "PATCH"):
+                    if int(self.headers.get("Content-Length", "0") or 0) > 400_000:
+                        self._json(413, {"detail": "Envoi trop volumineux."})
+                        return True
                     try:
                         corps = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))).decode() or "{}")
                     except (json.JSONDecodeError, UnicodeDecodeError):

@@ -5,7 +5,7 @@ import Shell from '../components/Shell.jsx'
 import { CAS, CENTRES, POINTS_CONTROLE, POINTS_NUTRITION, POUR, POUR_BOUTIQUE, VILLAGES } from '../lib/parcours.js'
 import { MDP_DEMO } from '../lib/config.js'
 import { Appels, District, References, Villages } from './Suivi.jsx'
-import CloucheReseau from '../components/CloucheReseau.jsx'
+import Messagerie from './Messagerie.jsx'
 import CarteReseau from './CarteReseau.jsx'
 import Campagne from './Campagne.jsx'
 import Gestion from './Gestion.jsx'
@@ -296,10 +296,14 @@ const MENUS = {
   district: { teinte: 'cyan', groupes: [{ titre: 'District', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/villages', nom: 'Villages', icone: 'liste' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }, { to: '/reseau/appels', nom: 'Appels vocaux', icone: 'bulle' }, { to: '/reseau/structures', nom: 'Crèches et écoles', icone: 'boite' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'carte' }] }, { titre: 'Gestion', liens: [{ to: '/reseau/gestion', nom: 'Comptes et villages', icone: 'cle' }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
   national: { teinte: 'cyan', groupes: [{ titre: 'National', liens: [{ to: '/reseau', nom: 'Tableau national', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'carte' }] }, { titre: 'Gestion', liens: [{ to: '/reseau/gestion', nom: 'Comptes et villages', icone: 'cle' }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
   ecole: { teinte: 'vert', groupes: [{ titre: 'Mon établissement', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }] }, { titre: 'Mes autres espaces', liens: [{ to: '/connexion', nom: 'Espace crèche et structure', icone: 'batiment' }, { to: '/fonctionnement', nom: 'Comment tout se relie', icone: 'aide' }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
-  technicien: { teinte: 'orange', groupes: [{ titre: 'Bornes', liens: [{ to: '/reseau', nom: 'Mes bornes', icone: 'accueil', fin: true }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
-  partenaire: { teinte: 'cyan', groupes: [{ titre: 'UNICEF Togo', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/bornes', nom: 'Les bornes', icone: 'carte' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  technicien: { teinte: 'orange', groupes: [{ titre: 'Bornes', liens: [{ to: '/reseau', nom: 'Mes bornes', icone: 'accueil', fin: true }, { to: '/reseau/bornes', nom: 'Stock et relevés', icone: 'boite' }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'liste' }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
+  partenaire: { teinte: 'cyan', groupes: [{ titre: 'UNICEF Togo', liens: [{ to: '/reseau', nom: 'Vue d’ensemble', icone: 'accueil', fin: true }, { to: '/reseau/bornes', nom: 'Les bornes', icone: 'boite' }, { to: '/reseau/manques', nom: 'Où il manque', icone: 'liste' }, { to: '/reseau/carte', nom: 'Carte du réseau', icone: 'carte' }] }, { titre: 'Aide', liens: [{ to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }, { to: '/reseau/synchro', nom: 'Données et sécurité', icone: 'bouclier' }] }] },
   centre: { teinte: 'orange', groupes: [{ titre: 'Centre de santé ou hôpital', liens: [{ to: '/reseau', nom: 'Tableau de bord', icone: 'accueil', fin: true }, { to: '/reseau/carte', nom: 'Carte et itinéraires', icone: 'carte' }, { to: '/reseau/alertes', nom: 'Cas qui arrivent', icone: 'horloge' }, { to: '/reseau/references', nom: 'Références', icone: 'coche' }] }, { titre: 'Aide', liens: [{ to: '/reseau/synchro', nom: 'Hors réseau', icone: 'aide' }, { to: '/reseau/roles', nom: 'Qui fait quoi', icone: 'aide' }] }] },
 }
+// Chaque rôle (sauf le partenaire, en lecture seule) a un groupe « Échanger » : messagerie entre comptes.
+Object.entries(MENUS).forEach(([role, m]) => {
+  if (role !== 'partenaire') m.groupes.splice(1, 0, { titre: 'Échanger', liens: [{ to: '/reseau/messages', nom: 'Messagerie', icone: 'bulle' }] })
+})
 const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé', district: 'Responsable de district', national: 'Responsable national', technicien: 'Technicien des bornes', partenaire: 'Partenaire UNICEF (lecture seule)', ecole: 'Établissement 0-5 ans' }
 
 export default function Reseau() {
@@ -308,7 +312,6 @@ export default function Reseau() {
   if (!s) return <Connexion onOk={(r) => { ecrireSessionReseau(r); setS(r) }} />
   const m = MENUS[s.role]
   const titre = s.role === 'centre' && s.ref === 'c4' ? 'Hôpital' : TITRES[s.role]
-  const sortir = () => { ecrireSessionReseau(null); setS(null); nav('/connexion', { state: { sortie: true } }) }
   return (
     <Shell titre={titre} teinte={m.teinte} groupes={m.groupes} nom={s.nom} sous={titre} utilisateur={s.identifiant}>
       <div className="liaisons" aria-label="Liaisons de cet espace">
@@ -317,15 +320,15 @@ export default function Reseau() {
         ))}
         <button type="button" className="bouton secondaire petit-bouton" onClick={() => nav('/reseau/roles')}>Qui fait quoi</button>
       </div>
-      <div className="barre-reseau"><CloucheReseau jeton={s.jeton} /><button type="button" className="bouton secondaire petit-bouton" onClick={sortir}>Se déconnecter</button></div>
       <Routes>
         <Route index element={s.role === 'technicien' ? <Bornes s={s} /> : s.role === 'partenaire' ? <Partenaire s={s} /> : s.role === 'national' ? <National s={s} /> : s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
         <Route path="carte" element={<CarteReseau s={s} />} />
+        <Route path="messages" element={s.role === 'partenaire' ? <Partenaire s={s} /> : <Messagerie s={s} />} />
         <Route path="roles" element={<QuiFaitQuoi dans />} />
         <Route path="synchro" element={<Synchro />} />
         <Route path="bornes" element={['technicien', 'partenaire', 'district'].includes(s.role) ? <Bornes s={s} /> : <Tableau s={s} />} />
         <Route path="gestion" element={s.role === 'district' || s.role === 'national' ? <Gestion s={s} /> : <Tableau s={s} />} />
-        <Route path="manques" element={['district', 'national', 'agent'].includes(s.role) ? <Manques s={s} /> : <Tableau s={s} />} />
+        <Route path="manques" element={['district', 'national', 'agent', 'technicien', 'partenaire'].includes(s.role) ? <Manques s={s} /> : <Tableau s={s} />} />
         <Route path="campagne" element={s.role === 'agent' ? <Campagne s={s} /> : <Tableau s={s} />} />
         <Route path="structures" element={s.role === 'agent' || s.role === 'district' ? <Structures s={s} /> : <Tableau s={s} />} />
         <Route path="villages" element={s.role === 'centre' || s.role === 'boutique' || s.role === 'ecole' ? <Tableau s={s} /> : <Villages s={s} />} />
