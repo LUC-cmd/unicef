@@ -236,3 +236,37 @@ class GraphiquesTest(unittest.TestCase):
         self.assertGreater(sum(x["prises"] for x in d["tendance"]), 0)
         self.assertEqual(sum(x["total"] for x in d["parCas"]), d["references"]["total"])
         self.assertEqual(sum(x["total"] for x in d["parCentre"]), d["references"]["total"])
+
+
+class StructuresTest(unittest.TestCase):
+    def setUp(self):
+        self.r = neuf()
+        self.ec = connecter(self.r, "ecole.agbele")
+
+    def test_presence_et_vue(self):
+        code, v = self.r.traiter("POST", "structures/moi/presence", {"presents": 33}, self.ec)
+        self.assertEqual(code, 200)
+        self.assertEqual(v["presenceAujourdhui"], 33)
+        self.assertEqual(self.r.traiter("POST", "structures/moi/presence", {"presents": 99}, self.ec)[0], 422)
+        self.assertEqual(len(v["semaine"]), 7)
+
+    def test_signalement_cree_une_reference_sans_nom(self):
+        corps = {"idClient": "sign-000001-abcd", "code": "AG-0042", "motif": "maigre"}
+        code, o = self.r.traiter("POST", "structures/moi/signalement", corps, self.ec)
+        self.assertEqual(code, 200)
+        self.assertEqual(o["reference"]["origine"], "ecole")
+        _, o2 = self.r.traiter("POST", "structures/moi/signalement", corps, self.ec)
+        self.assertTrue(o2["doublon"])
+        self.assertEqual(self.r.traiter("POST", "structures/moi/signalement", {"idClient": "sign-000002-abcd", "code": "Kofi Mensah", "motif": "maigre"}, self.ec)[0], 422)
+        _, v = self.r.traiter("GET", "structures/moi", None, self.ec)
+        self.assertEqual(v["signalements"], 1)
+
+    def test_le_district_voit_les_structures_et_le_centre_son_tableau(self):
+        di = connecter(self.r, "district.togo")
+        _, d = self.r.traiter("GET", "district", None, di)
+        self.assertEqual(len(d["structures"]), 3)
+        ho = connecter(self.r, "centre.davie")
+        _, c = self.r.traiter("GET", "centre/moi", None, ho)
+        self.assertTrue(c["hopital"])
+        self.assertEqual(len(c["tendance"]), 7)
+        self.assertEqual(self.r.traiter("GET", "structures/moi", None, ho)[0], 403)

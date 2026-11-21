@@ -7,7 +7,7 @@ import { envoyerOuGarder, reseau } from '../lib/reseauClient.js'
 import { delaiLisible, ETATS_REF, PRIORITES, anneau, heureCourte } from '../lib/suivi.js'
 
 /** Charge une liste du service et la rafraîchit toutes les 8 secondes. */
-function useDonnees(chemin, jeton, delai = 8000) {
+export function useDonnees(chemin, jeton, delai = 8000) {
   const [d, setD] = useState(null)
   const [erreur, setErreur] = useState('')
   const [n, setN] = useState(0)
@@ -94,6 +94,11 @@ export function District({ s }) {
           <li><b>{r.prises}</b> prises en charge</li>
         </ol>
         <p><Link to="/reseau/references" className="bouton secondaire">Voir chaque référence</Link> <Link to="/reseau/villages" className="bouton secondaire">Voir les villages</Link></p>
+      </section>
+      <section className="carte">
+        <h2>Crèches, jardins d’enfants et écoles</h2>
+        <ul className="liste-coches">{d.structures.map((e) => <li key={e.id}><b>{e.nom.replace(/ \(fictives?\)/, '')}</b> : {e.inscrits} enfants, présence {e.presenceMoyennePct ?? '–'} %, vaccins à jour {e.vaccinesPct} %, {e.signalements} signalement{e.signalements > 1 ? 's' : ''}.</li>)}</ul>
+        <p><Link to="/reseau/structures" className="bouton secondaire">Voir les établissements</Link></p>
       </section>
       <section className="carte">
         <h2>Où agir en premier</h2>

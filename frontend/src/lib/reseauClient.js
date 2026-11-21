@@ -53,7 +53,7 @@ export function idEnvoi() {
 const AVEC_ID = ['alertes', 'visites', 'references']
 
 export async function envoyerOuGarder(chemin, corps) {
-  if (AVEC_ID.includes(chemin) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
+  if ((AVEC_ID.includes(chemin) || chemin.endsWith('/signalement')) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
   try { return { ok: true, donnees: await reseau.post(chemin, corps, lireSessionReseau()?.jeton) } } catch (e) {
     if (e.statut && e.statut !== 0) return { ok: false, refuse: true, erreur: e.message }
     ecrireSortie([...lireSortie(), { chemin, corps, date: Date.now() }])

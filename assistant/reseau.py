@@ -94,7 +94,19 @@ COMPTES = {
     "centre.zogbedji": ("centre", "c3", CENTRES["c3"][0]),
     "centre.davie": ("centre", "c4", CENTRES["c4"][0]),
     "district.togo": ("district", "", "Responsable de district (démonstration)"),
+    "ecole.agbele": ("ecole", "e1", "Jardin d’enfants d’Agbélé (fictif)"),
+    "ecole.davie": ("ecole", "e2", "École maternelle de Davié (fictive)"),
+    "ecole.zogbedji": ("ecole", "e3", "Crèche communautaire de Zogbédji (fictive)"),
 }
+
+# Structures d'accueil des 0-5 ans (FICTIVES) : id -> (nom, village, type, enfants inscrits, enfants vaccinés à jour, repas servis par jour)
+STRUCTURES = {
+    "e1": ("Jardin d’enfants d’Agbélé (fictif)", "agbele", "Jardin d’enfants (3 à 5 ans)", 38, 31, 38),
+    "e2": ("École maternelle de Davié (fictive)", "davie", "École maternelle (4 à 5 ans)", 54, 36, 0),
+    "e3": ("Crèche communautaire de Zogbédji (fictive)", "zogbedji", "Crèche (0 à 3 ans)", 22, 20, 22),
+}
+MOTIFS_SIGNALEMENT = {"absent": "Absent depuis plus de 3 jours", "maigre": "Semble très maigre (mesure du bras à faire)", "fievre": "Fièvre ou toux persistante",
+                      "vaccin": "Vaccin en retard", "comportement": "Changement de comportement inquiétant"}
 
 # Suivi des enfants par village (FICTIF) : (enfants inscrits, enfants vus ces 30 derniers jours avant les saisies du prototype)
 SUIVI_BASE = {"agbele": (62, 51), "kpadape": (48, 21), "zogbedji": (71, 26), "davie": (95, 36), "tovegan": (27, 9)}
@@ -207,7 +219,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -305,6 +317,11 @@ def _demo_depart():
         ],
     }
     donnees["references"], donnees["appels"] = _demo_suivi(donnees["alertes"])
+    donnees["presences"] = []
+    auj = datetime.now(timezone.utc).date()
+    for sid, st in STRUCTURES.items():
+        for i, taux in zip(range(6, 0, -1), (0.9, 0.88, 0.92, 0.8, 0.86, 0.84)):
+            donnees["presences"].append({"id": uuid.uuid4().hex[:10], "structure": sid, "jour": (auj - timedelta(days=i)).isoformat(), "presents": round(st[3] * taux)})
     return donnees
 
 
@@ -535,6 +552,24 @@ class Reseau:
                     raise Erreur(422, "Le suivi à la maison vient après la prise en charge.")
                 self._avancer_reference(r, etat)
                 return self._vue_reference(r)
+        # ---- jardins d'enfants, écoles et crèches
+        if p[:1] == ["structures"]:
+            if m == "GET" and n == 1:
+                self._auth(jeton, "agent", "district")
+                return {"structures": [self._vue_structure(k) for k in STRUCTURES]}
+            if m == "GET" and p[1:] == ["moi"]:
+                u = self._auth(jeton, "ecole")
+                return self._vue_structure(u[2], detail=True)
+            if m == "POST" and p[1:] == ["moi", "presence"]:
+                u = self._auth(jeton, "ecole")
+                return self._noter_presence(u[2], c)
+            if m == "POST" and p[1:] == ["moi", "signalement"]:
+                u = self._auth(jeton, "ecole")
+                return self._signaler(u[2], c)
+        # ---- tableau d'un centre ou de l'hôpital
+        if m == "GET" and p == ["centre", "moi"]:
+            u = self._auth(jeton, "centre")
+            return self._vue_centre(u[2])
         # ---- villages et district
         if m == "GET" and p == ["villages"]:
             self._auth(jeton, "agent", "district")
@@ -647,6 +682,85 @@ class Reseau:
                 res["reference"] = self._vue_reference(r)
         return res
 
+    def _vue_structure(self, sid, detail=False):
+        nom, village, type_, inscrits, vaccines, repas = STRUCTURES[sid]
+        pres = {x["jour"]: x["presents"] for x in self.s.d["presences"] if x["structure"] == sid}
+        auj = datetime.now(timezone.utc).date()
+        sem = [{"jour": (auj - timedelta(days=i)).isoformat()} for i in range(6, -1, -1)]
+        for j in sem:
+            j["presents"] = pres.get(j["jour"])
+        connus = [j["presents"] for j in sem if j["presents"] is not None]
+        taux = round(100 * sum(connus) / (len(connus) * inscrits)) if connus and inscrits else None
+        signal = [r for r in self.s.d["references"] if r.get("structure") == sid]
+        v = {"id": sid, "nom": nom, "village": village, "type": type_, "inscrits": inscrits, "vaccinesAJour": vaccines, "vaccinesPct": round(100 * vaccines / inscrits),
+             "repas": repas, "presenceAujourdhui": pres.get(auj.isoformat()), "presenceMoyennePct": taux,
+             "signalements": len(signal), "signalementsPris": len([r for r in signal if r["etat"] in FINALES])}
+        if detail:
+            v["semaine"] = sem
+            v["motifs"] = [{"id": k, "libelle": x} for k, x in MOTIFS_SIGNALEMENT.items()]
+            v["suivi"] = [self._vue_reference(r) for r in signal][:20]
+        return v
+
+    def _noter_presence(self, sid, c):
+        try:
+            n = int(c.get("presents"))
+        except (TypeError, ValueError):
+            raise Erreur(422, "Nombre d’enfants présents attendu.")
+        if not 0 <= n <= STRUCTURES[sid][3]:
+            raise Erreur(422, f"Entre 0 et {STRUCTURES[sid][3]} enfants.")
+        jour = datetime.now(timezone.utc).date().isoformat()
+        ex = next((x for x in self.s.d["presences"] if x["structure"] == sid and x["jour"] == jour), None)
+        if ex:
+            with self.s.verrou:
+                ex["presents"] = n
+                self.s.sauver()
+        else:
+            self.s.ajouter("presences", {"id": uuid.uuid4().hex[:10], "structure": sid, "jour": jour, "presents": n})
+        return self._vue_structure(sid, detail=True)
+
+    def _signaler(self, sid, c):
+        """Une école ou une crèche signale un enfant par son code (jamais son nom) : le centre le plus proche reçoit une référence."""
+        motif = c.get("motif")
+        if motif not in MOTIFS_SIGNALEMENT:
+            raise Erreur(422, "Motif attendu.")
+        code = court(c.get("code"), 12).upper()
+        if not RE_CODE_ENFANT.match(code):
+            raise Erreur(422, "Code enfant attendu (lettres, chiffres, tiret). Aucun nom n’est accepté.")
+        idc = court(c.get("idClient"), 64)
+        if not RE_ID_CLIENT.match(idc):
+            raise Erreur(422, "Identifiant d'envoi attendu (8 à 64 caractères).")
+        deja = self._existant("references", idc)
+        if deja:
+            return {"doublon": True, "reference": self._vue_reference(deja)}
+        village = STRUCTURES[sid][1]
+        urgent = motif in ("maigre", "fievre")
+        centre = centre_pour(village, 2 if urgent else 1)
+        a = self.s.ajouter("alertes", {"id": uuid.uuid4().hex[:10], "centreId": centre["id"], "cas": "enfant", "niveau": "urgent" if urgent else "surveiller",
+                                       "signes": [MOTIFS_SIGNALEMENT[motif]], "depuis": village, "heure": maintenant(), "etat": "en-route", "idClient": idc + "-a"})
+        r = self._nouvelle_reference(village, "enfant", a["niveau"], centre["id"], "ecole", [], idc, a["id"])
+        r["structure"] = sid
+        with self.s.verrou:
+            self.s.sauver()
+        return {"doublon": False, "reference": self._vue_reference(r), "centre": centre["nom"]}
+
+    def _vue_centre(self, cid):
+        nom, village, niveau, services = CENTRES[cid]
+        refs = [self._vue_reference(r) for r in self.s.d["references"] if r["centreId"] == cid]
+        delais = sorted(r["priseEnMin"] for r in refs if r["priseEnMin"] is not None)
+        origine = {}
+        for r in refs:
+            origine[r["village"]] = origine.get(r["village"], 0) + 1
+        return {"id": cid, "nom": nom, "niveau": niveau, "services": services, "hopital": niveau >= 3,
+                "attendus": len([r for r in refs if r["etat"] in ("envoyee", "recue")]),
+                "urgentsEnRoute": len([r for r in refs if r["etat"] in ("envoyee", "recue") and r["niveau"] == "urgent"]),
+                "surPlace": len([r for r in refs if r["etat"] == "arrivee"]),
+                "prises": len([r for r in refs if r["etat"] in FINALES]),
+                "enRetard": len([r for r in refs if r["retard"]]),
+                "delaiMedianMin": delais[len(delais) // 2] if delais else None,
+                "tendance": self._tendance([r for r in self.s.d["references"] if r["centreId"] == cid]),
+                "provenance": sorted(({"village": k, "total": v} for k, v in origine.items()), key=lambda x: -x["total"]),
+                "parOrigine": {o: len([r for r in refs if r["origine"] == o]) for o in ("alerte", "visite", "agent", "ecole")}}
+
     def _vue_appel(self, a):
         v = dict(a)
         v["libelle"] = SUJETS_APPEL.get(a["sujet"], a["sujet"])
@@ -698,6 +812,7 @@ class Reseau:
             "tendance": self._tendance(refs),
             "parCas": [{"cas": k, "libelle": LIBELLE_CAS[k], "total": len([r for r in refs if r["cas"] == k])} for k in CAS],
             "parCentre": self._par_centre(refs),
+            "structures": [self._vue_structure(k) for k in STRUCTURES],
         }
 
     def _tendance(self, refs):
