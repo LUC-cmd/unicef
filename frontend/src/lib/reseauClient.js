@@ -7,6 +7,7 @@ import { orienter as orienterLocal, creerAlerte as alerteLocale, ALPHABET_CODE }
 const BASE = '/assistant/reseau'
 const CLE_SESSION = 'fildor.reseau.session'
 const CLE_SORTIE = 'fildor.reseau.sortie'
+const CLE_SYNCHRO = 'fildor.reseau.synchro'
 
 export class ErreurReseau extends Error {
   constructor(message, statut) { super(message); this.statut = statut }
@@ -45,8 +46,12 @@ export function ecrireSessionReseau(s) {
 
 /* ---------- envoyer, ou garder jusqu'au retour du réseau ---------- */
 const lireSortie = () => { try { return JSON.parse(localStorage.getItem(CLE_SORTIE) || '[]') } catch { return [] } }
-const ecrireSortie = (l) => { try { localStorage.setItem(CLE_SORTIE, JSON.stringify(l.slice(-200))) } catch { /* plein */ } }
+const ecrireSortie = (l) => { try { localStorage.setItem(CLE_SORTIE, JSON.stringify(l.slice(-500))) } catch { /* plein */ } }
 export const nombreEnAttente = () => lireSortie().length
+export const fileEnAttente = () => lireSortie()
+/** Données reçues d'un fichier de synchronisation (clé USB, Bluetooth) : elles rejoignent la file et partiront dès qu'il y a du réseau. */
+export function ajouterEnAttente(items) { const l = lireSortie(); ecrireSortie([...l, ...items.map((x) => ({ chemin: x.chemin, corps: x.corps, date: x.date ?? Date.now() }))]); return items.length }
+export function derniereSynchro() { try { return Number(localStorage.getItem(CLE_SYNCHRO)) || 0 } catch { return 0 } }
 
 /** Identifiant d'envoi : le service ignore un second envoi portant le même identifiant (pas de doublon après une coupure). */
 export function idEnvoi() {
@@ -54,9 +59,10 @@ export function idEnvoi() {
   return 'e' + Array.from(a, (x) => x.toString(36)).join('')
 }
 const AVEC_ID = ['alertes', 'visites', 'references', 'foyers']
+const SE_TERMINE_PAR = ['/signalement', '/observation', '/soins', '/releve', '/recharge']
 
 export async function envoyerOuGarder(chemin, corps) {
-  if ((AVEC_ID.includes(chemin) || (chemin.endsWith('/signalement') || chemin.endsWith('/observation') || chemin.endsWith('/soins'))) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
+  if ((AVEC_ID.includes(chemin) || SE_TERMINE_PAR.some((f) => chemin.endsWith(f))) && !corps.idClient) corps = { ...corps, idClient: idEnvoi() }
   try { return { ok: true, donnees: await reseau.post(chemin, corps, lireSessionReseau()?.jeton) } } catch (e) {
     if (e.statut && e.statut !== 0) return { ok: false, refuse: true, erreur: e.message }
     ecrireSortie([...lireSortie(), { chemin, corps, date: Date.now() }])
@@ -70,6 +76,7 @@ export async function synchroniser() {
     try { await reseau.post(x.chemin, x.corps, lireSessionReseau()?.jeton); envoyes++ } catch (e) { if (!e.statut) restes.push(x) /* les refus définitifs sont abandonnés */ }
   }
   ecrireSortie(restes)
+  if (envoyes) { try { localStorage.setItem(CLE_SYNCHRO, String(Date.now())) } catch { /* refusé */ } }
   return envoyes
 }
 if (typeof window !== 'undefined') window.addEventListener('online', () => { synchroniser() })

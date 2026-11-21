@@ -37,7 +37,7 @@ export default function MenuProfilFamille({ compte }) {
     if (!f.type.startsWith('image/')) { setErreur('Choisissez une image.'); return }
     try { ecrirePhoto(utilisateur, await preparerPhoto(f)); setErreur('') } catch (x) { setErreur(x.message) }
   }
-  const sortir = () => { setConfirmer(false); definirSecretFamille(''); ecrireCompte(null); nav('/famille') }
+  const sortir = () => { setConfirmer(false); definirSecretFamille(''); ecrireCompte(null); nav('/connexion', { state: { sortie: true } }) }
 
   return (
     <div className="profil" ref={ref}>

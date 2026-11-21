@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth, useReseau } from '../lib/contexte.jsx'
 import ConfirmerSortie from './ConfirmerSortie.jsx'
 import Avatar, { ecrirePhoto, lirePhoto, preparerPhoto } from './Avatar.jsx'
@@ -10,6 +10,7 @@ const ESPACE = { AGENT: '/agent', MAIRIE: '/mairie', DECIDEUR: '/carte', STRUCTU
 /** Le compte de la personne connectée : photo, rôle, retour à son espace, déconnexion. */
 export default function MenuProfil() {
   const { session, deconnexion } = useAuth()
+  const nav = useNavigate()
   const { enLigne } = useReseau()
   const [ouvert, setOuvert] = useState(false)
   const [erreur, setErreur] = useState('')
@@ -66,7 +67,7 @@ export default function MenuProfil() {
           <button type="button" role="menuitem" className="profil-sortie" onClick={() => { setOuvert(false); setConfirmer(true) }}>Se déconnecter</button>
         </div>
       )}
-      <ConfirmerSortie ouvert={confirmer} onAnnuler={() => setConfirmer(false)} onConfirmer={() => { setConfirmer(false); deconnexion() }} />
+      <ConfirmerSortie ouvert={confirmer} onAnnuler={() => setConfirmer(false)} onConfirmer={() => { setConfirmer(false); deconnexion(); nav('/connexion', { state: { sortie: true } }) }} />
     </div>
   )
 }

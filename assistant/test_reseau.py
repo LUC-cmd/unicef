@@ -429,3 +429,38 @@ class FoyersTest(unittest.TestCase):
         e = f["enfants"][0]["code"]
         code, _ = self.r.traiter("POST", f"foyers/{f['code']}/soins", {"enfant": e, "soin": "vitamineA", "idClient": "soin-0000009-a"}, self.ag)
         self.assertEqual(code, 422)
+
+
+class BornesTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.tech = connecter(self.r, "technicien.borne")
+        self.uni = connecter(self.r, "unicef.partenaire")
+
+    def test_technicien_voit_les_alertes(self):
+        code, v = self.r.traiter("GET", "bornes", None, self.tech)
+        self.assertEqual(code, 200)
+        etats = {b["id"]: b["etat"] for b in v["bornes"]}
+        self.assertEqual(etats["b3"], "a-visiter"); self.assertEqual(etats["b1"], "stock-bas")
+        self.assertIn("stock", v["bornes"][0])
+
+    def test_partenaire_lit_sans_detail_et_ne_modifie_rien(self):
+        code, v = self.r.traiter("GET", "bornes", None, self.uni)
+        self.assertEqual(code, 200); self.assertNotIn("stock", v["bornes"][0]); self.assertNotIn("lieu", v["bornes"][0])
+        self.assertEqual(self.r.traiter("GET", "national", None, self.uni)[0], 200)
+        for chemin in ("bornes/b1/releve", "bornes/b1/recharge", "villages", "comptes", "foyers", "visites", "references"):
+            self.assertEqual(self.r.traiter("POST", chemin, {"nom": "x"}, self.uni)[0], 403, chemin)
+
+    def test_releve_sans_doublon_et_recharge(self):
+        corps = {"idClient": "e-test-1", "stock": {"serviettes": 50}, "retraits": 10, "sondage": {"utile": {"oui": 3}}}
+        a = self.r.traiter("POST", "bornes/b3/releve", corps, self.tech)[1]
+        b = self.r.traiter("POST", "bornes/b3/releve", corps, self.tech)[1]
+        self.assertEqual(a["retraits"], 28); self.assertEqual(b["retraits"], 28)
+        self.assertEqual(a["etat"], "stock-bas")   # la relève remet l'horloge à zéro, mais l'antalgique reste à 0
+        c = self.r.traiter("POST", "bornes/b3/recharge", {"idClient": "e2", "ajout": {"antalgique": 30, "preservatifs": 20}}, self.tech)[1]
+        self.assertEqual(c["etat"], "ok")
+        self.assertEqual(self.r.traiter("POST", "bornes/zz/releve", {}, self.tech)[0], 404)
+
+    def test_notifications_technicien(self):
+        _, n = self.r.traiter("GET", "notifications", None, self.tech)
+        self.assertTrue(any("relève" in x["texte"] for x in n["notifications"]))

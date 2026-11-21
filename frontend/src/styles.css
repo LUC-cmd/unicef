@@ -2746,3 +2746,32 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 .tel-corps.basique .tel-bas { padding: 14px 10px 0; }
 .tel-touches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
 .tel-touches i { width: auto; height: 34px; border-radius: 17px; background: linear-gradient(180deg, #f4f7f9, #b9c4cd); color: #1d2a36; display: grid; place-items: center; font: 800 15px/1 Inter, sans-serif; box-shadow: 0 2px 0 #5f6c77; }
+
+.cx-groupe { margin-top: 1rem; }
+.cx-groupe h2 { font-size: 1rem; margin: 0 0 .4rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem; }
+.cx-groupe h2 small { font-weight: 500; color: #5b6f82; font-size: .82rem; }
+.liaisons { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1.2rem; background: #fff; border: 1px solid var(--bord, #d5e2ec); border-radius: var(--rayon, 12px); padding: .6rem .9rem; margin: 0 0 1rem; }
+.liaisons > div { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.liaisons b { font-size: .8rem; color: #0e7c86; margin-right: .2rem; }
+.liaisons i { font-style: normal; font-size: .82rem; background: #eaf5f7; border-radius: 999px; padding: .2rem .65rem; color: #16325c; }
+.liaisons .bouton { margin-left: auto; }
+
+.partenaire-entete { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1cabe2, #0e5f8f); color: #fff; border-radius: var(--rayon); padding: 1.4rem 1.6rem; margin-bottom: 1rem; }
+.partenaire-entete h1 { margin: 0; color: #fff; } .partenaire-entete p { margin: .3rem 0 0; color: #eaf6fd; max-width: 46rem; }
+.partenaire-actions { display: flex; flex-wrap: wrap; gap: .5rem; } .partenaire-actions .bouton.secondaire { background: #fff; }
+.borne-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.borne-carte { background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 1rem 1.1rem; border-top: 4px solid #2e9e4f; display: grid; gap: .6rem; }
+.borne-carte.moyen { border-top-color: #e8a317; } .borne-carte.urgent { border-top-color: #c62828; }
+.borne-carte header { display: flex; justify-content: space-between; gap: .6rem; align-items: flex-start; } .borne-carte h3 { margin: 0; font-size: 1rem; }
+.pastille-b { font-size: .78rem; font-weight: 700; padding: .2rem .65rem; border-radius: 999px; background: #e3f4e8; color: #1e6b36; white-space: nowrap; }
+.pastille-b.moyen { background: #fdf0d2; color: #7a5200; } .pastille-b.urgent { background: #fbe0e0; color: #8e1b1b; }
+.stock-barres { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
+.stock-barres li, .rep-ligne { display: grid; grid-template-columns: minmax(8rem, 1.3fr) 2fr 4.2rem; gap: .6rem; align-items: center; font-size: .88rem; }
+.stock-barres i, .rep-ligne i { display: block; height: 7px; border-radius: 4px; background: linear-gradient(90deg, #1cabe2 var(--p), #e6eef4 var(--p)); }
+.stock-barres li.bas i { background: linear-gradient(90deg, #c62828 var(--p), #e6eef4 var(--p)); } .stock-barres li.bas b { color: #c62828; }
+.rep-ligne b { text-align: right; } .rep-ligne small { color: #5b6f82; }
+.repartitions { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.4rem; } .repartition { margin: 0; display: grid; gap: .45rem; }
+.alerte-liste li { color: #8e1b1b; }
+.boutons-ligne { display: flex; flex-wrap: wrap; gap: .5rem; }
+.champ-synchro { display: grid; gap: .3rem; max-width: 22rem; margin: .4rem 0 .8rem; font-weight: 600; }
+@media print { .partenaire-actions, .liaisons, .barre-reseau { display: none; } }

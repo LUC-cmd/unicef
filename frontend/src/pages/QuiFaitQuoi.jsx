@@ -1,5 +1,5 @@
 import Bandeau from '../components/Bandeau.jsx'
-import { A_VALIDER, CHAINE, DEPLOIEMENT, HORS_LIGNE, ROLES } from '../lib/quiFaitQuoi.js'
+import { A_VALIDER, CHAINE, DEPLOIEMENT, HORS_LIGNE, ROLES, ROLES_EXTRA } from '../lib/quiFaitQuoi.js'
 
 /** Qui crée, qui envoie, qui reçoit, qui fait quoi, et comment on déploie, hors ligne comme en ligne. */
 export default function QuiFaitQuoi({ dans = false }) {
@@ -14,7 +14,7 @@ export default function QuiFaitQuoi({ dans = false }) {
         <section className="carte">
           <h2>Chaque rôle</h2>
           <div className="roles-grille">
-            {ROLES.map((r) => (
+            {[...ROLES, ...ROLES_EXTRA].map((r) => (
               <article key={r.id} className="role">
                 <h3>{r.nom}</h3>
                 <p className="petit">{r.ou}</p>

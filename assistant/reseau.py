@@ -98,7 +98,12 @@ COMPTES = {
     "ecole.agbele": ("ecole", "e1", "Jardin d’enfants d’Agbélé (fictif)"),
     "ecole.davie": ("ecole", "e2", "École maternelle de Davié (fictive)"),
     "ecole.zogbedji": ("ecole", "e3", "Crèche communautaire de Zogbédji (fictive)"),
+    "technicien.borne": ("technicien", "", "Technicien des bornes (démonstration)"),
+    "unicef.partenaire": ("partenaire", "", "UNICEF Togo, partenaire en lecture seule (démonstration)"),
 }
+PRODUITS_BORNE = {"serviettes": "Serviettes hygiéniques", "preservatifs": "Préservatifs", "bon": "Bons de consultation", "antalgique": "Antalgique simple"}
+SEUIL_BORNE = 10   # en dessous : stock bas
+RELEVE_MAX_JOURS = 7   # sans relève au-delà : borne à visiter
 
 # Structures d'accueil des 0-5 ans (FICTIVES) : id -> (nom, village, type, enfants inscrits, enfants vaccinés à jour, repas servis par jour)
 # Routes entre villages (FICTIVES) : (village A, village B, revêtement). Longueur = distance entre les villages.
@@ -260,7 +265,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -362,6 +367,7 @@ def _demo_depart():
     donnees["references"], donnees["appels"] = _demo_suivi(donnees["alertes"])
     donnees["observations"] = _demo_observations()
     donnees["foyers"] = _demo_foyers()
+    donnees["bornes"] = _demo_bornes()
     donnees["obstacles"] = [
         {"id": uuid.uuid4().hex[:10], "de": "zogbedji", "vers": "davie", "type": "inondation", "note": "Le pont bas est sous l’eau depuis la pluie de cette nuit.", "heure": avant(5), "actif": True, "par": "agent.nutrition"},
         {"id": uuid.uuid4().hex[:10], "de": "kpadape", "vers": "zogbedji", "type": "boue", "note": "Piste glissante après le marigot.", "heure": avant(20), "actif": True, "par": "centre.kpadape"},
@@ -409,6 +415,21 @@ def _demo_suivi(alertes):
         {"id": uuid.uuid4().hex[:10], "famille": "FAM-B8RT", "village": "zogbedji", "sujet": "nutrition", "langue": "Mina", "etat": "joint", "tentatives": 1, "heure": avant(9)},
     ]
     return refs, appels
+
+
+def _demo_bornes():
+    """Bornes FICTIVES : une par type de lieu, avec leur réseau (2G, 3G ou aucun) et ce que les utilisatrices ont répondu."""
+    def b(i, nom, village, lieu, reseau_, stock, h, retraits, cartes, prob, utile):
+        return {"id": i, "nom": nom, "village": village, "lieu": lieu, "reseau": reseau_, "stock": stock, "releve": avant(h), "retraits": retraits, "cartes": cartes,
+                "sondage": {"probleme": prob, "utile": utile}, "journal": []}
+    return [
+        b("b1", "Borne du centre de santé d’Agbélé", "agbele", "Centre de santé", "2G", {"serviettes": 42, "preservatifs": 8, "bon": 70, "antalgique": 22}, 20, 57, 31,
+          {"regles": 21, "protection": 9, "produits": 14, "info": 6, "autre": 2}, {"oui": 30, "peu": 14, "non": 8}),
+        b("b2", "Borne de l’école de Davié", "davie", "École", "3G", {"serviettes": 60, "preservatifs": 33, "bon": 90, "antalgique": 5}, 50, 41, 24,
+          {"regles": 17, "protection": 6, "produits": 9, "info": 11, "autre": 1}, {"oui": 25, "peu": 12, "non": 7}),
+        b("b3", "Borne du marché de Zogbédji", "zogbedji", "Marché", "aucun", {"serviettes": 9, "preservatifs": 12, "bon": 40, "antalgique": 0}, 290, 18, 12,
+          {"regles": 8, "protection": 3, "produits": 12, "info": 4, "autre": 0}, {"oui": 9, "peu": 6, "non": 5}),
+    ]
 
 
 def _demo_foyers():
@@ -721,8 +742,15 @@ class Reseau:
             self._auth(jeton, "district", "national", "agent")
             return {"manques": self._manques()}
         if m == "GET" and p == ["national"]:
-            self._auth(jeton, "national")
+            self._auth(jeton, "national", "partenaire")
             return self._national()
+        if p[:1] == ["bornes"]:
+            if m == "GET" and n == 1:
+                u = self._auth(jeton, "technicien", "partenaire", "district", "national")
+                return {"bornes": [self._vue_borne(x, detail=u[1] in ("technicien", "district")) for x in self.s.d["bornes"]], "produits": PRODUITS_BORNE}
+            if m == "POST" and n == 3 and p[2] in ("releve", "recharge"):
+                self._auth(jeton, "technicien")
+                return self._maj_borne(p[1], p[2], c)
         # ---- campagne porte-à-porte : un QR collé sur la maison
         if p[:1] == ["foyers"]:
             if m == "GET" and n == 1:
@@ -910,6 +938,54 @@ class Reseau:
             v["suivi"] = [self._vue_reference(r) for r in signal][:20]
         return v
 
+    def _vue_borne(self, x, detail=True):
+        """Une borne vue par le technicien (tout) ou par un partenaire (totaux seulement, jamais de détail de lieu précis)."""
+        maintenant_ = datetime.now(timezone.utc)
+        try:
+            age = (maintenant_ - datetime.fromisoformat(x["releve"])).total_seconds() / 86400
+        except (ValueError, KeyError):
+            age = 999
+        bas = [k for k, n in x["stock"].items() if n <= SEUIL_BORNE]
+        alertes = []
+        if bas:
+            alertes.append("Stock bas : " + ", ".join(PRODUITS_BORNE[k].lower() for k in bas))
+        if age > RELEVE_MAX_JOURS:
+            alertes.append(f"Pas de relève depuis {int(age)} jours : à visiter")
+        etat = "a-visiter" if age > RELEVE_MAX_JOURS else "stock-bas" if bas else "ok"
+        sond = x["sondage"]
+        vue = {"id": x["id"], "nom": x["nom"], "village": VILLAGES[x["village"]][0] if x["village"] in VILLAGES else x["village"], "reseau": x["reseau"], "etat": etat, "alertes": alertes,
+               "retraits": x["retraits"], "cartes": x["cartes"], "ageReleveJours": round(age, 1), "sondage": sond, "stockBas": len(bas)}
+        if detail:
+            vue.update({"lieu": x["lieu"], "stock": x["stock"], "releve": x["releve"], "villageId": x["village"]})
+        return vue
+
+    def _maj_borne(self, bid, action, c):
+        x = next((b for b in self.s.d["bornes"] if b["id"] == bid), None)
+        if not x:
+            raise Erreur(404, "Borne inconnue.")
+        idc = court(c.get("idClient"), 40)
+        with self.s.verrou:
+            if idc and idc in x.setdefault("vus", []):
+                return self._vue_borne(x)   # déjà reçu : aucun doublon après une coupure
+            if idc:
+                x["vus"] = (x["vus"] + [idc])[-50:]
+            if action == "recharge":
+                for k, v in (c.get("ajout") or {}).items():
+                    if k in PRODUITS_BORNE:
+                        x["stock"][k] = x["stock"].get(k, 0) + max(0, min(500, int(v or 0)))
+            else:   # relève : ce que la borne a gardé en mémoire, sans aucune donnée personnelle
+                for k, v in (c.get("stock") or {}).items():
+                    if k in PRODUITS_BORNE:
+                        x["stock"][k] = max(0, min(1000, int(v or 0)))
+                x["retraits"] += max(0, min(5000, int(c.get("retraits") or 0)))
+                for cle in ("probleme", "utile"):
+                    for k, v in ((c.get("sondage") or {}).get(cle) or {}).items():
+                        x["sondage"][cle][k] = x["sondage"][cle].get(k, 0) + max(0, min(500, int(v or 0)))
+            x["releve"] = maintenant()
+            x["journal"] = (x.get("journal", []) + [{"heure": x["releve"], "action": action}])[-30:]
+        self.s.sauver()
+        return self._vue_borne(x)
+
     def _notifications(self, u):
         """Ce qui demande l'attention du rôle connecté, calculé sur les données réelles du service."""
         ident, role, ref = u[0], u[1], u[2]
@@ -949,6 +1025,11 @@ class Reseau:
                 e = self._vue_structure(k)
                 if e["eveilAStimuler"]:
                     ajoute("info", f"{e['eveilAStimuler']} enfant(s) à stimuler : {e['nom'].replace(' (fictif)', '').replace(' (fictive)', '')}", "/reseau/structures")
+        elif role == "technicien":
+            for b in self.s.d["bornes"]:
+                vb = self._vue_borne(b)
+                for a in vb["alertes"]:
+                    ajoute("urgent" if "relève" in a else "info", f"{vb['nom']} : {a}", "/reseau")
         elif role == "ecole":
             v = self._vue_structure(ref)
             if v["vaccinesPct"] is not None and v["vaccinesPct"] < 80:

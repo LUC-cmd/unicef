@@ -51,6 +51,20 @@ export const ROLES = [
     horsLigne: 'La carte et le SMS fonctionnent sans internet. La borne garde son propre stock.' },
 ]
 
+export const ROLES_EXTRA = [
+  { id: 'technicien', nom: 'Technicien des bornes', ou: 'Sur la route, de borne en borne',
+    cree: 'Rien : il entretient.', envoie: 'La relève de chaque borne (stock restant, retraits) et les recharges.',
+    recoit: 'Les bornes à visiter, les stocks bas, ce que disent les utilisatrices (anonymes), le réseau de chaque emplacement.',
+    fait: 'Passe là où la borne n’a pas été relevée depuis plus de 7 jours, recharge ce qui manque, remonte les pannes.',
+    pas: 'Ne voit aucune personne ni aucune carte : seulement des totaux.',
+    horsLigne: 'La relève est saisie sans réseau et part au retour de la connexion, ou par fichier chiffré.' },
+  { id: 'partenaire', nom: 'Partenaire (UNICEF)', ou: 'Au bureau, en lecture seule',
+    cree: 'Rien.', envoie: 'Rien : il ne peut rien modifier.',
+    recoit: 'Le tableau national par région et par domaine, l’état des bornes en totaux, un rapport à télécharger.',
+    fait: 'Suit les tendances, repère les reculs, oriente les moyens et les financements.',
+    pas: 'Ne voit ni nom, ni adresse, ni enfant. Ne peut ni créer de compte ni modifier une donnée.',
+    horsLigne: 'En ligne. Il lit ce que le terrain a envoyé.' },
+]
 export const CHAINE = [
   ['Le national', 'ouvre les districts'],
   ['Le district', 'crée villages, centres, écoles et accès'],
@@ -82,3 +96,16 @@ export const A_VALIDER = [
   'Le tableau national est calculé sur des données fictives, sauf la région Plateaux (mois courant) qui vient du district de démonstration.',
   'La conservation des données du service Python entre deux redéploiements doit être vérifiée sur Railway.',
 ]
+
+/** Pour chaque espace : de qui il reçoit, à qui il envoie. Affiché en haut de chaque tableau de bord. */
+export const LIAISONS = {
+  national: { recoit: ['Districts (chiffres par région)'], envoie: ['Districts (orientations)'] },
+  district: { recoit: ['Agents (visites, références)', 'Centres (prises en charge)', 'Écoles (signalements)'], envoie: ['Agents (consignes, accès)', 'Centres et écoles (accès)', 'National (chiffres)'] },
+  agent: { recoit: ['District (consignes)', 'Écoles (enfants signalés)', 'Familles (demandes)'], envoie: ['Centres (références, alertes)', 'District (visites, soins donnés)'] },
+  centre: { recoit: ['Agents (cas annoncés)', 'Écoles (signalements)', 'Bornes et téléphones (urgences)'], envoie: ['Agents (état du cas)', 'District (délais de prise en charge)'] },
+  hopital: { recoit: ['Centres de santé (cas graves)', 'Agents (urgences)', 'Écoles (signalements)'], envoie: ['Centres et agents (état du cas)', 'District (délais)'] },
+  ecole: { recoit: ['Centre (suite donnée aux signalements)', 'District (accès)'], envoie: ['Centre le plus proche (signalements)', 'Agents (enfants à visiter)', 'District (présences, éveil)'] },
+  technicien: { recoit: ['Bornes (stock, relève, réponses anonymes)', 'District (bornes à placer)'], envoie: ['Bornes (recharge)', 'District et partenaires (état des bornes)'] },
+  partenaire: { recoit: ['National (tendances par région)', 'Bornes (totaux)'], envoie: ['Rien : lecture seule'] },
+  boutique: { recoit: ['Agents (validation des produits, contrôles)', 'Familles (demandes)'], envoie: ['Agents (produits à valider)', 'Familles (disponibilités)'] },
+}

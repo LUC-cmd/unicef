@@ -23,8 +23,24 @@ const COMPTES = [
   { id: 'boutique.agbele', role: 'Boutique partenaire', lieu: 'Agbélé', detail: 'Ajoute ses produits pour les enfants, les femmes enceintes et les jeunes filles, suit les demandes des familles et ses contrôles. Un agent de santé valide les produits.', cible: '/reseau', Icone: IconeCroix, reseau: true },
   { id: 'agent.nutrition', role: 'Agent de santé, nutrition', lieu: 'Réseau nutrition', detail: 'Valide les produits des boutiques, prévoit les visites, contrôle les boutiques et répond aux questions anonymes des jeunes filles.', cible: '/reseau', Icone: IconeAgent, reseau: true },
   { id: 'centre.davie', role: 'Hôpital : cas qui arrivent', lieu: 'Hôpital de Davié', detail: 'Voit arriver les cas urgents annoncés par les agents, les bornes et les téléphones, les urgences en premier.', cible: '/reseau', Icone: IconeCroix, reseau: true },
+  { id: 'district.togo', role: 'Responsable de district', lieu: 'District de démonstration', detail: 'Crée les villages, centres, hôpitaux, crèches et écoles, ouvre les accès (code d’activation), suit références, retards et manques, et envoie les agents où il faut.', cible: '/reseau', Icone: IconeZone, reseau: true },
+  { id: 'national.togo', role: 'Responsable national', lieu: 'Togo, toutes les régions', detail: 'Voit le pays entier : vaccination, nutrition, santé de la mère et de l’enfant, éveil, jeunes filles, région par région, avec l’évolution sur 6 mois et les reculs. Aucun nom d’enfant.', cible: '/reseau', Icone: IconeBouclier, reseau: true },
+  { id: 'centre.agbele', role: 'Centre de santé de village', lieu: 'Agbélé', detail: 'Reçoit les cas annoncés par les agents et les écoles avant l’arrivée du patient, avec l’itinéraire, et marque l’arrivée puis la prise en charge.', cible: '/reseau', Icone: IconeCroix, reseau: true },
+  { id: 'ecole.agbele', role: 'Jardin d’enfants', lieu: 'Jardin d’enfants d’Agbélé', detail: 'Présences, éveil et apprentissage (4 domaines), signalement d’un enfant au centre le plus proche. Aucun nom, des codes.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
+  { id: 'ecole.davie', role: 'École maternelle', lieu: 'École maternelle de Davié', detail: 'Mêmes outils que le jardin d’enfants : présences, éveil, signalements vers l’hôpital de Davié.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
+  { id: 'ecole.zogbedji', role: 'Crèche de village', lieu: 'Crèche de Zogbédji', detail: 'Présences, repas, éveil des tout-petits et signalement au centre de santé le plus proche.', cible: '/reseau', Icone: IconeCarnet, reseau: true },
+  { id: 'unicef.partenaire', role: 'Partenaire UNICEF', lieu: 'Lecture seule', detail: 'Voit le tableau national, l’état des bornes en totaux et télécharge un rapport. Ne peut rien modifier et ne voit aucune personne. Compte de démonstration : ce n’est pas un compte officiel de l’UNICEF.', cible: '/reseau', Icone: IconeBouclier, reseau: true },
+  { id: 'technicien.borne', role: 'Technicien des bornes', lieu: 'Bornes du district', detail: 'Voit l’état de chaque borne (stock, relève, réseau), recharge, enregistre une relève même sans réseau et lit ce que disent les utilisatrices.', cible: '/reseau', Icone: IconeReglage, reseau: true },
   { id: 'decideur', role: 'Responsable régional', lieu: 'Région Maritime', detail: 'Voir la carte des zones oubliées, décider où envoyer une équipe en priorité.', cible: '/carte', Icone: IconeZone },
   { id: 'admin', role: 'Administrateur', lieu: 'Démonstration', detail: 'Gère les comptes, les messages, les clés USB, fait avancer le temps pour tester.', cible: '/admin', Icone: IconeReglage },
+]
+
+const GROUPES = [
+  ['Pilotage', 'Voir le pays, la région, le district, décider', ['national.togo', 'unicef.partenaire', 'decideur', 'district.togo']],
+  ['Santé', 'Soigner, orienter, visiter', ['agent.vo', 'agent.nutrition', 'structure.golfe', 'centre.agbele', 'centre.davie', 'technicien.borne']],
+  ['Petite enfance et école', 'Éveil, présences, signalements', ['creche.golfe', 'ecole.agbele', 'ecole.davie', 'ecole.zogbedji']],
+  ['Familles et jeunes filles', 'Un code, aucun nom', ['famille', 'fille.demo', 'boutique.agbele']],
+  ['Administration', 'Naissances, comptes, démonstration', ['mairie', 'admin']],
 ]
 
 export default function Connexion() {
@@ -74,7 +90,11 @@ export default function Connexion() {
         navigate('/reseau', { replace: true })
         return
       }
-      await connexion(id, mdp)
+      try { await connexion(id, mdp) } catch (e1) {
+        if (e1.statut !== 401) throw e1
+        // Pas un compte du serveur principal : on essaie les accès créés par un responsable (district, centre, école, agent).
+        try { ecrireSessionReseau(await reseau.post('connexion', { identifiant: id, mdp })); navigate('/reseau', { replace: true }); return } catch { throw e1 }
+      }
       navigate('/preparation', {
         replace: true,
         state: { cible: lieu.state?.depuis && cible && lieu.state.depuis.startsWith(cible) ? lieu.state.depuis : cible },
@@ -111,13 +131,21 @@ export default function Connexion() {
           <h1>Connexion</h1>
           <p className="cx-sous">Choisissez votre espace, puis entrez vos identifiants. Les comptes ci-dessous sont des comptes de démonstration : un clic les pré-remplit.</p>
 
-          <div className="cx-roles" role="radiogroup" aria-label="Votre espace">
-            {COMPTES.map((c) => (
-              <button key={c.id} type="button" role="radio" aria-checked={choisi === c.id}
-                      className={`cx-role${choisi === c.id ? ' actif' : ''}`} onClick={() => choisir(c)}>
-                <span className="cx-role-icone"><c.Icone /></span>
-                <span className="cx-role-texte"><b>{c.role}</b><small>{c.lieu}</small></span>
-              </button>
+          {lieu.state?.sortie && <p className="succes" role="status">Vous êtes déconnecté. Vos données restent protégées.</p>}
+          <div role="radiogroup" aria-label="Votre espace">
+            {GROUPES.map(([titreG, aideG, ids]) => (
+              <section key={titreG} className="cx-groupe">
+                <h2>{titreG}<small>{aideG}</small></h2>
+                <div className="cx-roles">
+                  {ids.map((id) => COMPTES.find((x) => x.id === id)).filter(Boolean).map((c) => (
+                    <button key={c.id} type="button" role="radio" aria-checked={choisi === c.id}
+                            className={`cx-role${choisi === c.id ? ' actif' : ''}`} onClick={() => choisir(c)}>
+                      <span className="cx-role-icone"><c.Icone /></span>
+                      <span className="cx-role-texte"><b>{c.role}</b><small>{c.lieu}</small></span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
           {compte && <p className="cx-detail" key={compte.id}>{compte.detail}</p>}
@@ -139,6 +167,7 @@ export default function Connexion() {
               </span>
             </label>
             <button className="bouton cx-envoi" disabled={enCours}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
+            <button type="button" className="bouton secondaire" onClick={() => navigate('/reseau')}>Première connexion : activer mon accès</button>
           </form>
 
           <div className="cx-local">
