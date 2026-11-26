@@ -225,7 +225,7 @@ function Grossesse({ e, maj }) {
           {SIGNES_GROSSESSE.map((s) => <li key={s.id}><label className="soin-case"><input type="checkbox" checked={signes.includes(s.id)} onChange={() => bascule(s.id)} /> {s.texte}</label></li>)}
         </ul>
       </section>
-      <ResultatSoins {...lireSignesGrossesse(signes)} />
+      <div className="resultat-bas"><ResultatSoins {...lireSignesGrossesse(signes)} /></div>
       <section className="carte">
         <h2>Mon plan d’accouchement</h2>
         <p>À préparer avant le terme, avec une personne de confiance.</p>

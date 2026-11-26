@@ -2836,3 +2836,18 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
   body.imprime-att .attestation.a-imprimer { position: absolute; left: 0; top: 0; width: 100%; max-width: none; border-color: #000; }
   body.imprime-att .att-bouton { display: none !important; }
 }
+
+/* Analyse de la région : phrase de lecture, causes, carte de chaleur */
+.analyse-phrase { font-size: 1.05rem; margin: 0.2rem 0 0.8rem; }
+.analyse-liste { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.7rem; }
+.analyse-liste p { margin: 0.2rem 0 0; }
+table.chaleur td { text-align: center; font-weight: 600; }
+.chaleur-bien { background: #e3f4ea; color: #14633a; }
+.chaleur-moyen { background: #fff6dc; color: #7a5a00; }
+.chaleur-mal { background: #fbe4e1; color: #a02a1f; }
+.chaleur-neutre { color: #667; }
+tr.chaleur-moyenne th, tr.chaleur-moyenne td { border-top: 2px solid var(--bord); background: #f4f7fb; }
+
+/* Résultat d'un repérage : collé en haut de l'écran pendant qu'on coche */
+.resultat-collant { position: sticky; top: 0.5rem; z-index: 6; margin-bottom: 1rem; box-shadow: 0 6px 18px rgba(20, 30, 60, 0.18); border-radius: 14px; }
+.resultat-bas { position: sticky; bottom: 0.6rem; z-index: 6; box-shadow: 0 -6px 18px rgba(20, 30, 60, 0.18); border-radius: 14px; }

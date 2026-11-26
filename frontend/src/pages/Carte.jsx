@@ -12,6 +12,7 @@ import GestionComptes from '../components/GestionComptes.jsx'
 import Bandeau from '../components/Bandeau.jsx'
 import GraphiqueEvolution from '../components/GraphiqueEvolution.jsx'
 import AlertesZones from '../components/AlertesZones.jsx'
+import AnalyseRegion from '../components/AnalyseRegion.jsx'
 import { Link } from 'react-router-dom'
 
 const L = 640
@@ -206,6 +207,7 @@ export default function Carte({ vue = 'carte' }) {
         </div>
       )}
 
+        <AnalyseRegion zones={zones} />
         <div className="deux-colonnes">
           {gauche}
           <section>{detailJsx}</section>
