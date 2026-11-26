@@ -9,6 +9,8 @@ import { formaterDate } from '../lib/format.js'
 import ConseilSaison from '../components/ConseilSaison.jsx'
 import EspaceFamille from '../components/EspaceFamille.jsx'
 import FilEnfant from '../components/FilEnfant.jsx'
+import Attestation from '../components/Attestation.jsx'
+import { reseau } from '../lib/reseauClient.js'
 import { MESSAGES_SECOURS, PROCHES_SECOURS, PROFIL_SECOURS } from '../lib/secoursFamille.js'
 import { ecrireCompte, lireCompte, useInstallation } from '../lib/famille.js'
 
@@ -74,6 +76,20 @@ function Connexion({ onConnecte }) {
         <p className="petit">Une famille sans compte : l'agent de santé l'inscrit lors de sa visite et lui remet sa carte de famille.</p>
       </form>
     </main>
+  )
+}
+
+/** Les attestations tamponnées par l'hôpital ou le centre : la famille les voit ici et les imprime. */
+function MesAttestations({ code }) {
+  const [liste, setListe] = useState(null)
+  useEffect(() => { reseau.get(`attestations/${encodeURIComponent(code)}`, '').then((r) => setListe(r.attestations)).catch(() => setListe([])) }, [code])
+  if (!liste) return null
+  return (
+    <section className="carte" aria-labelledby="t-att">
+      <h2 id="t-att">Mes attestations</h2>
+      {liste.length === 0 ? <p className="petit">Quand l’hôpital ou le centre de santé établit une attestation (accouchement, naissance, prise en charge), elle apparaît ici. Vous pouvez l’imprimer.</p>
+        : liste.map((a) => <Attestation key={a.id} a={a} />)}
+    </section>
   )
 }
 
@@ -270,6 +286,7 @@ function Tableau({ compte, profil, setProfil, sortir, onSecret, onglet }) {
         )}
         {onglet === 'dossier' && (
           <>
+        <MesAttestations code={compte.codeFamille} />
         <DeclarationFamille compte={compte} profil={profil} />
         <section className="carte" aria-labelledby="t-dossier">
           <h2 id="t-dossier">Préparer la déclaration de naissance</h2>

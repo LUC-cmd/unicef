@@ -108,6 +108,8 @@ LIEUX_BORNE = {"centre": "Centre de santé", "ecole": "École", "lycee": "Lycée
 VILLES_BORNE = ["Lomé", "Tsévié", "Aného", "Kpalimé", "Atakpamé", "Sokodé", "Bassar", "Kara", "Dapaong"]
 CANAUX_CONTACT = {"sms": "Par SMS", "appel": "Par appel", "visite": "Par une visite discrète"}
 MOTIFS_CONTACT = {"parler": "Parler à une personne de confiance", "regles": "Règles ou douleurs", "protection": "Se protéger", "retard": "Retard de règles", "autre": "Autre"}
+TYPES_ATTESTATION = {"accouchement": "Attestation d’accouchement", "naissance": "Attestation de naissance vivante", "prise_en_charge": "Attestation de prise en charge", "hospitalisation": "Attestation d’hospitalisation"}
+RE_IMAGE = re.compile(r"^data:image/(jpeg|png|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$")
 SEUIL_BORNE = 10   # en dessous : stock bas
 RELEVE_MAX_JOURS = 7   # sans relève au-delà : borne à visiter
 
@@ -272,7 +274,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": [], "contacts": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": [], "contacts": [], "cachets": [], "attestations": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -375,6 +377,10 @@ def _demo_depart():
     donnees["observations"] = _demo_observations()
     donnees["foyers"] = _demo_foyers()
     donnees["inscriptions"] = _demo_inscriptions(donnees["foyers"])
+    cachet = _cachet_demo(CENTRES["c4"][0])
+    donnees["cachets"] = [{"centre": "c4", "image": cachet, "responsable": "Dr Responsable (fictif)", "titre": "Médecin-chef", "heure": avant(48)}]
+    donnees["attestations"] = [{"id": uuid.uuid4().hex[:10], "numero": "ATT-C4-0001", "centreId": "c4", "centre": CENTRES["c4"][0], "type": "accouchement", "libelle": TYPES_ATTESTATION["accouchement"],
+                                "famille": "F-0001", "enfant": "", "dateEvenement": avant(72)[:10], "note": "Accouchement sans complication.", "cachet": {"image": cachet, "responsable": "Dr Responsable (fictif)", "titre": "Médecin-chef"}, "emis": avant(70)}]
     donnees["contacts"] = [
         {"id": uuid.uuid4().hex[:10], "code": "DEMO0001", "prenom": "Ama (fictif)", "nom": "", "telephone": "", "canal": "visite", "motif": "regles", "village": "agbele", "consentement": avant(6), "etat": "a-contacter", "heure": avant(6)},
         {"id": uuid.uuid4().hex[:10], "code": "DEMO0002", "prenom": "Efua (fictif)", "nom": "Test", "telephone": "90 00 00 00", "canal": "sms", "motif": "parler", "village": "davie", "consentement": avant(30), "etat": "contactee", "heure": avant(30)},
@@ -471,6 +477,17 @@ def _demo_foyers():
                 f["soins"].append({"enfant": code, "soin": t, "heure": avant(24 * 8), "par": "agent.nutrition", "idClient": f"seed{n}{t}"[:20].ljust(8, "x")})
         out.append(f)
     return out
+
+
+def _cachet_demo(nom):
+    """Un cachet FICTIF dessiné en SVG, pour la démonstration. Chaque hôpital importe le sien."""
+    nom = nom.replace(" (fictif)", "").replace(" (fictive)", "").upper()
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" fill="none" stroke="#1f3a93" stroke-width="5"/>'
+           '<circle cx="100" cy="100" r="70" fill="none" stroke="#1f3a93" stroke-width="2"/>'
+           '<text x="100" y="78" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#1f3a93">' + nom + '</text>'
+           '<text x="100" y="104" text-anchor="middle" font-family="Arial" font-size="12" fill="#1f3a93">CACHET FICTIF</text>'
+           '<text x="100" y="124" text-anchor="middle" font-family="Arial" font-size="11" fill="#1f3a93">DÉMONSTRATION</text></svg>')
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("ascii")
 
 
 def _demo_inscriptions(foyers):
@@ -897,6 +914,24 @@ class Reseau:
         if m == "GET" and n == 3 and p[:2] == ["centre", "enfant"]:
             self._auth(jeton, "centre")
             return self._chercher_enfant(None, p[2])
+        if p[:2] == ["centre", "moi"] and n == 3 and p[2] in ("cachet", "attestations"):
+            u = self._auth(jeton, "centre")
+            if m == "GET" and p[2] == "cachet":
+                return {"cachet": self._cachet(u[2])}
+            if m == "POST" and p[2] == "cachet":
+                return self._enregistrer_cachet(u[2], c)
+            if m == "GET" and p[2] == "attestations":
+                return {"attestations": [x for x in self.s.d["attestations"] if x["centreId"] == u[2]], "types": TYPES_ATTESTATION}
+            if m == "POST" and p[2] == "attestations":
+                return self._etablir_attestation(u[2], c)
+        if m == "GET" and p[:1] == ["attestations"] and n in (2, 3):
+            # Public : la famille retrouve ses attestations avec son code famille ; n'importe qui peut vérifier un numéro (aucun nom).
+            if n == 3 and p[1] == "verifier":
+                x = next((a for a in self.s.d["attestations"] if a["numero"] == court(p[2], 30).upper()), None)
+                return {"valide": bool(x), "type": x["libelle"] if x else "", "centre": x["centre"] if x else "", "date": x["emis"][:10] if x else ""}
+            if n == 2:
+                fam = court(p[1], 12).upper()
+                return {"attestations": [x for x in self.s.d["attestations"] if x["famille"] == fam]}
         if m == "POST" and p == ["centre", "moi", "accueil"]:
             u = self._auth(jeton, "centre")
             return self._accueillir(u[2], c)
@@ -1199,6 +1234,41 @@ class Reseau:
         if detail:
             vue.update({"lieu": x["lieu"], "stock": x["stock"], "releve": x["releve"], "villageId": x["village"]})
         return vue
+
+    def _cachet(self, cid):
+        x = next((y for y in self.s.d["cachets"] if y["centre"] == cid), None)
+        return {"image": x["image"], "responsable": x["responsable"], "titre": x["titre"], "heure": x["heure"]} if x else None
+
+    def _enregistrer_cachet(self, cid, c):
+        image, resp, titre = c.get("image"), court(c.get("responsable"), 60).strip(), court(c.get("titre"), 60).strip()
+        if not isinstance(image, str) or len(image) > 260000 or not RE_IMAGE.match(image):
+            raise Erreur(422, "Image du cachet attendue (PNG, JPEG ou WebP, légère).")
+        if len(resp) < 3:
+            raise Erreur(422, "Nom du responsable qui signe attendu.")
+        with self.s.verrou:
+            self.s.d["cachets"] = [y for y in self.s.d["cachets"] if y["centre"] != cid]
+            self.s.d["cachets"].insert(0, {"centre": cid, "image": image, "responsable": resp, "titre": titre or "Responsable", "heure": maintenant()})
+            self.s.sauver()
+        return {"cachet": self._cachet(cid)}
+
+    def _etablir_attestation(self, cid, c):
+        """Le centre ou l'hôpital établit une attestation tamponnée avec son cachet : la famille la retrouve dans son espace et peut l'imprimer."""
+        cachet = self._cachet(cid)
+        if not cachet:
+            raise Erreur(422, "Importez d’abord le cachet de l’établissement, puis le nom du responsable qui signe.")
+        t = c.get("type")
+        fam = court(c.get("famille"), 12).upper()
+        enf = court(c.get("enfant"), 12).upper()
+        if t not in TYPES_ATTESTATION or not RE_CODE_ENFANT.match(fam) or (enf and not RE_CODE_ENFANT.match(enf)):
+            raise Erreur(422, "Type d’attestation et code famille attendus (par exemple F-0001). Aucun nom n’est accepté.")
+        jour = court(c.get("date"), 10)
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", jour):
+            jour = maintenant()[:10]
+        nb = len([a for a in self.s.d["attestations"] if a["centreId"] == cid]) + 1
+        a = self.s.ajouter("attestations", {"id": uuid.uuid4().hex[:10], "numero": f"ATT-{cid.upper()}-{nb:04d}", "centreId": cid, "centre": CENTRES[cid][0], "type": t, "libelle": TYPES_ATTESTATION[t],
+                                           "famille": fam, "enfant": enf, "dateEvenement": jour, "note": court(c.get("note"), 200),
+                                           "cachet": {"image": cachet["image"], "responsable": cachet["responsable"], "titre": cachet["titre"]}, "emis": maintenant()})
+        return a
 
     def _registre_enfants(self):
         """Tous les enfants connus, par code : âge, village, maison, soins à donner, établissement. Jamais de nom."""

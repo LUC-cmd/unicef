@@ -2818,3 +2818,21 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 .liste-enfants li { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: center; padding: 0.6rem 0.9rem; border: 1px solid var(--bord); border-radius: var(--rayon); background: #fff; }
 .liste-enfants li .petit { flex: 1 1 8rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Page de connexion : la zone d'action reste visible après le clic sur un compte */
+.cx-action { scroll-margin: 1.5rem; outline: none; }
+
+/* Attestation tamponnée : lisible à l'écran, seule sur la page à l'impression */
+.attestation { border: 2px solid var(--nuit, #1f3a93); border-radius: 6px; padding: 1.4rem 1.6rem; background: #fff; max-width: 40rem; margin: 1rem 0; display: grid; gap: 0.7rem; }
+.attestation header { text-align: center; border-bottom: 1px solid var(--bord); padding-bottom: 0.6rem; }
+.attestation h3 { margin: 0.2rem 0; font-size: 1.25rem; }
+.att-etab { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
+.attestation footer { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: 0.6rem; }
+.att-cachet { width: 130px; height: 130px; object-fit: contain; }
+.att-note { border-top: 1px dashed var(--bord); padding-top: 0.5rem; }
+@media print {
+  body.imprime-att * { visibility: hidden !important; }
+  body.imprime-att .attestation.a-imprimer, body.imprime-att .attestation.a-imprimer * { visibility: visible !important; }
+  body.imprime-att .attestation.a-imprimer { position: absolute; left: 0; top: 0; width: 100%; max-width: none; border-color: #000; }
+  body.imprime-att .att-bouton { display: none !important; }
+}

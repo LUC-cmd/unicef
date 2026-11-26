@@ -640,3 +640,34 @@ class RegistreEnfantsTest(unittest.TestCase):
         self.assertTrue(all("nom" not in e for e in v["enfants"]))
         self.assertEqual(r.traiter("GET", "enfants", None, di)[0], 200)
         self.assertEqual(r.traiter("GET", "enfants", None, ec)[0], 403)
+
+
+class AttestationsTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ho = connecter(self.r, "centre.davie")
+        self.cv = connecter(self.r, "centre.agbele")
+        self.png = "data:image/png;base64,iVBORw0KGgo="
+
+    def test_sans_cachet_pas_d_attestation(self):
+        code, _ = self.r.traiter("POST", "centre/moi/attestations", {"type": "accouchement", "famille": "F-0002"}, self.cv)
+        self.assertEqual(code, 422)
+
+    def test_cachet_puis_attestation_visible_par_la_famille(self):
+        self.assertEqual(self.r.traiter("POST", "centre/moi/cachet", {"image": self.png, "responsable": "Dr Test"}, self.cv)[0], 200)
+        code, a = self.r.traiter("POST", "centre/moi/attestations", {"type": "naissance", "famille": "f-0002", "enfant": "t045a", "date": "2026-11-20"}, self.cv)
+        self.assertEqual((code, a["famille"], a["dateEvenement"]), (200, "F-0002", "2026-11-20"))
+        mes = self.r.traiter("GET", "attestations/F-0002")[1]["attestations"]
+        self.assertEqual([x["numero"] for x in mes], [a["numero"]])
+        self.assertTrue(self.r.traiter("GET", f"attestations/verifier/{a['numero']}")[1]["valide"])
+        self.assertFalse(self.r.traiter("GET", "attestations/verifier/ATT-XX-9999")[1]["valide"])
+
+    def test_refus(self):
+        self.assertEqual(self.r.traiter("POST", "centre/moi/cachet", {"image": "http://x/y.png", "responsable": "Dr Test"}, self.cv)[0], 422)
+        self.assertEqual(self.r.traiter("POST", "centre/moi/attestations", {"type": "naissance", "famille": "Mme Kossi"}, self.ho)[0], 422)
+        ec = connecter(self.r, "ecole.davie")
+        self.assertEqual(self.r.traiter("POST", "centre/moi/cachet", {"image": self.png, "responsable": "Dr Test"}, ec)[0], 403)
+
+    def test_demo_hopital_a_deja_un_cachet(self):
+        self.assertIsNotNone(self.r.traiter("GET", "centre/moi/cachet", None, self.ho)[1]["cachet"])
+        self.assertEqual(len(self.r.traiter("GET", "attestations/F-0001")[1]["attestations"]), 1)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { IconeAgent, IconeBouclier, IconeCarnet, IconeZone } from '../components/Icones.jsx'
 import { useAuth } from '../lib/contexte.jsx'
@@ -51,6 +51,7 @@ export default function Connexion() {
   const [erreur, setErreur] = useState('')
   const [choisi, setChoisi] = useState(null)
   const compte = COMPTES.find((c) => c.id === choisi)
+  const zoneAction = useRef(null)
   const [username, setUsername] = useState('')
   const [mdp, setMdp] = useState('')
   const [mdpVisible, setMdpVisible] = useState(false)
@@ -60,6 +61,11 @@ export default function Connexion() {
     setUsername(c.id)
     setMdp(MDP_DEMO)
     setErreur('')
+    // Le formulaire est plus bas : on y amène la personne tout de suite, bouton de connexion en vue.
+    setTimeout(() => {
+      zoneAction.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      zoneAction.current?.querySelector('button.cx-envoi:not([disabled])')?.focus({ preventScroll: true })
+    }, 60)
   }
 
   async function entrerFamille() {
@@ -147,6 +153,7 @@ export default function Connexion() {
               </section>
             ))}
           </div>
+          <div ref={zoneAction} className="cx-action" tabIndex={-1}>
           {compte && <p className="cx-detail" key={compte.id}>{compte.detail}</p>}
           {compte?.fille && <button type="button" className="bouton cx-envoi" onClick={() => { entrerFille(); navigate('/fille', { replace: true }) }}>Entrer dans mon espace</button>}
           {compte?.famille && <button type="button" className="bouton cx-envoi" disabled={enCours} onClick={entrerFamille}>{enCours ? 'Ouverture…' : 'Voir l’espace famille'}</button>}
@@ -168,6 +175,7 @@ export default function Connexion() {
             <button className="bouton cx-envoi" disabled={enCours}>{enCours ? 'Connexion…' : 'Se connecter'}</button>
             <button type="button" className="bouton secondaire" onClick={() => navigate('/reseau')}>Première connexion : activer mon accès</button>
           </form>
+          </div>
 
           <div className="cx-local">
             <h2>Pas de réseau ici ?</h2>
