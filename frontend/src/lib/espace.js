@@ -10,6 +10,21 @@ const CLE = 'fildor.dehors'
 const PREFIXES_JAVA = /^\/(agent|mairie|structure|carte|admin|carnet)(\/|$)/
 const VERS_FAMILLE = { '/jeux': '/famille/jeux', '/assistant': '/famille/assistant', '/grossesse': '/famille/grossesse', '/acte': '/famille/acte' }
 
+// Un lien ouvert dans un nouvel onglet affiche d'abord le site public (« Retourner dans mon espace » reste en haut),
+// sauf dans l'application installée sur le téléphone, qui rouvre tout de suite l'espace de la famille.
+try {
+  if (!sessionStorage.getItem('fildor.demarre')) {
+    sessionStorage.setItem('fildor.demarre', '1')
+    const installee = Boolean(window.matchMedia?.('(display-mode: standalone)').matches)
+    if (!installee) {
+      sessionStorage.setItem(CLE, '1')
+      // La famille déjà enregistrée sur cet appareil n'est pas une « nouvelle connexion » : on ne rouvre pas son espace de force.
+      const c = JSON.parse(localStorage.getItem('fildor.famille.compte') || 'null')
+      if (c?.telephone && c?.codeFamille) sessionStorage.setItem('fildor.identite', `f:${c.codeFamille}`)
+    }
+  }
+} catch { /* stockage indisponible : comportement habituel */ }
+
 export const lireDehors = () => { try { return sessionStorage.getItem(CLE) === '1' } catch { return false } }
 export function ecrireDehors(v) {
   try { if (v) sessionStorage.setItem(CLE, '1'); else sessionStorage.removeItem(CLE) } catch { /* refusé */ }

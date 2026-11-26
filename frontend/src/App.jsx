@@ -3,7 +3,9 @@ import MenuProfil from './components/MenuProfil.jsx'
 import MenuProfilFamille from './components/MenuProfilFamille.jsx'
 import EnteteReseau from './components/EnteteReseau.jsx'
 import NotificationsFamille from './components/NotificationsFamille.jsx'
-import { useCompteFamille } from './lib/famille.js'
+import { ecrireCompte, useCompteFamille } from './lib/famille.js'
+import { sortirFille } from './lib/fille.js'
+import { ecrireSessionReseau } from './lib/reseauClient.js'
 import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau, useCompteFille } from './lib/espace.js'
 import { Notifications } from './components/Shell.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
@@ -117,7 +119,7 @@ function enApplicationFamille() {
 }
 
 export default function App() {
-  const { session } = useAuth()
+  const { session, deconnexion } = useAuth()
   const { enLigne } = useReseau()
   const lieu = useLocation()
   const naviguer = useNavigate()
@@ -140,6 +142,15 @@ export default function App() {
   const espace = espaceDe({ ...connecte, accueilRole: ACCUEIL_ROLE })
   const dansFamille = Boolean(compteFamille) && !session && !reseauSession && /^\/famille(\/|$)/.test(lieu.pathname)
   const dansEspace = Boolean(espace) && !dehors && espace.estDans(lieu.pathname)
+  // Déconnexion complète, la même pour tous les comptes : jeune fille, famille, réseau professionnel, base principale.
+  const deconnecterTout = () => {
+    try { sortirFille() } catch { /* rien à effacer */ }
+    try { ecrireSessionReseau(null) } catch { /* rien à effacer */ }
+    try { ecrireCompte(null) } catch { /* rien à effacer */ }
+    try { deconnexion() } catch { /* pas de session principale */ }
+    ecrireDehors(false)
+    naviguer('/', { replace: true })
+  }
   // Connecté et pas « dehors » : tout ce qui n'est pas dans son espace ramène à son espace.
   const retour = espace && !dehors && !espace.estDans(lieu.pathname) ? (espace.vers?.(lieu.pathname) ?? espace.base) : null
   
@@ -202,6 +213,7 @@ export default function App() {
               {!espace && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {espace && !dansEspace && <Link className="bouton-entete principal" to={espace.base} onClick={() => ecrireDehors(false)}>Retourner dans mon espace</Link>}
               {dansEspace && <button type="button" className="bouton-entete principal" onClick={() => { ecrireDehors(true); naviguer('/') }}>Quitter l’espace</button>}
+              {espace && <button type="button" className="bouton-entete sortie" onClick={deconnecterTout}>Se déconnecter</button>}
               {(session || dansFamille) && dansEspace && (
                 <>
                   {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
