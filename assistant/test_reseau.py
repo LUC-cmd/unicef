@@ -347,8 +347,19 @@ class GouvernanceTest(unittest.TestCase):
         self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
         self.di = connecter(self.r, "district.togo")
 
+    def _creer_et_activer(self, jeton, role, nom, ref="", mdp="motdepasse1"):
+        code, o = self.r.traiter("POST", "comptes", {"role": role, "nom": nom, "ref": ref}, jeton)
+        self.assertEqual(code, 200, o)
+        ident, cle = o["compte"]["identifiant"], o["codeActivation"]
+        self.assertEqual(self.r.traiter("POST", "activer", {"identifiant": ident, "code": cle, "mdp": mdp})[0], 200)
+        code, c = self.r.traiter("POST", "connexion", {"identifiant": ident, "mdp": mdp})
+        self.assertEqual(code, 200)
+        return ident, cle, c["jeton"]
+
     def test_creer_compte_activer_connecter(self):
-        code, o = self.r.traiter("POST", "comptes", {"role": "agent", "nom": "Akou Mensah", "ref": "kpadape"}, self.di)
+        # le centre crée son agent
+        ce = connecter(self.r, "centre.agbele")
+        code, o = self.r.traiter("POST", "comptes", {"role": "agent", "nom": "Akou Mensah", "ref": "kpadape"}, ce)
         self.assertEqual(code, 200)
         ident, cle = o["compte"]["identifiant"], o["codeActivation"]
         self.assertEqual(self.r.traiter("POST", "connexion", {"identifiant": ident, "mdp": "nimporte"})[0], 401)
@@ -359,16 +370,43 @@ class GouvernanceTest(unittest.TestCase):
         code, c = self.r.traiter("POST", "connexion", {"identifiant": ident, "mdp": "motdepasse1"})
         self.assertEqual(code, 200)
         self.assertEqual(c["role"], "agent")
-        # le nouvel agent a bien les droits d'un agent
         self.assertEqual(self.r.traiter("GET", "references", None, c["jeton"])[0], 200)
-        # suspendu : plus d'accès
-        self.r.traiter("PATCH", f"comptes/{ident}", {"actif": False}, self.di)
+        # un autre compte ne peut pas suspendre cet agent ; le centre qui l'a créé le peut
+        self.assertEqual(self.r.traiter("PATCH", f"comptes/{ident}", {"actif": False}, self.di)[0], 403)
+        self.r.traiter("PATCH", f"comptes/{ident}", {"actif": False}, ce)
         self.assertEqual(self.r.traiter("GET", "references", None, c["jeton"])[0], 401)
 
-    def test_seul_le_national_cree_un_district(self):
-        self.assertEqual(self.r.traiter("POST", "comptes", {"role": "district", "nom": "District Test"}, self.di)[0], 403)
+    def test_chaque_niveau_cree_le_niveau_en_dessous(self):
         na = connecter(self.r, "national.togo")
-        self.assertEqual(self.r.traiter("POST", "comptes", {"role": "district", "nom": "District Test"}, na)[0], 200)
+        # le national ne crée ni district, ni agent, ni centre
+        for role in ("district", "agent", "centre", "ecole"):
+            self.assertEqual(self.r.traiter("POST", "comptes", {"role": role, "nom": "Test Nom", "ref": "c1"}, na)[0], 403)
+        _, _, re_ = self._creer_et_activer(na, "regional", "Région des Plateaux")
+        # le district ne crée ni district ni régional ni agent
+        for role in ("district", "regional", "agent"):
+            self.assertEqual(self.r.traiter("POST", "comptes", {"role": role, "nom": "Test Nom"}, self.di)[0], 403)
+        # le régional crée des districts, mais pas d'agent ni de village
+        self.assertEqual(self.r.traiter("POST", "comptes", {"role": "agent", "nom": "Test Nom"}, re_)[0], 403)
+        self.assertEqual(self.r.traiter("POST", "villages", {"nom": "Village X", "x": 10, "y": 10, "relie": ["agbele"]}, re_)[0], 403)
+        _, _, di = self._creer_et_activer(re_, "district", "District de Notsé")
+        # le district crée un centre, une école, un technicien
+        _, _, ce = self._creer_et_activer(di, "centre", "Dispensaire de Tovégan", ref="c1")
+        self._creer_et_activer(di, "technicien", "Technicien Notsé")
+        # le centre crée ses agents
+        _, _, ag = self._creer_et_activer(ce, "agent", "Agent Tovégan")
+        self.assertEqual(self.r.traiter("GET", "references", None, ag)[0], 200)
+        # chacun ne voit que ses propres créations
+        _, l = self.r.traiter("GET", "comptes", None, re_)
+        self.assertEqual([x["role"] for x in l["comptes"]], ["district"])
+        _, l = self.r.traiter("GET", "comptes", None, na)
+        self.assertEqual([x["role"] for x in l["comptes"]], ["regional"])
+        # un agent ne crée rien
+        self.assertEqual(self.r.traiter("GET", "comptes", None, ag)[0], 403)
+
+    def test_le_regional_lit_comme_le_national(self):
+        na = connecter(self.r, "national.togo")
+        _, _, re_ = self._creer_et_activer(na, "regional", "Région Maritime")
+        self.assertEqual(self.r.traiter("GET", "national", None, re_)[0], 200)
 
     def test_creer_village_centre_et_manques(self):
         code, v = self.r.traiter("POST", "villages", {"nom": "Kpélé Nord", "x": 60, "y": 25, "langue": "Éwé", "enfants": 80, "relie": ["tovegan"]}, self.di)

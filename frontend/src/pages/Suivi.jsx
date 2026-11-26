@@ -74,7 +74,7 @@ export function District({ s }) {
   return (
     <>
       <Bandeau titre="Vue d’ensemble du district">Où en est la couverture, combien de références sont arrivées au centre, et où agir en premier.</Bandeau>
-      <ActionsRapides actions={[['/reseau/gestion', 'Créer un compte (agent, centre, école)', true], ['/reseau/gestion', 'Ajouter un village ou un établissement'], ['/reseau/manques', 'Voir où il manque un service'], ['/reseau/references', 'Relancer les références en retard'], ['/reseau/messages', 'Envoyer un message']]} />
+      <ActionsRapides actions={[['/reseau/gestion', 'Créer un compte (centre, hôpital, école, technicien)', true], ['/reseau/gestion', 'Ajouter un village ou un établissement'], ['/reseau/manques', 'Voir où il manque un service'], ['/reseau/references', 'Relancer les références en retard'], ['/reseau/messages', 'Envoyer un message']]} />
       <div className="tuiles">
         <div className="tuile"><b>{d.couverture} %</b><span>des enfants vus ({d.vus} sur {d.enfants})</span></div>
         <div className="tuile"><b>{r.taux} %</b><span>des références prises en charge</span></div>

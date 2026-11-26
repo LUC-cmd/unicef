@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Bandeau from '../components/Bandeau.jsx'
 import { reseau } from '../lib/reseauClient.js'
 
-const ROLES = { district: 'Responsable de district', agent: 'Agent de santé', centre: 'Centre de santé ou hôpital', ecole: 'Crèche, jardin d’enfants ou école primaire' }
+const ROLES = { regional: 'Responsable régional', technicien: 'Technicien des bornes', partenaire: 'Partenaire UNICEF (lecture seule)', district: 'Responsable de district', agent: 'Agent de santé', centre: 'Centre de santé ou hôpital', ecole: 'Crèche, jardin d’enfants ou école primaire' }
 const ETATS = { 'a-activer': 'À activer', actif: 'Actif', suspendu: 'Suspendu' }
 const LANGUES = ['Éwé', 'Kabiyè', 'Mina', 'Autre']
 
@@ -17,7 +17,7 @@ export default function Gestion({ s }) {
   const charger = useCallback(async () => {
     try {
       const [l, c] = await Promise.all([reseau.get('lieux'), reseau.get('comptes', s.jeton)])
-      setLieux(l); setComptes(c.comptes); setCreables(c.creables); setErreur('')
+      setLieux(l); setComptes(c.comptes); setCreables(c.creables); setF((p) => (c.creables.includes(p.role) ? p : { ...p, role: c.creables[0], ref: '' })); setErreur('')
     } catch (e) { setErreur(e.message) }
   }, [s.jeton])
   useEffect(() => { charger() }, [charger])
@@ -37,10 +37,10 @@ export default function Gestion({ s }) {
 
   return (
     <>
-      <Bandeau titre="Comptes, villages et établissements">Le {s.role === 'national' ? 'national crée les districts, le district crée' : 'district crée'} les accès des agents, des centres et des écoles. Chaque accès commence par un code d’activation à usage unique, remis en main propre ou par SMS : la personne choisit elle-même son mot de passe.</Bandeau>
+      <Bandeau titre={s.role === 'centre' ? 'Mes agents' : 'Créer les comptes du niveau en dessous'}>{({ national: 'Vous ouvrez les comptes des responsables régionaux. Eux ouvriront les districts.', regional: 'Vous ouvrez les comptes des responsables de district de votre région.', district: 'Vous ouvrez les comptes des centres, hôpitaux, écoles, crèches et techniciens, après les avoir ajoutés au territoire. Les centres ouvrent leurs agents.', centre: 'Vous ouvrez les comptes de vos agents de santé.' })[s.role]} Chaque accès a un code d’activation à usage unique : la personne choisit son mot de passe.</Bandeau>
       {erreur && <p role="alert" className="erreur">{erreur}</p>}
       <section className="carte">
-        <h2>Ouvrir un accès</h2>
+        <h2>{s.role === 'centre' ? 'Ouvrir un compte agent' : 'Ouvrir un compte'}</h2>
         <form onSubmit={creer} className="ado-champs">
           <label>Type de compte<select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value, ref: '' })}>{creables.map((r) => <option key={r} value={r}>{ROLES[r]}</option>)}</select></label>
           <label>Nom de la personne ou du lieu<input value={f.nom} maxLength={80} onChange={(e) => setF({ ...f, nom: e.target.value })} required /></label>
@@ -67,8 +67,8 @@ export default function Gestion({ s }) {
           </li>
         ))}</ul>
       </section>
-      <NouveauVillage villages={villages} jeton={s.jeton} onChange={charger} />
-      <NouvelEtab villages={villages} jeton={s.jeton} onChange={charger} role={s.role} />
+      {s.role === 'district' && <NouveauVillage villages={villages} jeton={s.jeton} onChange={charger} />}
+      {s.role === 'district' && <NouvelEtab villages={villages} jeton={s.jeton} onChange={charger} role={s.role} />}
     </>
   )
 }

@@ -2804,3 +2804,7 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 @media (max-width: 760px) { .messagerie { grid-template-columns: 1fr; } }
 .msg-fil .cloche-badge { position: static; flex: none; }
 .msg-bulle img { max-height: 200px; width: auto; }
+
+/* Fenêtres et messages : plus de trait de couleur sur le côté, le texte suffit. */
+.retour, .retour-succes, .retour-erreur { border-left: 1px solid #d9e2ea; }
+.avertissement, .carte.urgence-info, .carte.attention, .action-zone, .note-acte, .rassurant, .jeu, .principe { border-left: 1px solid #d9e2ea; }

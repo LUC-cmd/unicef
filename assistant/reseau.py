@@ -119,7 +119,8 @@ OBSTACLES = {  # type -> (libellé, effet par mode : None = bloqué, sinon coeff
     "marche": ("Jour de marché, route encombrée", {"moto": 1.3, "voiture": 1.6, "pied": 1.0}),
 }
 TYPES_ETABLISSEMENT = {"creche": "Crèche (0 à 3 ans)", "jardin": "Jardin d’enfants et école maternelle (3 à 5 ans)", "ecole": "École primaire (6 à 11 ans)", "centre": "Centre de santé", "hopital": "Hôpital"}
-ROLES_CREABLES = {"district": ("agent", "centre", "ecole"), "national": ("district", "agent", "centre", "ecole")}
+# Chaque niveau ne crée que le niveau juste en dessous : national -> régional -> district -> centre / école / technicien ; centre -> ses agents.
+ROLES_CREABLES = {"national": ("regional", "partenaire"), "regional": ("district",), "district": ("centre", "ecole", "technicien"), "centre": ("agent",)}
 # Règles de démonstration de la campagne porte-à-porte : (libellé, âge minimum en mois, âge maximum, intervalle en jours ; None = une seule fois). À valider avec le ministère de la Santé.
 SOINS_CAMPAGNE = {"vitamineA": ("Vitamine A", 6, 59, 180), "deparasitage": ("Déparasitage", 12, 59, 180), "rougeole": ("Vaccin rougeole (rappel)", 9, 59, None)}
 REGIONS = [("maritime", "Maritime"), ("plateaux", "Plateaux"), ("centrale", "Centrale"), ("kara", "Kara"), ("savanes", "Savanes")]
@@ -523,7 +524,9 @@ class Reseau:
         u = lire_jeton(jeton)
         if not u:
             raise Erreur(401, "Connexion requise.")
-        if roles and u[1] not in roles:
+        # Le responsable régional lit comme le national (tableau, manques, carte) ; ce qu'il peut créer est réglé par ROLES_CREABLES.
+        role_effectif = "national" if u[1] == "regional" and "regional" not in roles else u[1]
+        if roles and role_effectif not in roles:
             raise Erreur(403, "Cet espace n’est pas le vôtre.")
         return u
 
@@ -719,11 +722,15 @@ class Reseau:
         if m == "POST" and p == ["activer"]:
             return self._activer(c)
         if p[:1] == ["comptes"]:
-            u = self._auth(jeton, "district", "national")
+            u = self._auth(jeton, "national", "regional", "district", "centre")
+            if u[1] not in ROLES_CREABLES:
+                raise Erreur(403, "Ce compte ne crée aucun accès.")
             if m == "GET" and n == 1:
-                return {"comptes": [self._vue_compte(x) for x in self.s.d["comptes"]], "creables": list(ROLES_CREABLES[u[1]])}
+                return {"comptes": [self._vue_compte(x) for x in self.s.d["comptes"] if x.get("cree") == u[0]], "creables": list(ROLES_CREABLES[u[1]])}
             if m == "POST" and n == 1:
                 return self._creer_compte(c, u)
+            if m in ("POST", "PATCH") and n in (2, 3) and self._compte(p[1]).get("cree") != u[0]:
+                raise Erreur(403, "Vous ne gérez que les accès que vous avez créés.")
             if m == "POST" and n == 3 and p[2] == "code":
                 x = self._compte(p[1])
                 code = self._nouveau_code(x)
@@ -736,7 +743,7 @@ class Reseau:
                 self._appliquer_dynamique()
                 return self._vue_compte(x)
         if m == "POST" and p == ["villages"]:
-            u = self._auth(jeton, "district", "national")
+            u = self._auth(jeton, "district")
             return self._creer_village(c)
         if m == "GET" and p == ["manques"]:
             self._auth(jeton, "district", "national", "agent", "partenaire", "technicien")
@@ -800,7 +807,7 @@ class Reseau:
                     self.s.sauver()
                 return self._vue_obstacle(o)
         if m == "POST" and p == ["etablissements"]:
-            u = self._auth(jeton, "district", "national")
+            u = self._auth(jeton, "district")
             nom, village, type_ = court(c.get("nom"), 80), c.get("village"), c.get("type")
             if len(nom) < 3 or village not in VILLAGES or type_ not in TYPES_ETABLISSEMENT:
                 raise Erreur(422, "Nom, village et type attendus.")
@@ -1360,6 +1367,8 @@ class Reseau:
         if len(nom) < 3:
             raise Erreur(422, "Un nom (3 lettres au moins) est attendu.")
         ref = court(c.get("ref"), 20)
+        if u[1] == "centre":
+            ref = ref if ref in VILLAGES else ""
         if role == "centre" and ref not in CENTRES:
             raise Erreur(422, "Choisissez le centre ou l’hôpital de ce compte.")
         if role == "ecole" and ref not in STRUCTURES:

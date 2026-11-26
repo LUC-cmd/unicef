@@ -24,7 +24,7 @@ export default function National({ s }) {
   return (
     <>
       <Bandeau titre={`Tableau national : ${d.pays.nom}`}>Où la santé, la nutrition, l’éveil et l’usage des services par les jeunes filles progressent, et où ils reculent. Pour décider où envoyer les moyens.</Bandeau>
-      <ActionsRapides actions={[['/reseau/gestion', 'Ouvrir un compte de district', true], ['/reseau/carte', 'Voir la carte des régions'], ['/reseau/manques', 'Voir où il manque un service'], ['/reseau/messages', 'Envoyer une consigne']]} />
+      <ActionsRapides actions={[['/reseau/gestion', 'Créer un compte responsable régional', true], ['/reseau/carte', 'Voir la carte des régions'], ['/reseau/manques', 'Voir où il manque un service'], ['/reseau/messages', 'Envoyer une consigne']]} />
       <div className="tuiles">
         <div className="tuile"><b>{serie[5]} %</b><span>{lib}, moyenne du pays</span></div>
         <div className="tuile"><b>{serie[5] - serie[2] >= 0 ? '+' : ''}{serie[5] - serie[2]} pts</b><span>sur 3 mois</span></div>

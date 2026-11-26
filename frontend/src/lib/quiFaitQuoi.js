@@ -1,28 +1,28 @@
 /** Qui crée quoi, qui envoie, qui reçoit, qui fait quoi : écrit d'après ce que le prototype fait réellement. */
 export const ROLES = [
   { id: 'national', nom: 'Responsable national', ou: 'Ministère, UNICEF, partenaires',
-    cree: 'Les régions et les accès des responsables de district. Peut aussi ouvrir les accès des agents, centres et écoles.',
+    cree: 'Les comptes des responsables régionaux, et le compte partenaire en lecture seule. Il ne crée rien en dessous : chaque responsable régional ouvre ses districts.',
     envoie: 'Les orientations : où renforcer, quels villages aider en priorité.',
     recoit: 'Le tableau national : pour chaque région et chaque domaine (vaccination, nutrition, santé de la mère et de l’enfant, éveil, jeunes filles), l’évolution sur 6 mois et les reculs.',
     fait: 'Compare les régions, repère celles qui reculent, décide où envoyer les moyens.',
     pas: 'Ne voit aucun nom, aucune adresse, aucun enfant : seulement des totaux et des pourcentages.',
     horsLigne: 'Consultation en ligne. Les chiffres montent des villages dès qu’un agent ou un centre retrouve du réseau.' },
   { id: 'district', nom: 'Responsable de district', ou: 'Chef-lieu du district',
-    cree: 'Les villages, les centres de santé, les hôpitaux, les crèches, les jardins d’enfants et les écoles. Ouvre les accès des agents, des centres et des écoles, chacun avec un code d’activation à usage unique.',
+    cree: 'Les villages, les centres de santé, les hôpitaux, les crèches, les jardins d’enfants et les écoles, puis leurs comptes et ceux des techniciens des bornes, chacun avec un code d’activation à usage unique. Les agents sont créés par leur centre.',
     envoie: 'Les accès, les consignes aux agents, les signalements d’obstacles sur les routes.',
     recoit: 'Les villages en un coup d’œil, les références en retard, les familles injoignables, les crèches et écoles, les manques (centre, hôpital, jardin d’enfants trop loin).',
     fait: 'Envoie les agents là où il faut, relance un centre lent, décide où ouvrir un centre ou un jardin d’enfants.',
     pas: 'Ne soigne pas, ne voit pas de nom d’enfant.',
     horsLigne: 'En ligne. Il lit ce que les agents ont synchronisé.' },
   { id: 'agent', nom: 'Agent de santé', ou: 'Dans les villages, de maison en maison',
-    cree: 'Les maisons de la campagne (un QR à coller sur la porte, avec les codes des enfants), les références vers un centre, les appels à passer aux familles, la validation des produits des boutiques.',
+    cree: 'Ne crée aucun compte. Crée les maisons de la campagne (un QR à coller sur la porte, avec les codes des enfants), les références vers un centre, les appels à passer aux familles, la validation des produits des boutiques.',
     envoie: 'Des visites avec signes de danger (alerte automatique au centre), des références, des soins donnés, des obstacles sur la route.',
     recoit: 'Le suivi de chaque référence (envoyée, arrivée, prise en charge), les familles à visiter, les enfants signalés par les écoles, les questions anonymes des jeunes filles.',
     fait: 'Scanne le QR de la maison : voit qui a déjà reçu vitamine A, déparasitage ou rappel, et ne donne que ce qui manque. Une visite envoyée deux fois n’est enregistrée qu’une fois.',
     pas: 'Ne pose aucun diagnostic. Seul le code de l’enfant est utilisé, jamais son nom.',
     horsLigne: 'Marche sans réseau : les saisies sont gardées sur le téléphone et envoyées au retour de la connexion, sans doublon.' },
   { id: 'centre', nom: 'Centre de santé ou hôpital', ou: 'Au centre ou à l’hôpital',
-    cree: 'Rien : il reçoit. Ses agents lui adressent les cas.',
+    cree: 'Les comptes de ses agents de santé. Il reçoit aussi les cas que ses agents lui adressent.',
     envoie: 'L’état de chaque cas : arrivé, pris en charge. Les obstacles qu’il connaît sur sa route.',
     recoit: 'Les alertes avant l’arrivée du patient (urgences, cas attendus), avec l’itinéraire et le mode de transport conseillé. Les enfants signalés par les écoles et les crèches.',
     fait: 'Prépare l’accueil, marque l’arrivée puis la prise en charge. L’hôpital reçoit les cas graves que les centres lui envoient.',
@@ -52,6 +52,13 @@ export const ROLES = [
 ]
 
 export const ROLES_EXTRA = [
+  { id: 'regional', nom: 'Responsable régional', ou: 'Chef-lieu de la région',
+    cree: 'Les comptes des responsables de district de sa région.',
+    envoie: 'Les orientations et les équipes envoyées en priorité aux districts.',
+    recoit: 'Le tableau de la région : chaque domaine, l’évolution sur 6 mois, les reculs et les manques.',
+    fait: 'Surveille toute sa région, décide où envoyer une équipe, ouvre ou suspend les districts.',
+    pas: 'Ne crée ni centre, ni école, ni agent : ce sont les districts et les centres qui le font. Ne voit aucun nom.',
+    horsLigne: 'Consultation en ligne. Les chiffres montent des villages dès qu’un agent retrouve du réseau.' },
   { id: 'technicien', nom: 'Technicien des bornes', ou: 'Sur la route, de borne en borne',
     cree: 'Rien : il entretient.', envoie: 'La relève de chaque borne (stock restant, retraits) et les recharges.',
     recoit: 'Les bornes à visiter, les stocks bas, ce que disent les utilisatrices (anonymes), le réseau de chaque emplacement.',
@@ -66,8 +73,10 @@ export const ROLES_EXTRA = [
     horsLigne: 'En ligne. Il lit ce que le terrain a envoyé.' },
 ]
 export const CHAINE = [
-  ['Le national', 'ouvre les districts'],
-  ['Le district', 'crée villages, centres, écoles et accès'],
+  ['Le national', 'ouvre les responsables régionaux'],
+  ['Le responsable régional', 'ouvre les districts'],
+  ['Le district', 'crée villages, centres, écoles et leurs accès'],
+  ['Le centre de santé', 'ouvre les comptes de ses agents'],
   ['L’agent', 'visite, scanne, oriente'],
   ['Le centre', 'prépare et prend en charge'],
   ['Le district et le national', 'voient les chiffres et décident'],
@@ -81,10 +90,10 @@ export const HORS_LIGNE = [
 ]
 
 export const DEPLOIEMENT = [
-  ['1. Ouvrir le district', 'Le national crée le compte du responsable de district. Celui-ci reçoit un identifiant et un code d’activation à usage unique, valable 14 jours, et choisit son mot de passe.'],
+  ['1. Ouvrir les régions et les districts', 'Le national crée le compte du responsable régional ; celui-ci crée les comptes des responsables de district. Chacun reçoit un identifiant et un code d’activation à usage unique, valable 14 jours, et choisit son mot de passe.'],
   ['2. Décrire le territoire', 'Le district ajoute les villages (avec la piste qui les relie), les centres, l’hôpital, les crèches, jardins d’enfants et écoles.'],
   ['3. Repérer les manques', 'La page « Où il manque » montre les villages sans centre à moins de 10 km, sans hôpital à moins de 30 km, sans crèche ni jardin d’enfants à moins de 8 km. C’est là qu’on ouvre un service ou qu’on place une borne en premier.'],
-  ['4. Ouvrir les accès', 'Pour chaque agent, centre et école, le district crée un accès et remet la fiche (identifiant + code) en main propre ou par SMS. La personne choisit elle-même son mot de passe ; un accès peut être suspendu à tout moment.'],
+  ['4. Ouvrir les accès', 'Le district crée les comptes de chaque centre, hôpital, école et technicien, et remet la fiche (identifiant + code) en main propre ou par SMS. Chaque centre crée ensuite ses propres agents. Chacun choisit lui-même son mot de passe ; un accès peut être suspendu par celui qui l’a créé.'],
   ['5. Placer les bornes', 'Une borne va dans un lieu sûr et fréquenté (centre de santé, école, boutique partenaire), de préférence dans un village identifié à l’étape 3. L’agent génère un lot de cartes, les charge dans la borne et relève les totaux à chaque passage. Prototype : le stock de la borne est local à son appareil.'],
   ['6. Lancer la campagne maison par maison', 'Chaque maison reçoit un QR collé sur la porte. À chaque passage, l’agent le scanne et ne donne que les soins qui manquent.'],
   ['7. Suivre et corriger', 'Le district suit références, retards et familles injoignables ; il signale les obstacles ; le national compare les régions.'],
@@ -99,10 +108,11 @@ export const A_VALIDER = [
 
 /** Pour chaque espace : de qui il reçoit, à qui il envoie. Affiché en haut de chaque tableau de bord. */
 export const LIAISONS = {
-  national: { recoit: ['Districts (chiffres par région)'], envoie: ['Districts (orientations)'] },
-  district: { recoit: ['Agents (visites, références)', 'Centres (prises en charge)', 'Écoles (signalements)'], envoie: ['Agents (consignes, accès)', 'Centres et écoles (accès)', 'National (chiffres)'] },
+  national: { recoit: ['Responsables régionaux (chiffres)'], envoie: ['Responsables régionaux (comptes, orientations)'] },
+  regional: { recoit: ['Districts (chiffres de la région)'], envoie: ['Districts (comptes, orientations)', 'National (chiffres)'] },
+  district: { recoit: ['Agents (visites, références)', 'Centres (prises en charge)', 'Écoles (signalements)'], envoie: ['Centres, écoles, techniciens (comptes)', 'Agents (consignes)', 'Responsable régional (chiffres)'] },
   agent: { recoit: ['District (consignes)', 'Écoles (enfants signalés)', 'Familles (demandes)'], envoie: ['Centres (références, alertes)', 'District (visites, soins donnés)'] },
-  centre: { recoit: ['Agents (cas annoncés)', 'Écoles (signalements)', 'Bornes et téléphones (urgences)'], envoie: ['Agents (état du cas)', 'District (délais de prise en charge)'] },
+  centre: { recoit: ['Agents (cas annoncés)', 'Écoles (signalements)', 'Bornes et téléphones (urgences)'], envoie: ['Agents (comptes, état du cas)', 'District (délais de prise en charge)'] },
   hopital: { recoit: ['Centres de santé (cas graves)', 'Agents (urgences)', 'Écoles (signalements)'], envoie: ['Centres et agents (état du cas)', 'District (délais)'] },
   ecole: { recoit: ['Centre (suite donnée aux signalements)', 'District (accès)'], envoie: ['Centre le plus proche (signalements)', 'Agents (enfants à visiter)', 'District (présences, éveil)'] },
   technicien: { recoit: ['Bornes (stock, relève, réponses anonymes)', 'District (bornes à placer)'], envoie: ['Bornes (recharge)', 'District et partenaires (état des bornes)'] },
