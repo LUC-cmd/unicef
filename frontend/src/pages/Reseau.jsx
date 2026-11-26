@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
+import ActionsRapides from '../components/ActionsRapides.jsx'
 import Shell from '../components/Shell.jsx'
 import { CAS, CENTRES, POINTS_CONTROLE, POINTS_NUTRITION, POUR, POUR_BOUTIQUE, VILLAGES } from '../lib/parcours.js'
 import { MDP_DEMO } from '../lib/config.js'
@@ -306,9 +307,19 @@ Object.entries(MENUS).forEach(([role, m]) => {
 })
 const TITRES = { boutique: 'Boutique partenaire', agent: 'Agent de santé', centre: 'Centre de santé', district: 'Responsable de district', national: 'Responsable national', technicien: 'Technicien des bornes', partenaire: 'Partenaire UNICEF (lecture seule)', ecole: 'Établissement 0-5 ans' }
 
+const ACTIONS = {
+  agent: [['/reseau/campagne', 'Visiter une maison (scanner le QR)', true], ['/reseau/references', 'Envoyer une référence au centre'], ['/reseau/produits', 'Valider des produits'], ['/reseau/questions', 'Répondre aux filles'], ['/reseau/appels', 'Appeler les familles']],
+  centre: [['/reseau/alertes', 'Voir les cas qui arrivent', true], ['/reseau/carte', 'Itinéraire vers un lieu'], ['/reseau/messages', 'Écrire à un agent']],
+  boutique: [['/reseau/produits', 'Ajouter ou modifier un produit', true], ['/reseau/demandes', 'Répondre aux demandes'], ['/reseau/controles', 'Voir les contrôles']],
+  ecole: [['/reseau/carte', 'Trouver le centre le plus proche', true], ['/reseau/messages', 'Écrire au centre ou à l’agent']],
+  technicien: [['/reseau/bornes', 'Enregistrer une relève', true], ['/reseau/carte', 'Préparer la tournée'], ['/reseau/manques', 'Où placer une borne']],
+  partenaire: [['/reseau/bornes', 'Voir l’état des bornes', true], ['/reseau/manques', 'Voir où il manque un service'], ['/reseau/carte', 'Carte du réseau']],
+}
+
 export default function Reseau() {
   const [s, setS] = useState(lireSessionReseau)
   const nav = useNavigate()
+  const lieu = useLocation()
   if (!s) return <Connexion onOk={(r) => { ecrireSessionReseau(r); setS(r) }} />
   const m = MENUS[s.role]
   const titre = s.role === 'centre' && s.ref === 'c4' ? 'Hôpital' : TITRES[s.role]
@@ -320,6 +331,7 @@ export default function Reseau() {
         ))}
         <button type="button" className="bouton secondaire petit-bouton" onClick={() => nav('/reseau/roles')}>Qui fait quoi</button>
       </div>
+      {/^\/reseau\/?$/.test(lieu.pathname) && ACTIONS[s.role] && <ActionsRapides actions={ACTIONS[s.role]} />}
       <Routes>
         <Route index element={s.role === 'technicien' ? <Bornes s={s} /> : s.role === 'partenaire' ? <Partenaire s={s} /> : s.role === 'national' ? <National s={s} /> : s.role === 'district' ? <District s={s} /> : s.role === 'ecole' ? <TableauEcole s={s} /> : s.role === 'centre' ? <TableauCentre s={s} /> : <Tableau s={s} />} />
         <Route path="carte" element={<CarteReseau s={s} />} />
