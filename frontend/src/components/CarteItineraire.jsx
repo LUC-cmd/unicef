@@ -53,7 +53,7 @@ export default function CarteItineraire({ jeton, role, departDefaut = 'agbele', 
 
       <div className="carte-grille">
         <figure className="graphe carte-svg">
-          {carte && <Carte carte={carte} lieux={carte.lieux} de={de} chemin={chemin} vers={res?.destination?.id} />}
+          {carte && <Carte carte={carte} lieux={lieux} de={de} chemin={chemin} vers={res?.destination?.id} />}
           <p className="legende-carte">
             {Object.entries(TYPES).filter(([k]) => k !== 'ecole' && k !== 'nutrition').map(([k, [n, c]]) => <span key={k}><i style={{ background: c }} /> {n}</span>)}
             <span><i className="obst" /> Obstacle</span><span><i className="trait-plein" /> Goudron</span><span><i className="trait-tirets" /> Piste</span>
