@@ -671,3 +671,50 @@ class AttestationsTest(unittest.TestCase):
     def test_demo_hopital_a_deja_un_cachet(self):
         self.assertIsNotNone(self.r.traiter("GET", "centre/moi/cachet", None, self.ho)[1]["cachet"])
         self.assertEqual(len(self.r.traiter("GET", "attestations/F-0001")[1]["attestations"]), 1)
+
+
+class PartageFillesTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ag = connecter(self.r, "agent.nutrition")
+
+    def poster(self, texte, code="AAAA 1111", theme="regles"):
+        return self.r.traiter("POST", "partages", {"code": code, "pseudo": "FILLE-AAAA", "theme": theme, "texte": texte})
+
+    def test_liste_de_depart_et_ecriture(self):
+        code, v = self.r.traiter("GET", "partages")
+        self.assertEqual(code, 200)
+        n = len(v["partages"])
+        self.assertGreaterEqual(n, 3)
+        code, o = self.poster("J’ai mal au ventre pendant mes règles, comment faites-vous ?")
+        self.assertEqual(code, 200)
+        self.assertEqual(len(self.r.traiter("GET", "partages")[1]["partages"]), n + 1)
+        self.assertNotIn("auteur", o["partage"])
+
+    def test_pas_de_coordonnees(self):
+        for t in ("Appelle-moi au 90 12 34 56 78 vite", "écris à moi@mail.com", "regarde https://x.org", "ok"):
+            self.assertEqual(self.poster(t)[0], 422, t)
+
+    def test_commentaire_moi_aussi_signalement(self):
+        pid = self.poster("Je me sens seule avec cette question sur mes règles.")[1]["partage"]["id"]
+        code, v = self.r.traiter("POST", f"partages/{pid}/commentaires", {"code": "BBBB 2222", "pseudo": "FILLE-BBBB", "texte": "Moi aussi, ça passe, parle à l’agente."})
+        self.assertEqual((code, len(v["commentaires"])), (200, 1))
+        v = self.r.traiter("POST", f"partages/{pid}/moi-aussi", {"code": "BBBB 2222"})[1]
+        self.assertEqual(v["moiAussi"], 1)
+        self.assertEqual(self.r.traiter("POST", f"partages/{pid}/moi-aussi", {"code": "BBBB 2222"})[1]["moiAussi"], 0)
+        for i in range(3):
+            self.r.traiter("POST", f"partages/{pid}/signaler", {"code": f"CCC{i} 0000"})
+        self.assertNotIn(pid, [x["id"] for x in self.r.traiter("GET", "partages")[1]["partages"]])
+        self.assertIn(pid, [x["id"] for x in self.r.traiter("GET", "partages/moderation", None, self.ag)[1]["partages"]])
+        self.assertFalse(self.r.traiter("PATCH", f"partages/{pid}", {"cache": False}, self.ag)[1]["cache"])
+
+    def test_agente_repond_et_sujet_grave(self):
+        code, o = self.poster("Il m’a frappée hier et j’ai peur", theme="pression")
+        self.assertIn("soutien", o)
+        pid = o["partage"]["id"]
+        self.assertIn(pid, [x["id"] for x in self.r.traiter("GET", "partages/moderation", None, self.ag)[1]["partages"]])
+        v = self.r.traiter("POST", f"partages/{pid}/commentaires", {"texte": "Viens au centre, on t’écoute."}, self.ag)[1]
+        self.assertTrue(v["commentaires"][-1]["agent"])
+        self.assertEqual(self.r.traiter("GET", "partages/moderation")[0], 401)
+        suivi = self.r.traiter("POST", "partages/suivi", {"ids": [pid]})[1]["suivi"]
+        self.assertTrue(suivi[pid]["agent"])

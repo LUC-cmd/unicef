@@ -10,7 +10,9 @@ import EspaceAdolescente from './EspaceAdolescente.jsx'
 import Nutrition from './Nutrition.jsx'
 import { PRODUITS, formater, lienQrCarte, lireBorne, ecrireBorne, resumeJournal } from '../lib/borne.js'
 import { QUOTA_PERSO } from '../lib/cartePerso.js'
-import { lireFille, lireCartePerso, sortirFille } from '../lib/fille.js'
+import { lireFille, lireCartePerso, sortirFille, verrouille } from '../lib/fille.js'
+import PartageFilles from './PartageFilles.jsx'
+import VerrouFille from './VerrouFille.jsx'
 import { ajouterJours, ecartJours, lireEspace } from '../lib/adolescente.js'
 import { QUESTIONS_CONSULTATION, consulter } from '../lib/parcours.js'
 import { reseau } from '../lib/reseauClient.js'
@@ -19,6 +21,7 @@ const GROUPES = [
   { titre: 'Mon espace', liens: [
     { to: '/fille', nom: 'Tableau de bord', icone: 'accueil', fin: true },
     { to: '/fille/parler', nom: 'Poser mes questions', icone: 'bulle' },
+    { to: '/fille/partage', nom: 'Parler entre filles', icone: 'coeur' },
     { to: '/fille/borne', nom: 'Aller à la borne', icone: 'boite' },
     { to: '/fille/carte', nom: 'Ma carte et mon code', icone: 'cle' },
     { to: '/fille/accompagnement', nom: 'Être accompagnée (facultatif)', icone: 'bouclier' },
@@ -57,6 +60,7 @@ function Tableau({ f }) {
           <h2>Que veux-tu faire ?</h2>
           <ul className="fille-actions">
             <li><Link className="bouton" to="/fille/parler">Poser une question, parler d’une douleur</Link></li>
+            <li><Link className="bouton secondaire" to="/fille/partage">Parler avec d’autres filles qui vivent la même chose</Link></li>
             <li><Link className="bouton secondaire" to="/fille/borne">Retirer mes produits à la borne</Link></li>
             <li><Link className="bouton secondaire" to="/fille/accompagnement">Être accompagnée par une personne de confiance (facultatif)</Link></li>
             <li><Link className="bouton secondaire" to="/fille/lieux">Trouver la borne ou la boutique la plus proche</Link></li>
@@ -231,12 +235,15 @@ function Carte() {
 export default function EspaceFille() {
   const f = lireFille()
   const nav = useNavigate()
+  const [verrou, setVerrou] = useState(verrouille)
   if (!f) return <Navigate to="/connexion" replace />
+  if (verrou) return <VerrouFille onOuvert={() => setVerrou(false)} />
   return (
     <Shell titre="Jeune fille" teinte="rose" groupes={GROUPES} nom={f.pseudo} sous="Compte jeune fille" utilisateur={f.pseudo}>
       <Routes>
         <Route index element={<Tableau f={f} />} />
         <Route path="parler" element={<Parler />} />
+        <Route path="partage" element={<PartageFilles />} />
         <Route path="borne" element={<Borne f={f} />} />
         <Route path="carte" element={<Carte />} />
         <Route path="accompagnement" element={<Accompagnement />} />

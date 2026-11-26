@@ -5,6 +5,8 @@ import EnteteReseau from './components/EnteteReseau.jsx'
 import NotificationsFamille from './components/NotificationsFamille.jsx'
 import { ecrireCompte, useCompteFamille } from './lib/famille.js'
 import { sortirFille } from './lib/fille.js'
+import NotificationsFille from './components/NotificationsFille.jsx'
+import MenuProfilFille from './components/MenuProfilFille.jsx'
 import { ecrireSessionReseau } from './lib/reseauClient.js'
 import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau, useCompteFille } from './lib/espace.js'
 import { Notifications } from './components/Shell.jsx'
@@ -213,7 +215,7 @@ export default function App() {
               {!espace && <Link className="bouton-entete principal" to="/connexion">Se connecter</Link>}
               {espace && !dansEspace && <Link className="bouton-entete principal" to={espace.base} onClick={() => ecrireDehors(false)}>Retourner dans mon espace</Link>}
               {dansEspace && <button type="button" className="bouton-entete principal" onClick={() => { ecrireDehors(true); naviguer('/') }}>Quitter l’espace</button>}
-              {espace && <button type="button" className="bouton-entete sortie" onClick={deconnecterTout}>Se déconnecter</button>}
+              {espace && !(compteFille && !session && !reseauSession && !compteFamille) && <button type="button" className="bouton-entete sortie" onClick={deconnecterTout}>Se déconnecter</button>}
               {(session || dansFamille) && dansEspace && (
                 <>
                   {dansFamille ? <NotificationsFamille compte={compteFamille} /> : <Notifications role={session.role} />}
@@ -223,6 +225,7 @@ export default function App() {
                 </>
               )}
               {reseauSession && dansEspace && !session && <EnteteReseau s={reseauSession} />}
+              {compteFille && dansEspace && !session && !reseauSession && !compteFamille && <><NotificationsFille /><MenuProfilFille fille={compteFille} onSortie={deconnecterTout} /></>}
               {session && <MenuProfil />}
               {dansFamille && <MenuProfilFamille compte={compteFamille} />}
             </div>

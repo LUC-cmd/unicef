@@ -110,6 +110,13 @@ CANAUX_CONTACT = {"sms": "Par SMS", "appel": "Par appel", "visite": "Par une vis
 MOTIFS_CONTACT = {"parler": "Parler à une personne de confiance", "regles": "Règles ou douleurs", "protection": "Se protéger", "retard": "Retard de règles", "autre": "Autre"}
 TYPES_ATTESTATION = {"accouchement": "Attestation d’accouchement", "naissance": "Attestation de naissance vivante", "prise_en_charge": "Attestation de prise en charge", "hospitalisation": "Attestation d’hospitalisation"}
 RE_IMAGE = re.compile(r"^data:image/(jpeg|png|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$")
+# Espace de partage entre jeunes filles : anonyme, modéré, sans coordonnées. Chaque fille est un code ; seul son empreinte est gardée.
+THEMES_PARTAGE = {"regles": "Règles et douleurs", "grossesse": "Grossesse ou retard de règles", "protection": "Me protéger", "ecole": "École et études",
+                  "pression": "Pression ou violence", "honte": "La honte et la peur d’en parler", "autre": "Autre chose"}
+MOTS_SENSIBLES = ("viol", "frapp", "battu", "suicid", "mourir", "me tuer", "de force", "forcé", "menac", "abus")
+RE_COORDONNEES = re.compile(r"(\d[\s.\-]*){8,}|@|https?://|www\.", re.I)
+SEUIL_PARTAGE_PAR_HEURE = 6
+SEUIL_CACHE = 3
 SEUIL_BORNE = 10   # en dessous : stock bas
 RELEVE_MAX_JOURS = 7   # sans relève au-delà : borne à visiter
 
@@ -274,7 +281,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": [], "contacts": [], "cachets": [], "attestations": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": [], "contacts": [], "cachets": [], "attestations": [], "partages": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -377,6 +384,7 @@ def _demo_depart():
     donnees["observations"] = _demo_observations()
     donnees["foyers"] = _demo_foyers()
     donnees["inscriptions"] = _demo_inscriptions(donnees["foyers"])
+    donnees["partages"] = _demo_partages()
     cachet = _cachet_demo(CENTRES["c4"][0])
     donnees["cachets"] = [{"centre": "c4", "image": cachet, "responsable": "Dr Responsable (fictif)", "titre": "Médecin-chef", "heure": avant(48)}]
     donnees["attestations"] = [{"id": uuid.uuid4().hex[:10], "numero": "ATT-C4-0001", "centreId": "c4", "centre": CENTRES["c4"][0], "type": "accouchement", "libelle": TYPES_ATTESTATION["accouchement"],
@@ -477,6 +485,24 @@ def _demo_foyers():
                 f["soins"].append({"enfant": code, "soin": t, "heure": avant(24 * 8), "par": "agent.nutrition", "idClient": f"seed{n}{t}"[:20].ljust(8, "x")})
         out.append(f)
     return out
+
+
+def _demo_partages():
+    """Quelques messages FICTIFS pour que l'espace de partage ne soit pas vide à l'ouverture."""
+    def c(pseudo, texte, h, agent=False):
+        return {"id": uuid.uuid4().hex[:8], "pseudo": pseudo, "texte": texte, "heure": avant(h), "auteur": "demo" + pseudo[-3:], "agent": agent}
+    return [
+        {"id": uuid.uuid4().hex[:8], "pseudo": "FILLE-DEMO1", "theme": "regles", "texte": "J’ai très mal au ventre à chaque début de règles et je n’ose pas en parler à ma mère. Quelqu’un a déjà vécu ça ?", "heure": avant(30),
+         "auteur": "demo1", "aides": ["demo2", "demo3", "demo4"], "signale": 0, "cache": False, "sensible": False, "commentaires": [
+             c("FILLE-DEMO2", "Moi aussi au début. Ce qui m’a aidé : une bouillotte chaude sur le ventre et marcher doucement. Et j’en ai parlé à l’agente de santé, elle m’a rassurée.", 28),
+             c("Agente de santé", "Merci de l’écrire. Des douleurs fortes qui t’empêchent d’aller à l’école méritent un avis : passe nous voir au centre, sans rendez-vous, personne ne te jugera.", 26, True)]},
+        {"id": uuid.uuid4().hex[:8], "pseudo": "FILLE-DEMO3", "theme": "honte", "texte": "J’ai honte d’aller acheter des préservatifs à la boutique, tout le monde nous connaît. Comment vous faites ?", "heure": avant(52),
+         "auteur": "demo3", "aides": ["demo1", "demo5"], "signale": 0, "cache": False, "sensible": False, "commentaires": [
+             c("FILLE-DEMO5", "J’utilise la borne du lycée avec mon code : personne ne me voit et personne ne me demande rien.", 50)]},
+        {"id": uuid.uuid4().hex[:8], "pseudo": "FILLE-DEMO4", "theme": "ecole", "texte": "Ma grossesse m’a fait quitter l’école. Je voudrais reprendre. Des filles ont réussi ?", "heure": avant(80),
+         "auteur": "demo4", "aides": ["demo1"], "signale": 0, "cache": False, "sensible": False, "commentaires": [
+             c("FILLE-DEMO6", "Oui. J’ai repris après la naissance de mon bébé, avec l’aide du centre social. Parle-en à l’agente de santé : il existe des solutions.", 70)]},
+    ]
 
 
 def _cachet_demo(nom):
@@ -714,6 +740,9 @@ class Reseau:
                 if not x:
                     raise Erreur(404, "Question introuvable.")
                 return {k: v for k, v in x.items() if k != "code"}
+        # ---- espace de partage entre jeunes filles
+        if p[:1] == ["partages"]:
+            return self._route_partages(m, p, n, c, jeton)
         # ---- jeunes filles qui acceptent d'être contactées : seulement avec leur accord, retirable à tout moment
         if p[:1] == ["accompagnement"]:
             if m == "POST" and n == 1:
@@ -1234,6 +1263,107 @@ class Reseau:
         if detail:
             vue.update({"lieu": x["lieu"], "stock": x["stock"], "releve": x["releve"], "villageId": x["village"]})
         return vue
+
+    # ---- partage entre jeunes filles : anonyme et modéré
+    def _empreinte(self, code):
+        code = re.sub(r"[^A-Z0-9]", "", court(code, 24).upper())
+        if len(code) < 4:
+            raise Erreur(422, "Connectez-vous à votre espace pour écrire.")
+        return hashlib.sha256(("partage:" + code).encode()).hexdigest()[:12]
+
+    def _vue_partage(self, x, agent=False):
+        v = {"id": x["id"], "pseudo": x["pseudo"], "theme": x["theme"], "themeLibelle": THEMES_PARTAGE[x["theme"]], "texte": x["texte"], "heure": x["heure"], "moiAussi": len(x["aides"]),
+             "commentaires": [{"id": k["id"], "pseudo": k["pseudo"], "texte": k["texte"], "heure": k["heure"], "agent": k.get("agent", False)} for k in x["commentaires"]]}
+        if agent:
+            v.update({"signale": x["signale"], "cache": x["cache"], "sensible": x["sensible"]})
+        return v
+
+    def _texte_partage(self, c, max_=600):
+        texte = court(c.get("texte"), max_).strip()
+        if len(texte) < 5:
+            raise Erreur(422, "Écrivez au moins une phrase.")
+        if RE_COORDONNEES.search(texte):
+            raise Erreur(422, "Pour ta sécurité, n’écris ni numéro de téléphone, ni adresse, ni lien, ni nom complet.")
+        return texte
+
+    def _pseudo_partage(self, c):
+        pseudo = court(c.get("pseudo"), 24).strip() or "Une fille"
+        if RE_COORDONNEES.search(pseudo):
+            raise Erreur(422, "Choisis un surnom sans numéro ni adresse.")
+        return pseudo
+
+    def _route_partages(self, m, p, n, c, jeton):
+        u = lire_jeton(jeton) if jeton else None
+        pro = bool(u and u[1] in ("agent", "centre"))
+        if m == "GET" and n == 1:
+            return {"themes": THEMES_PARTAGE, "partages": [self._vue_partage(x) for x in self.s.d["partages"] if not x["cache"]]}
+        if m == "GET" and p == ["partages", "moderation"]:
+            self._auth(jeton, "agent", "centre")
+            return {"partages": [self._vue_partage(x, agent=True) for x in self.s.d["partages"] if x["signale"] or x["sensible"] or x["cache"]]}
+        if m == "POST" and n == 1:
+            auteur = self._empreinte(c.get("code"))
+            theme = c.get("theme")
+            if theme not in THEMES_PARTAGE:
+                raise Erreur(422, "Choisis un sujet.")
+            texte, pseudo = self._texte_partage(c), self._pseudo_partage(c)
+            recents = [x for x in self.s.d["partages"] if x["auteur"] == auteur and (datetime.now(timezone.utc) - datetime.fromisoformat(x["heure"])).total_seconds() < 3600]
+            if len(recents) >= SEUIL_PARTAGE_PAR_HEURE:
+                raise Erreur(429, "Tu as beaucoup écrit : reviens un peu plus tard.")
+            sensible = any(mot in texte.lower() for mot in MOTS_SENSIBLES)
+            x = self.s.ajouter("partages", {"id": uuid.uuid4().hex[:8], "pseudo": pseudo, "theme": theme, "texte": texte, "heure": maintenant(), "auteur": auteur, "aides": [], "signale": 0,
+                                           "cache": False, "sensible": sensible, "commentaires": []})
+            res = {"partage": self._vue_partage(x)}
+            if sensible:
+                res["soutien"] = "Ce que tu écris est grave. Tu n’es pas seule : parle à une personne de confiance ou à une agente de santé, et si tu es en danger, va au centre de santé ou à l’hôpital tout de suite. Une agente verra ton message."
+            return res
+        if m == "POST" and p == ["partages", "suivi"]:
+            ids = c.get("ids") if isinstance(c.get("ids"), list) else []
+            sortie = {}
+            for x in self.s.d["partages"]:
+                if x["id"] in ids[:50]:
+                    sortie[x["id"]] = {"commentaires": len(x["commentaires"]), "agent": any(k.get("agent") for k in x["commentaires"]), "moiAussi": len(x["aides"])}
+            return {"suivi": sortie}
+        if m == "PATCH" and n == 2:
+            self._auth(jeton, "agent", "centre")
+            x = self.s.trouver("partages", p[1])
+            if not x:
+                raise Erreur(404, "Message introuvable.")
+            with self.s.verrou:
+                x["cache"] = bool(c.get("cache"))
+                if not x["cache"]:
+                    x["signale"] = 0
+                self.s.sauver()
+            return self._vue_partage(x, agent=True)
+        if m == "POST" and n == 3 and p[2] in ("commentaires", "moi-aussi", "signaler"):
+            x = self.s.trouver("partages", p[1])
+            if not x or x["cache"]:
+                raise Erreur(404, "Message introuvable.")
+            if p[2] == "commentaires":
+                auteur = "agent:" + u[0] if pro else self._empreinte(c.get("code"))
+                texte = self._texte_partage(c, 500)
+                k = {"id": uuid.uuid4().hex[:8], "pseudo": "Agente de santé" if pro else self._pseudo_partage(c), "texte": texte, "heure": maintenant(), "auteur": auteur, "agent": pro}
+                with self.s.verrou:
+                    x["commentaires"].append(k)
+                    del x["commentaires"][:-100]
+                    self.s.sauver()
+                return self._vue_partage(x)
+            auteur = self._empreinte(c.get("code"))
+            with self.s.verrou:
+                if p[2] == "moi-aussi":
+                    if auteur in x["aides"]:
+                        x["aides"].remove(auteur)
+                    else:
+                        x["aides"].append(auteur)
+                else:
+                    x.setdefault("signaleurs", [])
+                    if auteur not in x["signaleurs"]:
+                        x["signaleurs"].append(auteur)
+                        x["signale"] += 1
+                        if x["signale"] >= SEUIL_CACHE:
+                            x["cache"] = True
+                self.s.sauver()
+            return self._vue_partage(x)
+        raise Erreur(404, "Introuvable.")
 
     def _cachet(self, cid):
         x = next((y for y in self.s.d["cachets"] if y["centre"] == cid), None)

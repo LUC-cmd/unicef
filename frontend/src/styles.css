@@ -2851,3 +2851,15 @@ tr.chaleur-moyenne th, tr.chaleur-moyenne td { border-top: 2px solid var(--bord)
 /* Résultat d'un repérage : collé en haut de l'écran pendant qu'on coche */
 .resultat-collant { position: sticky; top: 0.5rem; z-index: 6; margin-bottom: 1rem; box-shadow: 0 6px 18px rgba(20, 30, 60, 0.18); border-radius: 14px; }
 .resultat-bas { position: sticky; bottom: 0.6rem; z-index: 6; box-shadow: 0 -6px 18px rgba(20, 30, 60, 0.18); border-radius: 14px; }
+
+/* Parler entre filles */
+.partage { border: 1px solid var(--bord); border-radius: var(--rayon); background: #fff; padding: 1rem 1.1rem; margin: 0.8rem 0; display: grid; gap: 0.5rem; }
+.partage-moi { border-color: #d6538a; background: #fff7fb; }
+.partage header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.4rem; }
+.partage p { margin: 0; }
+.partage-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.partage-reponses { display: grid; gap: 0.5rem; padding-left: 0.8rem; border-left: 3px solid var(--bord); }
+.partage-reponse.agent { background: #eaf4fb; border-radius: 8px; padding: 0.5rem 0.7rem; }
+.partage-regles { background: #fff8e6; }
+.profil-form { display: grid; gap: 0.3rem; padding: 0.4rem 0.9rem; }
+.profil-form label { display: grid; gap: 0.2rem; font-size: 0.9rem; }
