@@ -13,6 +13,7 @@ import { QUOTA_PERSO } from '../lib/cartePerso.js'
 import { lireFille, lireCartePerso, sortirFille } from '../lib/fille.js'
 import { ajouterJours, ecartJours, lireEspace } from '../lib/adolescente.js'
 import { QUESTIONS_CONSULTATION, consulter } from '../lib/parcours.js'
+import { reseau } from '../lib/reseauClient.js'
 
 const GROUPES = [
   { titre: 'Mon espace', liens: [
@@ -20,6 +21,7 @@ const GROUPES = [
     { to: '/fille/parler', nom: 'Poser mes questions', icone: 'bulle' },
     { to: '/fille/borne', nom: 'Aller à la borne', icone: 'boite' },
     { to: '/fille/carte', nom: 'Ma carte et mon code', icone: 'cle' },
+    { to: '/fille/accompagnement', nom: 'Être accompagnée (facultatif)', icone: 'bouclier' },
     { to: '/fille/cycle', nom: 'Mon cycle', icone: 'horloge' },
     { to: '/fille/lieux', nom: 'Boutiques et bornes près de moi', icone: 'carte' },
   ] },
@@ -56,6 +58,7 @@ function Tableau({ f }) {
           <ul className="fille-actions">
             <li><Link className="bouton" to="/fille/parler">Poser une question, parler d’une douleur</Link></li>
             <li><Link className="bouton secondaire" to="/fille/borne">Retirer mes produits à la borne</Link></li>
+            <li><Link className="bouton secondaire" to="/fille/accompagnement">Être accompagnée par une personne de confiance (facultatif)</Link></li>
             <li><Link className="bouton secondaire" to="/fille/lieux">Trouver la borne ou la boutique la plus proche</Link></li>
           </ul>
         </section>
@@ -158,6 +161,58 @@ function Borne({ f }) {
   )
 }
 
+const CLE_ACCORD = 'fildor.accord'
+const lireAccord = () => { try { return JSON.parse(localStorage.getItem(CLE_ACCORD) || 'null') } catch { return null } }
+const MOTIFS_C = [['parler', 'Parler à une personne de confiance'], ['regles', 'Règles ou douleurs'], ['protection', 'Me protéger'], ['retard', 'Retard de règles'], ['autre', 'Autre chose']]
+
+/** Par défaut, anonyme. Si elle le choisit, elle donne un prénom (ou un surnom) et dit comment être contactée : accord clair, retirable à tout moment. */
+function Accompagnement() {
+  const [accord, setAccord] = useState(lireAccord)
+  const [f, setF] = useState({ prenom: '', nom: '', telephone: '', canal: 'visite', motif: 'parler', consentement: false })
+  const [msg, setMsg] = useState(null)
+  const code = lireCartePerso()
+  const donner = async (e) => {
+    e.preventDefault(); setMsg(null)
+    try {
+      await reseau.post('accompagnement', { ...f, code }, '')
+      const a = { prenom: f.prenom, depuis: new Date().toISOString().slice(0, 10) }
+      localStorage.setItem(CLE_ACCORD, JSON.stringify(a)); setAccord(a)
+    } catch (er) { setMsg(er.message) }
+  }
+  const retirer = async () => {
+    try { await reseau.post('accompagnement/retrait', { code }, ''); localStorage.removeItem(CLE_ACCORD); setAccord(null); setF({ ...f, consentement: false }); setMsg(null) }
+    catch (er) { setMsg(er.message) }
+  }
+  return (
+    <>
+      <Bandeau titre="Être accompagnée">Tu n’es pas obligée. Tu peux rester anonyme ou choisir qu’une personne de confiance te contacte.</Bandeau>
+      {accord ? (
+        <section className="carte">
+          <h2>Ton accord est donné</h2>
+          <p>L’agent de santé peut voir ton prénom <b>{accord.prenom}</b> et te contacter comme tu l’as choisi. Ton accord date du {accord.depuis}.</p>
+          <button type="button" className="bouton secondaire" onClick={retirer}>Retirer mon accord et redevenir anonyme</button>
+          {msg && <p role="alert" className="erreur">{msg}</p>}
+        </section>
+      ) : (
+        <section className="carte">
+          <h2>Je veux qu’une personne de confiance me contacte</h2>
+          <p className="petit">Si tu ne remplis rien, tu restes anonyme et tout continue de marcher comme avant.</p>
+          <form className="ado-champs" onSubmit={donner}>
+            <label>Prénom ou surnom (obligatoire ici)<input value={f.prenom} maxLength={40} onChange={(e) => setF({ ...f, prenom: e.target.value })} required /></label>
+            <label>Nom (facultatif)<input value={f.nom} maxLength={40} onChange={(e) => setF({ ...f, nom: e.target.value })} /></label>
+            <label>Pour quoi ?<select value={f.motif} onChange={(e) => setF({ ...f, motif: e.target.value })}>{MOTIFS_C.map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select></label>
+            <label>Comment te contacter ?<select value={f.canal} onChange={(e) => setF({ ...f, canal: e.target.value })}><option value="visite">Une visite discrète</option><option value="sms">Un SMS</option><option value="appel">Un appel</option></select></label>
+            {f.canal !== 'visite' && <label>Numéro de téléphone<input type="tel" inputMode="tel" value={f.telephone} maxLength={20} onChange={(e) => setF({ ...f, telephone: e.target.value })} required /></label>}
+            <label className="case"><input type="checkbox" checked={f.consentement} onChange={(e) => setF({ ...f, consentement: e.target.checked })} /> J’accepte que mon prénom et ces informations soient vus par l’agent de santé et le centre de santé. Je peux retirer mon accord quand je veux.</label>
+            <p><button className="bouton" type="submit" disabled={!f.consentement}>Donner mon accord</button></p>
+          </form>
+          {msg && <p role="alert" className="erreur">{msg}</p>}
+        </section>
+      )}
+    </>
+  )
+}
+
 function Carte() {
   const code = lireCartePerso()
   const [jr] = useState(() => resumeJournal(lireBorne()))
@@ -184,6 +239,7 @@ export default function EspaceFille() {
         <Route path="parler" element={<Parler />} />
         <Route path="borne" element={<Borne f={f} />} />
         <Route path="carte" element={<Carte />} />
+        <Route path="accompagnement" element={<Accompagnement />} />
         <Route path="cycle" element={<EspaceAdolescente />} />
         <Route path="lieux" element={<Nutrition />} />
         <Route path="*" element={<Tableau f={f} />} />

@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import Bandeau from '../components/Bandeau.jsx'
-import { envoyerOuGarder } from '../lib/reseauClient.js'
+import { envoyerOuGarder, reseau } from '../lib/reseauClient.js'
 import { useDonnees } from './Suivi.jsx'
 
 const ETATS = { ok: ['En ordre', 'ok'], 'stock-bas': ['Stock bas', 'moyen'], 'a-visiter': ['À visiter', 'urgent'] }
 const PROBLEMES = { regles: 'Règles douloureuses ou sans protection', protection: 'Se protéger', produits: 'Produits introuvables près de chez elle', info: 'Manque d’informations', autre: 'Autre' }
 const UTILE = { oui: 'Oui', peu: 'Un peu', non: 'Non' }
+const LIEUX = { lycee: 'Lycée ou université', gare: 'Gare routière', pharmacie: 'Pharmacie', marche: 'Marché', quartier: 'Commerce de quartier', jeunes: 'Maison des jeunes', toilettes: 'Toilettes publiques', centre: 'Centre de santé', ecole: 'École' }
+const VILLES = ['Lomé', 'Tsévié', 'Aného', 'Kpalimé', 'Atakpamé', 'Sokodé', 'Bassar', 'Kara', 'Dapaong']
+const VILLAGES = [['agbele', 'Agbélé'], ['davie', 'Davié'], ['kpadape', 'Kpadapé'], ['tovegan', 'Tovégan'], ['zogbedji', 'Zogbédji']]
 const RESEAU = { aucun: 'Aucun réseau : relève sur place ou par fichier', '2G': 'Réseau 2G', '3G': 'Réseau 3G' }
 
 /** Barres horizontales fines : une ligne par réponse, avec le nombre et la part. */
@@ -43,7 +46,7 @@ function Borne({ b, produits, jeton, fin }) {
         <h3>{b.nom}</h3>
         <span className={`pastille-b ${cl}`}>{lib}</span>
       </header>
-      <p className="petit">{b.lieu} · {b.village} · {RESEAU[b.reseau]} · dernière relève il y a {b.ageReleveJours < 1 ? 'moins d’un jour' : `${Math.round(b.ageReleveJours)} jour(s)`}</p>
+      <p className="petit">{b.lieu} · {b.zone === 'ville' ? 'en ville' : 'village'} de {b.village} · {RESEAU[b.reseau]} · dernière relève il y a {b.ageReleveJours < 1 ? 'moins d’un jour' : `${Math.round(b.ageReleveJours)} jour(s)`}</p>
       <ul className="stock-barres">
         {Object.entries(produits).map(([k, nom]) => (
           <li key={k} className={b.stock[k] <= 10 ? 'bas' : ''}><span>{nom}</span><i style={{ '--p': `${Math.min(100, b.stock[k])}%` }} aria-hidden="true" /><b>{b.stock[k]}</b></li>
@@ -73,12 +76,40 @@ function Borne({ b, produits, jeton, fin }) {
   )
 }
 
+/** Poser une borne : au village comme en ville, là où une fille peut venir sans être remarquée. */
+function InstallerBorne({ jeton, fin }) {
+  const [f, setF] = useState({ nom: '', lieu: 'lycee', zone: 'ville', localite: 'Lomé' })
+  const [msg, setMsg] = useState(null)
+  const changerZone = (zone) => setF({ ...f, zone, localite: zone === 'ville' ? VILLES[0] : VILLAGES[0][0] })
+  const envoyer = async (e) => {
+    e.preventDefault(); setMsg(null)
+    try { const b = await reseau.post('bornes', f, jeton); setMsg({ ok: true, texte: `${b.nom} est installée, avec un stock de départ.` }); setF({ ...f, nom: '' }); fin() }
+    catch (er) { setMsg({ ok: false, texte: er.message }) }
+  }
+  return (
+    <section className="carte" id="installer">
+      <h2>Installer une borne</h2>
+      <p className="petit">Partout où une fille peut venir sans qu’on la remarque : lycée, gare, pharmacie, marché, quartier. Pas seulement au village.</p>
+      <form className="ado-champs" onSubmit={envoyer}>
+        <label>Nom de la borne<input value={f.nom} maxLength={80} placeholder="Borne du lycée de Kpalimé" onChange={(e) => setF({ ...f, nom: e.target.value })} required /></label>
+        <label>Type de lieu<select value={f.lieu} onChange={(e) => setF({ ...f, lieu: e.target.value })}>{Object.entries(LIEUX).map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select></label>
+        <label>Zone<select value={f.zone} onChange={(e) => changerZone(e.target.value)}><option value="ville">En ville</option><option value="village">Au village</option></select></label>
+        <label>{f.zone === 'ville' ? 'Ville' : 'Village'}<select value={f.localite} onChange={(e) => setF({ ...f, localite: e.target.value })}>{f.zone === 'ville' ? VILLES.map((v) => <option key={v} value={v}>{v}</option>) : VILLAGES.map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select></label>
+        <p><button className="bouton" type="submit">Installer la borne</button></p>
+      </form>
+      {msg && <p role="status" className={msg.ok ? 'succes' : 'erreur'}>{msg.texte}</p>}
+    </section>
+  )
+}
+
 /** Technicien : l'état de chaque borne, ce qu'il faut recharger, où passer. Partenaire et district : totaux seulement. */
 export default function Bornes({ s }) {
   const [d, erreur, recharger] = useDonnees('bornes', s.jeton, 20000)
   if (!d) return <><Bandeau titre="Les bornes">Chargement…</Bandeau>{erreur && <p role="alert" className="erreur">{erreur}</p>}</>
   const detail = s.role === 'technicien' || s.role === 'district'
   const total = (cle) => d.bornes.reduce((a, b) => { for (const [k, n] of Object.entries(b.sondage[cle])) a[k] = (a[k] ?? 0) + n; return a }, {})
+  const ORDRE = { 'a-visiter': 0, 'stock-bas': 1, ok: 2 }
+  const retraitsPar = (cle) => d.bornes.reduce((a, b) => { const k = cle(b); a[k] = (a[k] ?? 0) + b.retraits; return a }, {})
   const aVisiter = d.bornes.filter((b) => b.etat === 'a-visiter').length
   const bas = d.bornes.filter((b) => b.stockBas > 0).length
   return (
@@ -90,11 +121,20 @@ export default function Bornes({ s }) {
         <div className={`tuile ${bas ? 'alerte' : ''}`}><b>{bas}</b><span>avec un produit presque épuisé</span></div>
         <div className="tuile"><b>{d.bornes.reduce((a, b) => a + b.retraits, 0)}</b><span>retraits au total</span></div>
       </div>
-      {detail && <section className="borne-liste">{d.bornes.map((b) => <Borne key={b.id} b={b} produits={d.produits} jeton={s.jeton} fin={recharger} />)}</section>}
+      {s.role === 'technicien' && <InstallerBorne jeton={s.jeton} fin={recharger} />}
+      <section className="carte">
+        <h2>Où les bornes servent le plus</h2>
+        <p className="petit">En ville, une fille évite d’acheter ces produits au vu de tous : la borne discrète répond à ce besoin (données de démonstration).</p>
+        <div className="repartitions">
+          <Repartition titre="Retraits par zone" valeurs={retraitsPar((b) => b.zone)} noms={{ ville: 'En ville', village: 'Au village' }} />
+          {detail && <Repartition titre="Retraits par type de lieu" valeurs={retraitsPar((b) => b.lieu)} noms={{}} />}
+        </div>
+      </section>
+      {detail && <section className="borne-liste">{[...d.bornes].sort((a, b) => ORDRE[a.etat] - ORDRE[b.etat]).map((b) => <Borne key={b.id} b={b} produits={d.produits} jeton={s.jeton} fin={recharger} />)}</section>}
       {!detail && (
         <section className="carte"><h2>État par borne</h2>
-          <div className="table-defile"><table className="table-references"><thead><tr><th>Village</th><th>Réseau</th><th>État</th><th>Retraits</th></tr></thead>
-            <tbody>{d.bornes.map((b) => <tr key={b.id}><td>{b.village}</td><td>{b.reseau === 'aucun' ? 'aucun' : b.reseau}</td><td><span className={`pastille-b ${ETATS[b.etat][1]}`}>{ETATS[b.etat][0]}</span></td><td>{b.retraits}</td></tr>)}</tbody></table></div>
+          <div className="table-defile"><table className="table-references"><thead><tr><th>Lieu</th><th>Zone</th><th>Réseau</th><th>État</th><th>Retraits</th></tr></thead>
+            <tbody>{d.bornes.map((b) => <tr key={b.id}><td>{b.village}</td><td>{b.zone === 'ville' ? 'Ville' : 'Village'}</td><td>{b.reseau === 'aucun' ? 'aucun' : b.reseau}</td><td><span className={`pastille-b ${ETATS[b.etat][1]}`}>{ETATS[b.etat][0]}</span></td><td>{b.retraits}</td></tr>)}</tbody></table></div>
         </section>
       )}
       <section className="carte">

@@ -582,3 +582,49 @@ class EnfantsEtablissementTest(unittest.TestCase):
         self.assertTrue(self.r.traiter("POST", "centre/moi/accueil", {"code": "DA-0008"}, jeton=self.ce)[1]["doublon"])
         self.assertEqual(self.r.traiter("POST", "centre/moi/accueil", {"code": "ZZ-9999"}, jeton=self.ce)[0], 404)
         self.assertEqual(self.r.traiter("POST", "centre/moi/accueil", {"code": "DA-0008"}, jeton=self.ec)[0], 403)
+
+
+class BornesVilleTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.tech = connecter(self.r, "technicien.borne")
+        self.uni = connecter(self.r, "unicef.partenaire")
+
+    def test_bornes_de_ville_dans_la_liste(self):
+        v = self.r.traiter("GET", "bornes", None, self.tech)[1]
+        self.assertEqual({b["zone"] for b in v["bornes"]}, {"village", "ville"})
+
+    def test_installer_en_ville(self):
+        code, b = self.r.traiter("POST", "bornes", {"nom": "Borne du lycée de Kpalimé", "lieu": "lycee", "zone": "ville", "localite": "Kpalimé"}, self.tech)
+        self.assertEqual((code, b["zone"], b["village"], b["etat"]), (200, "ville", "Kpalimé", "ok"))
+        self.assertEqual(self.r.traiter("POST", "bornes", {"nom": "Borne", "lieu": "lycee", "zone": "ville", "localite": "Nulle part"}, self.tech)[0], 422)
+        self.assertEqual(self.r.traiter("POST", "bornes", {"nom": "Borne du lycée", "lieu": "lycee", "zone": "ville", "localite": "Kara"}, self.uni)[0], 403)
+
+
+class ContactsFilleTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ag = connecter(self.r, "agent.nutrition")
+        self.ec = connecter(self.r, "ecole.davie")
+
+    def test_sans_accord_rien_n_est_garde(self):
+        n = len(self.r.traiter("GET", "accompagnement", None, self.ag)[1]["contacts"])
+        code, o = self.r.traiter("POST", "accompagnement", {"code": "1234 5678", "prenom": "Ama", "canal": "visite", "motif": "parler"})
+        self.assertEqual(code, 422)
+        self.assertEqual(len(self.r.traiter("GET", "accompagnement", None, self.ag)[1]["contacts"]), n)
+
+    def test_accord_puis_retrait(self):
+        corps = {"code": "1234 5678", "prenom": "Ama", "canal": "visite", "motif": "regles", "village": "agbele", "consentement": True}
+        code, o = self.r.traiter("POST", "accompagnement", corps)
+        self.assertEqual(code, 200)
+        liste = self.r.traiter("GET", "accompagnement", None, self.ag)[1]["contacts"]
+        self.assertIn("Ama", [x["prenom"] for x in liste])
+        self.assertTrue(all("code" not in x for x in liste))
+        self.assertEqual(self.r.traiter("PATCH", f"accompagnement/{o['id']}", {}, self.ag)[1]["etat"], "contactee")
+        self.assertTrue(self.r.traiter("POST", "accompagnement/retrait", {"code": "12345678"})[1]["retire"])
+        self.assertNotIn("Ama", [x["prenom"] for x in self.r.traiter("GET", "accompagnement", None, self.ag)[1]["contacts"]])
+
+    def test_telephone_exige_pour_sms_et_lecture_reservee(self):
+        self.assertEqual(self.r.traiter("POST", "accompagnement", {"code": "ABCD1234", "prenom": "Ama", "canal": "sms", "motif": "parler", "consentement": True})[0], 422)
+        self.assertEqual(self.r.traiter("GET", "accompagnement", None, self.ec)[0], 403)
+        self.assertEqual(self.r.traiter("GET", "accompagnement")[0], 401)

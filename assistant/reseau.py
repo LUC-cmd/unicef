@@ -102,6 +102,12 @@ COMPTES = {
     "unicef.partenaire": ("partenaire", "", "UNICEF Togo, partenaire en lecture seule (démonstration)"),
 }
 PRODUITS_BORNE = {"serviettes": "Serviettes hygiéniques", "preservatifs": "Préservatifs", "bon": "Bons de consultation", "antalgique": "Antalgique simple"}
+# Une borne se pose partout où une fille peut venir sans qu'on la remarque : au village comme en ville (lycée, gare, marché, pharmacie...).
+LIEUX_BORNE = {"centre": "Centre de santé", "ecole": "École", "lycee": "Lycée ou université", "marche": "Marché", "gare": "Gare routière", "pharmacie": "Pharmacie",
+               "quartier": "Commerce de quartier", "jeunes": "Maison des jeunes", "toilettes": "Toilettes publiques"}
+VILLES_BORNE = ["Lomé", "Tsévié", "Aného", "Kpalimé", "Atakpamé", "Sokodé", "Bassar", "Kara", "Dapaong"]
+CANAUX_CONTACT = {"sms": "Par SMS", "appel": "Par appel", "visite": "Par une visite discrète"}
+MOTIFS_CONTACT = {"parler": "Parler à une personne de confiance", "regles": "Règles ou douleurs", "protection": "Se protéger", "retard": "Retard de règles", "autre": "Autre"}
 SEUIL_BORNE = 10   # en dessous : stock bas
 RELEVE_MAX_JOURS = 7   # sans relève au-delà : borne à visiter
 
@@ -266,7 +272,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": [], "contacts": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -369,6 +375,10 @@ def _demo_depart():
     donnees["observations"] = _demo_observations()
     donnees["foyers"] = _demo_foyers()
     donnees["inscriptions"] = _demo_inscriptions(donnees["foyers"])
+    donnees["contacts"] = [
+        {"id": uuid.uuid4().hex[:10], "code": "DEMO0001", "prenom": "Ama (fictif)", "nom": "", "telephone": "", "canal": "visite", "motif": "regles", "village": "agbele", "consentement": avant(6), "etat": "a-contacter", "heure": avant(6)},
+        {"id": uuid.uuid4().hex[:10], "code": "DEMO0002", "prenom": "Efua (fictif)", "nom": "Test", "telephone": "90 00 00 00", "canal": "sms", "motif": "parler", "village": "davie", "consentement": avant(30), "etat": "contactee", "heure": avant(30)},
+    ]
     donnees["bornes"] = _demo_bornes()
     donnees["obstacles"] = [
         {"id": uuid.uuid4().hex[:10], "de": "zogbedji", "vers": "davie", "type": "inondation", "note": "Le pont bas est sous l’eau depuis la pluie de cette nuit.", "heure": avant(5), "actif": True, "par": "agent.nutrition"},
@@ -424,6 +434,10 @@ def _demo_bornes():
     def b(i, nom, village, lieu, reseau_, stock, h, retraits, cartes, prob, utile):
         return {"id": i, "nom": nom, "village": village, "lieu": lieu, "reseau": reseau_, "stock": stock, "releve": avant(h), "retraits": retraits, "cartes": cartes,
                 "sondage": {"probleme": prob, "utile": utile}, "journal": []}
+    def ville(i, nom, loc, lieu, reseau_, stock, h, retraits, cartes, prob, utile):
+        x = b(i, nom, loc, lieu, reseau_, stock, h, retraits, cartes, prob, utile)
+        x["zone"] = "ville"
+        return x
     return [
         b("b1", "Borne du centre de santé d’Agbélé", "agbele", "Centre de santé", "2G", {"serviettes": 42, "preservatifs": 8, "bon": 70, "antalgique": 22}, 20, 57, 31,
           {"regles": 21, "protection": 9, "produits": 14, "info": 6, "autre": 2}, {"oui": 30, "peu": 14, "non": 8}),
@@ -431,6 +445,12 @@ def _demo_bornes():
           {"regles": 17, "protection": 6, "produits": 9, "info": 11, "autre": 1}, {"oui": 25, "peu": 12, "non": 7}),
         b("b3", "Borne du marché de Zogbédji", "zogbedji", "Marché", "aucun", {"serviettes": 9, "preservatifs": 12, "bon": 40, "antalgique": 0}, 290, 18, 12,
           {"regles": 8, "protection": 3, "produits": 12, "info": 4, "autre": 0}, {"oui": 9, "peu": 6, "non": 5}),
+        ville("b4", "Borne du lycée (Lomé, fictive)", "Lomé", "Lycée ou université", "3G", {"serviettes": 120, "preservatifs": 6, "bon": 55, "antalgique": 30}, 30, 214, 96,
+              {"regles": 48, "protection": 41, "produits": 12, "info": 22, "autre": 3}, {"oui": 88, "peu": 21, "non": 6}),
+        ville("b5", "Borne de la gare routière (Sokodé, fictive)", "Sokodé", "Gare routière", "2G", {"serviettes": 35, "preservatifs": 52, "bon": 60, "antalgique": 12}, 70, 133, 61,
+              {"regles": 20, "protection": 36, "produits": 9, "info": 15, "autre": 2}, {"oui": 51, "peu": 17, "non": 8}),
+        ville("b6", "Borne de la pharmacie du quartier (Kara, fictive)", "Kara", "Pharmacie", "3G", {"serviettes": 80, "preservatifs": 75, "bon": 80, "antalgique": 40}, 200, 77, 44,
+              {"regles": 17, "protection": 30, "produits": 6, "info": 9, "autre": 1}, {"oui": 40, "peu": 9, "non": 3}),
     ]
 
 
@@ -677,6 +697,27 @@ class Reseau:
                 if not x:
                     raise Erreur(404, "Question introuvable.")
                 return {k: v for k, v in x.items() if k != "code"}
+        # ---- jeunes filles qui acceptent d'être contactées : seulement avec leur accord, retirable à tout moment
+        if p[:1] == ["accompagnement"]:
+            if m == "POST" and n == 1:
+                return self._demande_contact(c)
+            if m == "POST" and p == ["accompagnement", "retrait"]:
+                code = re.sub(r"[^A-Z0-9]", "", court(c.get("code"), 24).upper())
+                x = next((y for y in self.s.d["contacts"] if y["code"] == code), None)
+                if x:
+                    with self.s.verrou:
+                        self.s.d["contacts"].remove(x)
+                        self.s.sauver()
+                return {"retire": bool(x)}
+            if m == "GET" and n == 1:
+                self._auth(jeton, "agent", "centre")
+                return {"contacts": [{k: v for k, v in x.items() if k != "code"} for x in self.s.d["contacts"]], "canaux": CANAUX_CONTACT, "motifs": MOTIFS_CONTACT}
+            if m == "PATCH" and n == 2:
+                self._auth(jeton, "agent", "centre")
+                x = self.s.modifier("contacts", p[1], etat="contactee")
+                if not x:
+                    raise Erreur(404, "Demande introuvable.")
+                return {k: v for k, v in x.items() if k != "code"}
         # ---- visites des agents (une saisie envoyée deux fois n'est enregistrée qu'une fois)
         if p[:1] == ["visites"]:
             if m == "POST" and n == 1:
@@ -790,6 +831,9 @@ class Reseau:
             if m == "GET" and n == 1:
                 u = self._auth(jeton, "technicien", "partenaire", "district", "national")
                 return {"bornes": [self._vue_borne(x, detail=u[1] in ("technicien", "district")) for x in self.s.d["bornes"]], "produits": PRODUITS_BORNE}
+            if m == "POST" and n == 1:
+                self._auth(jeton, "technicien", "district")
+                return self._installer_borne(c)
             if m == "POST" and n == 3 and p[2] in ("releve", "recharge"):
                 self._auth(jeton, "technicien")
                 return self._maj_borne(p[1], p[2], c)
@@ -1147,10 +1191,52 @@ class Reseau:
         etat = "a-visiter" if age > RELEVE_MAX_JOURS else "stock-bas" if bas else "ok"
         sond = x["sondage"]
         vue = {"id": x["id"], "nom": x["nom"], "village": VILLAGES[x["village"]][0] if x["village"] in VILLAGES else x["village"], "reseau": x["reseau"], "etat": etat, "alertes": alertes,
-               "retraits": x["retraits"], "cartes": x["cartes"], "ageReleveJours": round(age, 1), "sondage": sond, "stockBas": len(bas)}
+               "zone": x.get("zone", "village"), "retraits": x["retraits"], "cartes": x["cartes"], "ageReleveJours": round(age, 1), "sondage": sond, "stockBas": len(bas)}
         if detail:
             vue.update({"lieu": x["lieu"], "stock": x["stock"], "releve": x["releve"], "villageId": x["village"]})
         return vue
+
+    def _demande_contact(self, c):
+        """Une jeune fille choisit de donner son prénom (ou un surnom) pour être contactée. Sans case d'accord cochée, rien n'est gardé."""
+        if c.get("consentement") is not True:
+            raise Erreur(422, "Votre accord est nécessaire : cochez la case pour que votre prénom soit vu par l’agent de santé.")
+        code = re.sub(r"[^A-Z0-9]", "", court(c.get("code"), 24).upper())
+        prenom, nom = court(c.get("prenom"), 40).strip(), court(c.get("nom"), 40).strip()
+        tel = re.sub(r"[^0-9+ ]", "", court(c.get("telephone"), 20)).strip()
+        canal, motif = c.get("canal"), c.get("motif")
+        if len(code) < 4 or len(prenom) < 2 or canal not in CANAUX_CONTACT or motif not in MOTIFS_CONTACT:
+            raise Erreur(422, "Prénom ou surnom, manière d’être contactée et sujet attendus.")
+        if canal in ("sms", "appel") and len(re.sub(r"\D", "", tel)) < 8:
+            raise Erreur(422, "Un numéro de téléphone est nécessaire pour être contactée par SMS ou par appel.")
+        village = c.get("village") if c.get("village") in VILLAGES else ""
+        ex = next((y for y in self.s.d["contacts"] if y["code"] == code), None)
+        champs = {"prenom": prenom, "nom": nom, "telephone": tel, "canal": canal, "motif": motif, "village": village, "consentement": maintenant(), "etat": "a-contacter", "heure": maintenant()}
+        if ex:
+            with self.s.verrou:
+                ex.update(champs)
+                self.s.sauver()
+            return {"id": ex["id"], "etat": ex["etat"], "mis_a_jour": True}
+        x = self.s.ajouter("contacts", {"id": uuid.uuid4().hex[:10], "code": code, **champs})
+        return {"id": x["id"], "etat": x["etat"], "mis_a_jour": False}
+
+    def _installer_borne(self, c):
+        """Poser une borne : au village ou en ville, dans un lieu où une fille peut venir discrètement."""
+        nom = court(c.get("nom"), 80).strip()
+        lieu = c.get("lieu")
+        zone = c.get("zone")
+        loc = c.get("localite")
+        if len(nom) < 3 or lieu not in LIEUX_BORNE or zone not in ("village", "ville"):
+            raise Erreur(422, "Nom, type de lieu et zone (village ou ville) attendus.")
+        if (zone == "village" and loc not in VILLAGES) or (zone == "ville" and loc not in VILLES_BORNE):
+            raise Erreur(422, "Choisissez le village ou la ville où poser la borne.")
+        reseau_ = c.get("reseau") if c.get("reseau") in ("aucun", "2G", "3G") else ("3G" if zone == "ville" else "2G")
+        nb = len(self.s.d["bornes"]) + 1
+        while any(b["id"] == f"b{nb}" for b in self.s.d["bornes"]):
+            nb += 1
+        x = {"id": f"b{nb}", "nom": nom, "village": loc, "zone": zone, "lieu": LIEUX_BORNE[lieu], "reseau": reseau_, "stock": {"serviettes": 40, "preservatifs": 40, "bon": 40, "antalgique": 20},
+             "releve": maintenant(), "retraits": 0, "cartes": 0, "sondage": {"probleme": {}, "utile": {}}, "journal": [{"heure": maintenant(), "action": "installation"}]}
+        self.s.ajouter("bornes", x)
+        return self._vue_borne(x)
 
     def _maj_borne(self, bid, action, c):
         x = next((b for b in self.s.d["bornes"] if b["id"] == bid), None)
