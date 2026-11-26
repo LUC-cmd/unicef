@@ -628,3 +628,15 @@ class ContactsFilleTest(unittest.TestCase):
         self.assertEqual(self.r.traiter("POST", "accompagnement", {"code": "ABCD1234", "prenom": "Ama", "canal": "sms", "motif": "parler", "consentement": True})[0], 422)
         self.assertEqual(self.r.traiter("GET", "accompagnement", None, self.ec)[0], 403)
         self.assertEqual(self.r.traiter("GET", "accompagnement")[0], 401)
+
+
+class RegistreEnfantsTest(unittest.TestCase):
+    def test_registre(self):
+        r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        ag, ec, di = connecter(r, "agent.nutrition"), connecter(r, "ecole.davie"), connecter(r, "district.togo")
+        code, v = r.traiter("GET", "enfants", None, ag)
+        self.assertEqual(code, 200)
+        self.assertIn("AG-0001", [e["code"] for e in v["enfants"]])
+        self.assertTrue(all("nom" not in e for e in v["enfants"]))
+        self.assertEqual(r.traiter("GET", "enfants", None, di)[0], 200)
+        self.assertEqual(r.traiter("GET", "enfants", None, ec)[0], 403)

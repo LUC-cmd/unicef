@@ -837,6 +837,10 @@ class Reseau:
             if m == "POST" and n == 3 and p[2] in ("releve", "recharge"):
                 self._auth(jeton, "technicien")
                 return self._maj_borne(p[1], p[2], c)
+        # ---- registre des enfants (codes seulement) : recherche pour l'agent, le centre et le district
+        if m == "GET" and p == ["enfants"]:
+            self._auth(jeton, "agent", "centre", "district")
+            return self._registre_enfants()
         # ---- campagne porte-à-porte : un QR collé sur la maison
         if p[:1] == ["foyers"]:
             if m == "GET" and n == 1:
@@ -1195,6 +1199,25 @@ class Reseau:
         if detail:
             vue.update({"lieu": x["lieu"], "stock": x["stock"], "releve": x["releve"], "villageId": x["village"]})
         return vue
+
+    def _registre_enfants(self):
+        """Tous les enfants connus, par code : âge, village, maison, soins à donner, établissement. Jamais de nom."""
+        etabs = {}
+        for x in self.s.d["inscriptions"]:
+            etabs.setdefault(x["code"], []).append(STRUCTURES[x["structure"]][0].replace(" (fictif)", "").replace(" (fictive)", "") if x["structure"] in STRUCTURES else "")
+        out = []
+        for f in self.s.d["foyers"]:
+            for e in f["enfants"]:
+                fiche = self._fiche_enfant(f, e)
+                fiche.update({"foyer": f["code"], "etablissements": etabs.get(e["code"], [])})
+                out.append(fiche)
+        out.sort(key=lambda x: (-len(x["soinsAFaire"]), x["code"]))
+        par_village = {}
+        for e in out:
+            v = par_village.setdefault(e["village"], {"village": e["village"], "enfants": 0, "aFaire": 0})
+            v["enfants"] += 1
+            v["aFaire"] += 1 if e["soinsAFaire"] else 0
+        return {"enfants": out, "parVillage": sorted(par_village.values(), key=lambda v: -v["aFaire"])}
 
     def _demande_contact(self, c):
         """Une jeune fille choisit de donner son prénom (ou un surnom) pour être contactée. Sans case d'accord cochée, rien n'est gardé."""

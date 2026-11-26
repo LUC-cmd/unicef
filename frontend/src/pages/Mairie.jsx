@@ -106,6 +106,7 @@ export default function Mairie({ vue = 'declarations' }) {
   const [info, setInfo] = useState('')
   const [rejet, setRejet] = useState(null) // { id, motif }
   const [ouvert, setOuvert] = useState(null)
+  const [q, setQ] = useState('')
   const [source, setSource] = useState('')
 
   const charger = useCallback(async () => {
@@ -264,6 +265,9 @@ export default function Mairie({ vue = 'declarations' }) {
       {info && <p className="succes" role="status">{info}{/valid/i.test(info) && <> <Link to="/mairie/nationalite">Étape suivante : le dossier de nationalité</Link></>}</p>}
       {erreur && <p className="erreur" role="alert">{erreur}</p>}
 
+      <div className="ligne-code">
+        <label>Chercher un dossier<input className="recherche" value={q} placeholder="N° de reçu, code enfant ou prénom" maxLength={40} onChange={(e) => setQ(e.target.value)} /></label>
+      </div>
       <div className="filtres-comptes" role="group" aria-label="Filtrer selon l'expéditeur">
         {[['', 'Tous les expéditeurs'], ...Object.entries(SOURCE_DECLARATION)].map(([k, v]) => (
           <button key={k} type="button" className={`filtre ${source === k ? 'actif' : ''}`} aria-pressed={source === k} onClick={() => setSource(k)}>{v}</button>
@@ -275,7 +279,7 @@ export default function Mairie({ vue = 'declarations' }) {
             <tr><th>Reçu</th><th>Enfant</th><th>Envoyé par</th><th>Né(e)</th><th>Noms communiqués</th><th>Délai</th><th>État</th><th></th></tr>
           </thead>
           <tbody>
-            {liste.filter((d) => !source || (d.source ?? 'AGENT') === source).map((d) => {
+            {liste.filter((d) => (!source || (d.source ?? 'AGENT') === source) && (!q.trim() || [d.numeroRecu, d.codeEnfant, d.enfantPrenom, d.zone].some((x) => String(x ?? '').toLowerCase().includes(q.trim().toLowerCase())))).map((d) => {
               const id = resumeIdentite(d)
               return (
                 <tr key={d.id} className="ligne-cliquable" onClick={() => setOuvert(d)}>

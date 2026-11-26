@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Bandeau from '../components/Bandeau.jsx'
 import LecteurQr from '../components/LecteurQr.jsx'
 import QrCode from '../components/QrCode.jsx'
@@ -20,12 +21,15 @@ export default function Campagne({ s }) {
 
   const charger = useCallback(async () => { try { setListe((await reseau.get('foyers', s.jeton)).foyers) } catch { /* hors ligne */ } }, [s.jeton])
   useEffect(() => { charger() }, [charger])
+  const [params] = useSearchParams()
 
   const ouvrir = async (c) => {
     const brut = String(c || code).trim().toUpperCase().replace('FILDOR-FOYER:', '')
     setMsg(''); setCree(null)
     try { setFoyer(await reseau.get(`foyers/${encodeURIComponent(brut)}`, s.jeton)); setCode(brut) } catch (e) { setFoyer(null); setMsg(e.message) }
   }
+  const depuis = params.get('foyer')
+  useEffect(() => { if (depuis) ouvrir(depuis) }, [depuis]) // eslint-disable-line react-hooks/exhaustive-deps
   const donner = async (enfant, soin) => {
     setMsg('')
     const r = await envoyerOuGarder(`foyers/${foyer.code}/soins`, { enfant, soin })
