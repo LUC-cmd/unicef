@@ -2808,3 +2808,13 @@ li.reseau-urgent { border-left: 5px solid #b3261e; padding-left: .6rem; backgrou
 /* Fenêtres et messages : plus de trait de couleur sur le côté, le texte suffit. */
 .retour, .retour-succes, .retour-erreur { border-left: 1px solid #d9e2ea; }
 .avertissement, .carte.urgence-info, .carte.attention, .action-zone, .note-acte, .rassurant, .jeu, .principe { border-left: 1px solid #d9e2ea; }
+
+/* Listes d'enfants : champ code + bouton sur une ligne, fiche trouvée, liste sur place */
+.ligne-code { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: flex-end; margin: 0.6rem 0 1rem; }
+.ligne-code label { flex: 1 1 14rem; display: grid; gap: 0.3rem; font-weight: 600; }
+.ligne-code input { font-size: 1.15rem; letter-spacing: 0.06em; }
+.fiche-enfant { display: grid; gap: 0.5rem; justify-items: start; padding: 0.9rem 1rem; margin-bottom: 1rem; border: 1px solid var(--bord); border-radius: var(--rayon); background: #f7fbfd; }
+.liste-enfants { list-style: none; margin: 0.8rem 0; padding: 0; display: grid; gap: 0.5rem; }
+.liste-enfants li { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: center; padding: 0.6rem 0.9rem; border: 1px solid var(--bord); border-radius: var(--rayon); background: #fff; }
+.liste-enfants li .petit { flex: 1 1 8rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

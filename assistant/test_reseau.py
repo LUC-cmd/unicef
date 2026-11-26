@@ -536,3 +536,49 @@ class MessagerieTest(unittest.TestCase):
         self.r.traiter("POST", "messages", {"a": "centre.davie", "texte": "secret"}, self.ag)
         tiers = connecter(self.r, "district.togo")
         self.assertEqual(self.r.traiter("GET", "messages/agent.nutrition", None, tiers)[1]["messages"], [])
+
+
+class EnfantsEtablissementTest(unittest.TestCase):
+    def setUp(self):
+        self.r = Reseau(stock=Stock(None, graine=True), repondre=repondre, corpus=CORPUS)
+        self.ec = connecter(self.r, "ecole.davie")
+        self.ce = connecter(self.r, "centre.davie")
+
+    def test_liste_de_depart(self):
+        code, v = self.r.traiter("GET", "structures/moi", jeton=self.ec)
+        self.assertEqual(code, 200)
+        self.assertEqual([e["code"] for e in v["enfants"]], ["DA-0008", "DA-0009"])
+
+    def test_chercher_puis_ajouter_par_code(self):
+        code, f = self.r.traiter("GET", "structures/moi/enfant/kp-0004", jeton=self.ec)
+        self.assertEqual((code, f["village"], f["dejaInscrit"]), (200, "kpadape", False))
+        avant = self.r.traiter("GET", "structures/moi", jeton=self.ec)[1]["inscrits"]
+        code, o = self.r.traiter("POST", "structures/moi/enfants", {"code": "kp-0004"}, jeton=self.ec)
+        self.assertEqual((code, o["doublon"], o["connu"]), (200, False, True))
+        self.assertIn("KP-0004", [e["code"] for e in o["structure"]["enfants"]])
+        self.assertEqual(o["structure"]["inscrits"], avant + 1)
+        self.assertTrue(self.r.traiter("POST", "structures/moi/enfants", {"code": "KP-0004"}, jeton=self.ec)[1]["doublon"])
+
+    def test_code_inconnu_et_nom_refuses(self):
+        self.assertEqual(self.r.traiter("GET", "structures/moi/enfant/ZZ-9999", jeton=self.ec)[0], 404)
+        self.assertEqual(self.r.traiter("POST", "structures/moi/enfants", {"code": "ZZ-9999"}, jeton=self.ec)[0], 404)
+        self.assertEqual(self.r.traiter("GET", "structures/moi/enfant/Kossi Mensah", jeton=self.ec)[0], 422)
+        code, o = self.r.traiter("POST", "structures/moi/enfants", {"code": "ZZ-9999", "ageMois": 70}, jeton=self.ec)
+        self.assertEqual((code, o["connu"]), (200, False))
+
+    def test_retirer(self):
+        code, o = self.r.traiter("POST", "structures/moi/enfants/DA-0009/retirer", {}, jeton=self.ec)
+        self.assertEqual(code, 200)
+        self.assertEqual([e["code"] for e in o["structure"]["enfants"]], ["DA-0008"])
+        self.assertEqual(self.r.traiter("POST", "structures/moi/enfants/DA-0009/retirer", {}, jeton=self.ec)[0], 404)
+
+    def test_reserve_aux_ecoles(self):
+        self.assertEqual(self.r.traiter("POST", "structures/moi/enfants", {"code": "AG-0001"}, jeton=self.ce)[0], 403)
+
+    def test_centre_accueille_un_enfant(self):
+        code, o = self.r.traiter("POST", "centre/moi/accueil", {"code": "da-0008"}, jeton=self.ce)
+        self.assertEqual((code, o["doublon"]), (200, False))
+        self.assertIn("DA-0008", [x["code"] for x in o["centre"]["surPlaceListe"]])
+        self.assertTrue(self.r.traiter("POST", "centre/moi/accueil", {"code": "DA-0008"}, jeton=self.ce)[1]["doublon"])
+        self.assertEqual(self.r.traiter("POST", "centre/moi/accueil", {"code": "ZZ-9999"}, jeton=self.ce)[0], 404)
+        self.assertEqual(self.r.traiter("POST", "centre/moi/accueil", {"code": "DA-0008"}, jeton=self.ec)[0], 403)

@@ -9,13 +9,25 @@ import { useDonnees } from './Suivi.jsx'
 
 const maj = (t) => (t ? t[0].toUpperCase() + t.slice(1) : '')
 const jour = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'short', timeZone: 'UTC' }).replace('.', '')
-const ORIGINES = { alerte: 'Alertes directes', visite: 'Visites des agents', agent: 'Références des agents', ecole: 'Écoles et crèches' }
+const ORIGINES = { alerte: 'Alertes directes', visite: 'Visites des agents', agent: 'Références des agents', ecole: 'Écoles et crèches', accueil: 'Arrivés directement' }
+const agePhrase = (m) => (m < 24 ? `${m} mois` : `${Math.floor(m / 12)} ans`)
 
 /** Tableau de bord du centre de santé ou de l'hôpital : ce qui arrive, ce qui est sur place, ce qui est pris en charge. */
 export function TableauCentre({ s }) {
-  const [c, erreur] = useDonnees('centre/moi', s.jeton, 6000)
+  const [c, erreur, recharger] = useDonnees('centre/moi', s.jeton, 6000)
+  const [code, setCode] = useState('')
+  const [msg, setMsg] = useState(null)
   if (!c) return <><Bandeau titre="Tableau de bord">Chargement…</Bandeau>{erreur && <p role="alert" className="erreur">{erreur}</p>}</>
   const max = Math.max(1, ...c.provenance.map((p) => p.total))
+  const accueillir = async (e) => {
+    e.preventDefault(); setMsg(null)
+    try {
+      const r = await reseau.post('centre/moi/accueil', { code: code.trim().toUpperCase() }, s.jeton)
+      setMsg({ ok: true, texte: r.doublon ? `${r.enfant.code} est déjà sur place.` : `${r.enfant.code} (${agePhrase(r.enfant.ageMois)}, ${maj(r.enfant.village)}) est enregistré sur place.` })
+      setCode(''); recharger()
+    } catch (er) { setMsg({ ok: false, texte: er.message }) }
+  }
+  const prendre = async (id) => { try { await reseau.patch(`references/${id}`, { etat: 'prise' }, s.jeton); recharger() } catch (er) { setMsg({ ok: false, texte: er.message }) } }
   return (
     <>
       <Bandeau surtitre={c.hopital ? 'Hôpital' : 'Centre de santé'} titre={c.nom.replace(' (fictif)', '')}>{c.hopital ? 'L’hôpital reçoit les cas graves envoyés par les centres, les agents et les écoles : césarienne, urgences, nouveau-né.' : 'Le centre reçoit les cas simples et envoie à l’hôpital ce qu’il ne peut pas prendre en charge.'} Services : {c.services.toLowerCase()}.</Bandeau>
@@ -26,7 +38,26 @@ export function TableauCentre({ s }) {
         <div className="tuile"><b>{c.prises}</b><span>pris en charge</span></div>
         <div className="tuile"><b>{c.delaiMedianMin == null ? '–' : delaiLisible(c.delaiMedianMin)}</b><span>délai médian</span></div>
       </div>
-      <p><Link className="bouton" to="/reseau/references">Traiter les cas qui arrivent</Link></p>
+      <section className="carte" id="accueil">
+        <h2>Enfants sur place ({c.surPlaceListe.length})</h2>
+        <form onSubmit={accueillir} className="ligne-code">
+          <label>Un enfant arrive : tapez son code<input value={code} placeholder="AG-0001" maxLength={12} autoComplete="off" onChange={(e) => setCode(e.target.value.toUpperCase())} required /></label>
+          <button className="bouton" type="submit">Enregistrer son arrivée</button>
+        </form>
+        {msg && <p role="status" className={msg.ok ? 'succes' : 'erreur'}>{msg.texte}</p>}
+        {c.surPlaceListe.length === 0 ? <p className="petit">Aucun enfant sur place pour le moment.</p> : (
+          <ul className="liste-enfants">
+            {c.surPlaceListe.map((x) => (
+              <li key={x.id}>
+                <b>{x.code ?? 'Enfant envoyé'}</b>
+                <span className="petit">{maj(x.village)} · {x.cas}{x.niveau === 'urgent' ? ' · urgent' : ''}</span>
+                <button className="bouton secondaire petit-bouton" onClick={() => prendre(x.id)}>Prendre en charge</button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p><Link className="petit" to="/reseau/references">Voir aussi les cas annoncés (en route)</Link></p>
+      </section>
       <div className="grille-graphes">
         <Tendance donnees={c.tendance} />
         <figure className="graphe">
@@ -93,6 +124,76 @@ function Eveil({ v, s, recharger }) {
   )
 }
 
+/** Liste des enfants de l'établissement : on tape le code, l'enfant déjà sur Fil d'Or apparaît, un clic l'ajoute. */
+function MesEnfants({ v, s, recharger, signaler }) {
+  const [code, setCode] = useState('')
+  const [fiche, setFiche] = useState(null)
+  const [inconnu, setInconnu] = useState(false)
+  const [age, setAge] = useState('')
+  const [msg, setMsg] = useState(null)
+  const remettre = () => { setCode(''); setFiche(null); setInconnu(false); setAge('') }
+  const chercher = async (e) => {
+    e.preventDefault(); setMsg(null); setFiche(null); setInconnu(false)
+    try { setFiche(await reseau.get(`structures/moi/enfant/${encodeURIComponent(code.trim().toUpperCase())}`, s.jeton)) }
+    catch (er) { if (er.statut === 404) setInconnu(true); else setMsg({ ok: false, texte: er.message }) }
+  }
+  const ajouter = async () => {
+    try {
+      const r = await reseau.post('structures/moi/enfants', { code: code.trim().toUpperCase(), ageMois: age === '' ? undefined : Number(age) }, s.jeton)
+      setMsg({ ok: true, texte: r.doublon ? 'Cet enfant est déjà dans votre liste.' : `${code.trim().toUpperCase()} ajouté à votre liste.` })
+      remettre(); recharger()
+    } catch (er) { setMsg({ ok: false, texte: er.message }) }
+  }
+  const retirer = async (c) => { try { await reseau.post(`structures/moi/enfants/${c}/retirer`, {}, s.jeton); recharger() } catch (er) { setMsg({ ok: false, texte: er.message }) } }
+  return (
+    <section className="carte" id="enfants">
+      <h2>Mes enfants ({v.enfants.length})</h2>
+      <form onSubmit={chercher} className="ligne-code">
+        <label>Ajouter un enfant : tapez son code<input value={code} placeholder="AG-0001" maxLength={12} autoComplete="off" onChange={(e) => { setCode(e.target.value.toUpperCase()); setFiche(null); setInconnu(false) }} required /></label>
+        <button className="bouton" type="submit">Chercher</button>
+      </form>
+      {fiche && (
+        <div className="fiche-enfant">
+          <p><b>{fiche.code}</b> · {agePhrase(fiche.ageMois)} · village de {maj(fiche.village)}</p>
+          <p className="petit">{fiche.soinsAFaire.length ? `À faire : ${fiche.soinsAFaire.join(', ').toLowerCase()}` : 'Soins à jour'} · déjà connu de Fil d’Or</p>
+          {fiche.dejaInscrit ? <p className="succes">Déjà dans votre liste.</p> : <button className="bouton" onClick={ajouter}>Ajouter à ma liste</button>}
+        </div>
+      )}
+      {inconnu && (
+        <div className="fiche-enfant">
+          <p>Ce code n’est pas encore sur Fil d’Or. Vous pouvez l’ajouter avec son âge.</p>
+          <label>Âge en mois<input type="number" min="0" max="143" value={age} onChange={(e) => setAge(e.target.value)} /></label>
+          <button className="bouton" onClick={ajouter} disabled={age === ''}>Ajouter comme nouvel enfant</button>
+        </div>
+      )}
+      {msg && <p role="status" className={msg.ok ? 'succes' : 'erreur'}>{msg.texte}</p>}
+      {v.enfants.length === 0 ? <p className="petit">Aucun enfant dans la liste : tapez un code ci-dessus.</p> : (
+        <div className="tableau-conteneur">
+          <table>
+            <thead><tr><th>Code</th><th>Âge</th><th>Village</th><th>Vaccins et soins</th><th>Éveil</th><th><span className="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              {v.enfants.map((e) => (
+                <tr key={e.code}>
+                  <th scope="row">{e.code}</th>
+                  <td>{agePhrase(e.ageMois)}</td>
+                  <td>{maj(e.village)}</td>
+                  <td>{!e.connu ? 'Non suivi' : e.soinsAFaire.length ? <b className="pastille pastille-prioritaire">{e.soinsAFaire.length} à faire</b> : 'À jour'}</td>
+                  <td>{e.aStimuler.length ? <b className="pastille pastille-prioritaire">À stimuler</b> : 'Bien'}</td>
+                  <td className="actions">
+                    <button className="bouton secondaire petit-bouton" onClick={() => signaler(e.code)}>Prévenir le centre</button>{' '}
+                    <button className="bouton secondaire petit-bouton" onClick={() => retirer(e.code)}>Retirer</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="petit">Un code, jamais un nom. L’enfant déjà suivi par un agent est reconnu tout de suite.</p>
+    </section>
+  )
+}
+
 export function TableauEcole({ s }) {
   const [v, erreur, recharger] = useDonnees('structures/moi', s.jeton, 10000)
   const [presents, setPresents] = useState('')
@@ -120,6 +221,7 @@ export function TableauEcole({ s }) {
         <div className={`tuile ${v.vaccinesPct < 80 ? 'alerte' : ''}`}><b>{v.vaccinesPct} %</b><span>vaccins à jour ({v.vaccinesAJour} sur {v.inscrits})</span></div>
         <div className="tuile"><b>{v.repas}</b><span>repas servis par jour</span></div>
       </div>
+      <MesEnfants v={v} s={s} recharger={recharger} signaler={(c) => { setF({ code: c, motif: 'absent' }); document.getElementById('signaler')?.scrollIntoView({ behavior: 'smooth' }) }} />
       <div className="grille-graphes">
         <figure className="graphe">
           <figcaption><b>Présence cette semaine</b></figcaption>
@@ -136,7 +238,7 @@ export function TableauEcole({ s }) {
         </section>
       </div>
       <Eveil v={v} s={s} recharger={recharger} />
-      <section className="carte">
+      <section className="carte" id="signaler">
         <h2>Prévenir le centre de santé</h2>
         <form onSubmit={signaler} className="ado-champs">
           <label>Code de l’enfant<input value={f.code} placeholder="AG-0042" maxLength={12} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase() })} required /></label>

@@ -266,7 +266,7 @@ class Stock:
     def __init__(self, chemin=None, graine=False):
         self.chemin = Path(chemin) if chemin else None
         self.verrou = threading.Lock()
-        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": []}
+        self.d = {"alertes": [], "demandes": [], "produits": [], "controles": [], "questions": [], "references": [], "visites": [], "appels": [], "presences": [], "observations": [], "obstacles": [], "etablissements": [], "comptes": [], "villages": [], "foyers": [], "bornes": [], "messages": [], "inscriptions": []}
         if self.chemin and self.chemin.exists():
             try:
                 lu = json.loads(self.chemin.read_text(encoding="utf-8"))
@@ -368,6 +368,7 @@ def _demo_depart():
     donnees["references"], donnees["appels"] = _demo_suivi(donnees["alertes"])
     donnees["observations"] = _demo_observations()
     donnees["foyers"] = _demo_foyers()
+    donnees["inscriptions"] = _demo_inscriptions(donnees["foyers"])
     donnees["bornes"] = _demo_bornes()
     donnees["obstacles"] = [
         {"id": uuid.uuid4().hex[:10], "de": "zogbedji", "vers": "davie", "type": "inondation", "note": "Le pont bas est sous l’eau depuis la pluie de cette nuit.", "heure": avant(5), "actif": True, "par": "agent.nutrition"},
@@ -449,6 +450,17 @@ def _demo_foyers():
             for t in faits:
                 f["soins"].append({"enfant": code, "soin": t, "heure": avant(24 * 8), "par": "agent.nutrition", "idClient": f"seed{n}{t}"[:20].ljust(8, "x")})
         out.append(f)
+    return out
+
+
+def _demo_inscriptions(foyers):
+    """Quelques enfants déjà inscrits dans chaque établissement de démonstration (codes de la campagne, aucun nom)."""
+    plan = {"e1": ["AG-0001", "AG-0002", "AG-0003"], "e2": ["DA-0008", "DA-0009"], "e3": ["ZO-0007"]}
+    out = []
+    for sid, codes in plan.items():
+        for code in codes:
+            age = next((e["ageMois"] for f in foyers for e in f["enfants"] if e["code"] == code), 0)
+            out.append({"id": uuid.uuid4().hex[:10], "structure": sid, "code": code, "ageMois": age, "jour": maintenant()[:10], "graine": True})
     return out
 
 
@@ -718,6 +730,15 @@ class Reseau:
             if m == "POST" and p[1:] == ["moi", "signalement"]:
                 u = self._auth(jeton, "ecole")
                 return self._signaler(u[2], c)
+            if m == "GET" and n == 4 and p[1:3] == ["moi", "enfant"]:
+                u = self._auth(jeton, "ecole")
+                return self._chercher_enfant(u[2], p[3])
+            if m == "POST" and p[1:] == ["moi", "enfants"]:
+                u = self._auth(jeton, "ecole")
+                return self._inscrire(u[2], c)
+            if m == "POST" and n == 5 and p[1:3] == ["moi", "enfants"] and p[4] == "retirer":
+                u = self._auth(jeton, "ecole")
+                return self._retirer(u[2], p[3])
         # ---- gouvernance : qui crée quoi, et les accès
         if m == "POST" and p == ["activer"]:
             return self._activer(c)
@@ -825,6 +846,12 @@ class Reseau:
         if m == "GET" and p == ["centre", "moi"]:
             u = self._auth(jeton, "centre")
             return self._vue_centre(u[2])
+        if m == "GET" and n == 3 and p[:2] == ["centre", "enfant"]:
+            self._auth(jeton, "centre")
+            return self._chercher_enfant(None, p[2])
+        if m == "POST" and p == ["centre", "moi", "accueil"]:
+            u = self._auth(jeton, "centre")
+            return self._accueillir(u[2], c)
         # ---- villages et district
         if m == "GET" and p == ["villages"]:
             self._auth(jeton, "agent", "district")
@@ -938,7 +965,8 @@ class Reseau:
         return res
 
     def _vue_structure(self, sid, detail=False):
-        nom, village, type_, inscrits, vaccines, repas = STRUCTURES[sid]
+        nom, village, type_, base, vaccines, repas = STRUCTURES[sid]
+        inscrits = self._inscrits(sid)
         pres = {x["jour"]: x["presents"] for x in self.s.d["presences"] if x["structure"] == sid}
         auj = datetime.now(timezone.utc).date()
         sem = [{"jour": (auj - timedelta(days=i)).isoformat()} for i in range(6, -1, -1)]
@@ -947,7 +975,7 @@ class Reseau:
         connus = [j["presents"] for j in sem if j["presents"] is not None]
         taux = round(100 * sum(connus) / (len(connus) * inscrits)) if connus and inscrits else None
         signal = [r for r in self.s.d["references"] if r.get("structure") == sid]
-        v = {"id": sid, "nom": nom, "village": village, "type": type_, "inscrits": inscrits, "vaccinesAJour": vaccines, "vaccinesPct": None if vaccines is None else round(100 * vaccines / inscrits),
+        v = {"id": sid, "nom": nom, "village": village, "type": type_, "inscrits": inscrits, "vaccinesAJour": vaccines, "vaccinesPct": None if vaccines is None or not base else round(100 * vaccines / base),
              "repas": repas, "presenceAujourdhui": pres.get(auj.isoformat()), "presenceMoyennePct": taux,
              "signalements": len(signal), "signalementsPris": len([r for r in signal if r["etat"] in FINALES])}
         ev = self._eveil(sid)
@@ -957,7 +985,90 @@ class Reseau:
             v["semaine"] = sem
             v["motifs"] = [{"id": k, "libelle": x} for k, x in MOTIFS_SIGNALEMENT.items()]
             v["suivi"] = [self._vue_reference(r) for r in signal][:20]
+            v["enfants"] = self._enfants_etab(sid, ev)
         return v
+
+    # ---- enfants d'un établissement : on tape le code TG, l'enfant déjà connu de Fil d'Or s'ajoute à la liste
+    def _inscrits(self, sid):
+        return STRUCTURES[sid][3] + len([x for x in self.s.d["inscriptions"] if x["structure"] == sid and not x.get("graine")])
+
+    def _enfant_connu(self, code):
+        for f in self.s.d["foyers"]:
+            for e in f["enfants"]:
+                if e["code"] == code:
+                    return f, e
+        return None, None
+
+    def _code_valide(self, code):
+        code = court(code, 12).upper()
+        if not RE_CODE_ENFANT.match(code):
+            raise Erreur(422, "Code enfant attendu (lettres, chiffres, tiret), par exemple AG-0001. Aucun nom n’est accepté.")
+        return code
+
+    def _fiche_enfant(self, f, e):
+        soins = [self._statut_soin(f, e, k) for k in SOINS_CAMPAGNE]
+        return {"code": e["code"], "ageMois": e["ageMois"], "village": f["village"], "connu": True,
+                "soinsAFaire": [x["libelle"] for x in soins if x["statut"] == "a-faire"], "soinsFaits": len([x for x in soins if x["statut"] == "fait"])}
+
+    def _chercher_enfant(self, sid, code):
+        code = self._code_valide(code)
+        f, e = self._enfant_connu(code)
+        if not e:
+            raise Erreur(404, "Ce code n’existe pas sur Fil d’Or. Vérifiez-le, ou ajoutez l’enfant avec son âge.")
+        v = self._fiche_enfant(f, e)
+        v["dejaInscrit"] = bool(sid and any(x["structure"] == sid and x["code"] == code for x in self.s.d["inscriptions"]))
+        return v
+
+    def _enfants_etab(self, sid, ev):
+        stim = {x["code"]: x["domaines"] for x in ev["aStimuler"]}
+        out = []
+        for x in sorted((x for x in self.s.d["inscriptions"] if x["structure"] == sid), key=lambda x: x["code"]):
+            f, e = self._enfant_connu(x["code"])
+            fiche = self._fiche_enfant(f, e) if e else {"code": x["code"], "ageMois": x["ageMois"], "village": STRUCTURES[sid][1], "connu": False, "soinsAFaire": [], "soinsFaits": 0}
+            fiche["aStimuler"] = stim.get(x["code"], [])
+            out.append(fiche)
+        return out
+
+    def _inscrire(self, sid, c):
+        code = self._code_valide(c.get("code"))
+        if any(x["structure"] == sid and x["code"] == code for x in self.s.d["inscriptions"]):
+            return {"doublon": True, "structure": self._vue_structure(sid, detail=True)}
+        f, e = self._enfant_connu(code)
+        if e:
+            age = e["ageMois"]
+        else:
+            try:
+                age = int(c.get("ageMois"))
+            except (TypeError, ValueError):
+                raise Erreur(404, "Ce code n’existe pas sur Fil d’Or. Vérifiez-le, ou ajoutez l’enfant avec son âge.")
+            if not 0 <= age <= 143:
+                raise Erreur(422, "Âge en mois attendu (0 à 143).")
+        self.s.ajouter("inscriptions", {"id": uuid.uuid4().hex[:10], "structure": sid, "code": code, "ageMois": age, "jour": maintenant()[:10]})
+        return {"doublon": False, "connu": bool(e), "structure": self._vue_structure(sid, detail=True)}
+
+    def _retirer(self, sid, code):
+        code = self._code_valide(code)
+        x = next((x for x in self.s.d["inscriptions"] if x["structure"] == sid and x["code"] == code), None)
+        if not x:
+            raise Erreur(404, "Cet enfant n’est pas dans votre liste.")
+        with self.s.verrou:
+            self.s.d["inscriptions"].remove(x)
+            self.s.sauver()
+        return {"structure": self._vue_structure(sid, detail=True)}
+
+    def _accueillir(self, cid, c):
+        """Le centre ou l'hôpital enregistre l'arrivée d'un enfant par son code : il passe « sur place » et attend la prise en charge."""
+        code = self._code_valide(c.get("code"))
+        f, e = self._enfant_connu(code)
+        if not e:
+            raise Erreur(404, "Ce code n’existe pas sur Fil d’Or. Vérifiez-le auprès de l’agent de santé ou de la famille.")
+        deja = next((r for r in self.s.d["references"] if r["centreId"] == cid and r.get("code") == code and r["etat"] not in FINALES), None)
+        if deja:
+            return {"doublon": True, "enfant": self._fiche_enfant(f, e), "centre": self._vue_centre(cid)}
+        r = self._nouvelle_reference(f["village"], "enfant", "surveiller", cid, "accueil", [], "", "")
+        r["code"] = code
+        self._avancer_reference(r, "arrivee")
+        return {"doublon": False, "enfant": self._fiche_enfant(f, e), "centre": self._vue_centre(cid)}
 
     def _noms_comptes(self):
         """Tous les comptes du réseau qui peuvent échanger : identifiant -> (nom, rôle). Le partenaire en est exclu (lecture seule)."""
@@ -1183,8 +1294,8 @@ class Reseau:
             n = int(c.get("presents"))
         except (TypeError, ValueError):
             raise Erreur(422, "Nombre d’enfants présents attendu.")
-        if not 0 <= n <= STRUCTURES[sid][3]:
-            raise Erreur(422, f"Entre 0 et {STRUCTURES[sid][3]} enfants.")
+        if not 0 <= n <= self._inscrits(sid):
+            raise Erreur(422, f"Entre 0 et {self._inscrits(sid)} enfants.")
         jour = datetime.now(timezone.utc).date().isoformat()
         ex = next((x for x in self.s.d["presences"] if x["structure"] == sid and x["jour"] == jour), None)
         if ex:
@@ -1236,7 +1347,9 @@ class Reseau:
                 "delaiMedianMin": delais[len(delais) // 2] if delais else None,
                 "tendance": self._tendance([r for r in self.s.d["references"] if r["centreId"] == cid]),
                 "provenance": sorted(({"village": k, "total": v} for k, v in origine.items()), key=lambda x: -x["total"]),
-                "parOrigine": {o: len([r for r in refs if r["origine"] == o]) for o in ("alerte", "visite", "agent", "ecole")}}
+                "parOrigine": {o: len([r for r in refs if r["origine"] == o]) for o in ("alerte", "visite", "agent", "ecole", "accueil")},
+                "surPlaceListe": [{"id": r["id"], "code": r.get("code"), "village": r["village"], "cas": LIBELLE_CAS.get(r["cas"], r["cas"]), "niveau": r["niveau"], "origine": r["origine"], "heure": r["heure"]}
+                                  for r in refs if r["etat"] == "arrivee"]}
 
     # ---- carte et itinéraires
     def _vue_obstacle(self, o):
