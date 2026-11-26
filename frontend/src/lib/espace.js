@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { lireSessionReseau } from './reseauClient.js'
+import { lireFille } from './fille.js'
 
 /**
  * Espace fermé : tant qu'une personne est connectée (agent, centre, école, famille…), elle reste dans son espace.
@@ -35,17 +36,28 @@ export function useSessionReseau() {
   return s
 }
 
+export function useCompteFille() {
+  const [f, setF] = useState(lireFille)
+  useEffect(() => {
+    const maj = () => setF(lireFille())
+    window.addEventListener('fildor-fille', maj)
+    return () => window.removeEventListener('fildor-fille', maj)
+  }, [])
+  return f
+}
+
 /** L'espace de la personne connectée : { base, estDans(chemin) } ou null si personne n'est connecté. */
-export function espaceDe({ session, reseauSession, compteFamille, accueilRole }) {
+export function espaceDe({ session, reseauSession, compteFamille, compteFille, accueilRole }) {
   if (session) return { base: accueilRole[session.role] ?? '/', estDans: (c) => PREFIXES_JAVA.test(c) }
   if (reseauSession) return { base: '/reseau', estDans: (c) => /^\/reseau(\/|$)/.test(c) }
   if (compteFamille) return { base: '/famille', estDans: (c) => /^\/famille(\/|$)/.test(c), vers: (c) => VERS_FAMILLE[c] }
+  if (compteFille) return { base: '/fille', estDans: (c) => /^\/fille(\/|$)/.test(c) }
   return null
 }
 
 /** Le même identifiant de personne tant qu'elle reste connectée : un changement = nouvelle connexion. */
-export const identiteConnectee = ({ session, reseauSession, compteFamille }) =>
-  session ? `j:${session.username ?? session.role}` : reseauSession ? `r:${reseauSession.identifiant}` : compteFamille ? `f:${compteFamille.codeFamille}` : ''
+export const identiteConnectee = ({ session, reseauSession, compteFamille, compteFille }) =>
+  session ? `j:${session.username ?? session.role}` : reseauSession ? `r:${reseauSession.identifiant}` : compteFamille ? `f:${compteFamille.codeFamille}` : compteFille ? `g:${compteFille.pseudo}` : ''
 
 export function useNouvelleConnexion(identite) {
   useEffect(() => {

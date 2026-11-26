@@ -4,7 +4,8 @@ import { creerCartePerso, lireCartePerso } from './cartePerso.js'
 /** Compte « jeune fille » de démonstration : un pseudo, aucun nom. Tout reste sur ce téléphone. */
 const CLE = 'fildor.fille'
 export const lireFille = () => { try { return JSON.parse(localStorage.getItem(CLE) || 'null') } catch { return null } }
-export const sortirFille = () => { try { localStorage.removeItem(CLE) } catch { /* refusé */ } }
+const signaler = () => { try { window.dispatchEvent(new Event('fildor-fille')) } catch { /* ignoré */ } }
+export const sortirFille = () => { try { localStorage.removeItem(CLE) } catch { /* refusé */ } signaler() }
 export function entrerFille() {
   const code = creerCartePerso()
   const e = lireEspace()
@@ -16,6 +17,7 @@ export function entrerFille() {
   }
   const f = { pseudo: `FILLE-${code.slice(0, 4)}`, depuis: new Date().toISOString().slice(0, 10) }
   try { localStorage.setItem(CLE, JSON.stringify(f)) } catch { /* refusé */ }
+  signaler()
   return f
 }
 export { lireCartePerso }

@@ -4,7 +4,7 @@ import MenuProfilFamille from './components/MenuProfilFamille.jsx'
 import EnteteReseau from './components/EnteteReseau.jsx'
 import NotificationsFamille from './components/NotificationsFamille.jsx'
 import { useCompteFamille } from './lib/famille.js'
-import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau } from './lib/espace.js'
+import { ecrireDehors, espaceDe, identiteConnectee, useDehors, useNouvelleConnexion, useSessionReseau, useCompteFille } from './lib/espace.js'
 import { Notifications } from './components/Shell.jsx'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
@@ -133,8 +133,9 @@ export default function App() {
   const finIntro = () => setIntro(false)
   const compteFamille = useCompteFamille()
   const reseauSession = useSessionReseau()
+  const compteFille = useCompteFille()
   const dehors = useDehors()
-  const connecte = { session, reseauSession, compteFamille }
+  const connecte = { session, reseauSession, compteFamille, compteFille }
   useNouvelleConnexion(identiteConnectee(connecte))
   const espace = espaceDe({ ...connecte, accueilRole: ACCUEIL_ROLE })
   const dansFamille = Boolean(compteFamille) && !session && !reseauSession && /^\/famille(\/|$)/.test(lieu.pathname)
